@@ -1,8 +1,8 @@
-import { Card, CardContent } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
+import { Card, CardContent } from "../ui/card";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { MapPin, Bed, Bath, Square, Heart, Eye } from "lucide-react";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "../figma/ImageWithFallback";
 
 export default function FeaturedProperties() {
   const properties = [
@@ -100,7 +100,7 @@ export default function FeaturedProperties() {
                   className="w-full h-44 md:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute top-3 md:top-4 left-3 md:left-4">
-                  <Badge 
+                  <Badge
                     variant={property.type === 'Satılık' ? 'default' : 'secondary'}
                     className="bg-white/90 text-gray-900 hover:bg-white text-xs"
                   >
@@ -117,7 +117,7 @@ export default function FeaturedProperties() {
                   <span className="text-xs text-white">{property.views}</span>
                 </div>
               </div>
-              
+
               <CardContent className="p-4 md:p-6">
                 <div className="mb-4">
                   <h3 className="text-base md:text-lg mb-2 text-gray-900 line-clamp-1">{property.title}</h3>

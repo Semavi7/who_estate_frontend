@@ -1,12 +1,12 @@
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
+} from "../ui/select";
 import { Search, MapPin } from "lucide-react";
 
 interface HeroSectionProps {
@@ -22,9 +22,8 @@ export default function HeroSection({
     >
       {/* Dark overlay for better text readability */}
       <div
-        className={`absolute inset-0 bg-black/40 ${
-          showContent ? "animate-hero-overlay" : "animate-hero-overlay-initial"
-        }`}
+        className={`absolute inset-0 bg-black/40 ${showContent ? "animate-hero-overlay" : "animate-hero-overlay-initial"
+          }`}
       />
 
       {showContent && (

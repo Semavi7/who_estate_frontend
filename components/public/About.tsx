@@ -1,7 +1,7 @@
-import { Button } from "./ui/button";
-import { Card, CardContent } from "./ui/card";
+import { Button } from "../ui/button";
+import { Card, CardContent } from "../ui/card";
 import { Award, Users, Building, Clock } from "lucide-react";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "../figma/ImageWithFallback";
 
 export default function About() {
   const stats = [
@@ -36,10 +36,10 @@ export default function About() {
               Neden <span className="text-primary">EmlakPro</span>?
             </h2>
             <p className="text-base md:text-lg text-gray-600 mb-6 md:mb-8 leading-relaxed">
-              15 yılı aşkın sektör tecrübemizle, Türkiye'nin en güvenilir emlak platformlarından biri haline geldik. 
+              15 yılı aşkın sektör tecrübemizle, Türkiye'nin en güvenilir emlak platformlarından biri haline geldik.
               Müşteri memnuniyetini her zaman ön planda tutarak, hayalinizdeki mülke ulaşmanızda size rehberlik ediyoruz.
             </p>
-            
+
             <div className="space-y-4 mb-6 md:mb-8">
               <div className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
@@ -75,7 +75,7 @@ export default function About() {
               alt="Emlak Ofisi"
               className="rounded-2xl shadow-xl w-full"
             />
-            
+
             {/* Stats overlay */}
             <div className="absolute -bottom-4 md:-bottom-6 -left-4 md:-left-6 right-4 md:right-6">
               <Card className="bg-white shadow-xl">

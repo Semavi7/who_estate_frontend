@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { Phone, Mail, MapPin, Menu, X } from "lucide-react";
 import Link from "next/link";
 import LoginForm from "./LoginForm";
@@ -77,7 +77,8 @@ export default function Header({ showHeader = true }: HeaderProps) {
               <div className="bg-primary text-primary-foreground p-2 rounded-lg">
                 <div className="h-6 w-6 flex items-center justify-center">🏠</div>
               </div>
-              <span className="text-xl">EmlakPro</span>
+              <span className="text-xl lg:hidden">Derya Emlak</span>
+              <span className="hidden text-xl lg:inline">Derya Emlak Who Estate</span>
             </div>
             {/* Desktop Navigation */}
             <nav
@@ -92,9 +93,11 @@ export default function Header({ showHeader = true }: HeaderProps) {
             <div
               className="flex items-center space-x-4 animate-cta"
             >
-              <Button className="hidden md:inline-flex">
-                İlan Ver
-              </Button>
+              <Link href="admin/dashboard">
+                <Button className="hidden md:inline-flex">
+                  Yönetim Paneli
+                </Button>
+              </Link>
               {/* Mobile menu button */}
               <Button
                 variant="ghost"
@@ -116,7 +119,9 @@ export default function Header({ showHeader = true }: HeaderProps) {
               <Link className="text-foreground hover:text-primary transition-colors" href={'/contact'}>İletişim</Link>
               <div className="pt-4 border-t border-gray-200 space-y-2">
                 <Button onClick={handleLoginClick} variant="outline" className="w-full">Giriş Yap</Button>
-                <Button className="w-full">İlan Ver</Button>
+                <Link href="admin/dashboard" className="w-full">
+                  <Button className="w-full">Yönetim Paneli</Button>
+                </Link>
               </div>
             </nav>
           </div>

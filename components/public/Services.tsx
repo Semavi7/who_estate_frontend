@@ -1,4 +1,4 @@
-import { Card, CardContent } from "./ui/card";
+import { Card, CardContent } from "../ui/card";
 import { Home, Users, Calculator, Shield, Search, TrendingUp } from "lucide-react";
 
 export default function Services() {

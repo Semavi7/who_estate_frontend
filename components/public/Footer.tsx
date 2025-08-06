@@ -1,5 +1,5 @@
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import { Phone, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 
 export default function Footer() {
@@ -80,8 +80,8 @@ export default function Footer() {
             <div className="space-y-2">
               <h4 className="text-sm md:text-base">Bülten Aboneliği</h4>
               <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                <Input 
-                  placeholder="E-posta adresiniz" 
+                <Input
+                  placeholder="E-posta adresiniz"
                   className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 text-sm"
                 />
                 <Button className="bg-primary hover:bg-primary/90 text-sm px-4 py-2 sm:px-6">

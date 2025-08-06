@@ -1,8 +1,8 @@
-import About from "@/components/About";
-import FeaturedProperties from "@/components/FeaturedProperties";
-import Footer from "@/components/Footer";
-import HeroSection from "@/components/HeroSection";
-import Services from "@/components/Services";
+import About from "@/components/public/About";
+import FeaturedProperties from "@/components/public/FeaturedProperties";
+import Footer from "@/components/public/Footer";
+import HeroSection from "@/components/public/HeroSection";
+import Services from "@/components/public/Services";
 
 export default function Home() {
   return (
