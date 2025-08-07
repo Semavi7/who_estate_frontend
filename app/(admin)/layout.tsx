@@ -35,7 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Sidebar */}
             <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-64'} flex flex-col`}>
                 {/* Sidebar Header */}
-                <div className="p-4 border-b border-gray-200">
+                <div className="p-45 border-b border-gray-200">
                     <div className="flex items-center justify-between">
                         {!sidebarCollapsed && (
                             <div className="flex items-center space-x-2">

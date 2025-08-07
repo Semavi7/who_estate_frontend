@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import Link from "next/link";
 
 interface Property {
   id: number;
@@ -222,7 +223,7 @@ export default function PropertyListings() {
           )}
         </div>
         
-        <Button className="w-full">Detayları Görüntüle</Button>
+        <Link href={`listings/${property.id}`}><Button className="w-full">Detayları Görüntüle</Button></Link>
       </CardContent>
     </Card>
   );

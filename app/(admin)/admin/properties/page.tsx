@@ -4,86 +4,115 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../../../components
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
 import { Badge } from "../../../../components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../../../../components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../components/ui/table";
 import { 
   Search, 
   Plus, 
   Edit, 
   Trash2, 
-  Eye, 
   Filter,
+  Building2,
   MapPin,
-  Bed,
-  Bath,
-  Square
+  Calendar,
+  Eye
 } from "lucide-react";
-import PropertyForm from "../../../../components/admin/PropertyForm";
+import { toast } from "sonner";
+import Link from "next/link";
 
 interface Property {
   id: number;
   title: string;
-  location: string;
-  price: string;
-  type: "satilik" | "kiralik";
+  type: "konut" | "isyeri" | "arsa";
+  listingType: "satilik" | "kiralik";
   category: string;
-  bedrooms: number;
-  bathrooms: number;
+  price: number;
   area: number;
-  status: "active" | "pending" | "sold";
+  rooms: string;
+  location: string;
+  status: "aktif" | "pasif" | "beklemede";
   createdAt: string;
-  views: number;
+  images: string[];
 }
 
-export default function AdminProperties() {
+interface AdminPropertiesProps {
+  onNavigate?: (page: string, propertyId?: number) => void;
+}
+
+export default function AdminProperties({ onNavigate }: AdminPropertiesProps) {
   const [properties, setProperties] = useState<Property[]>([
     {
       id: 1,
       title: "Deniz Manzaralı Lüks Villa",
-      location: "Beşiktaş, İstanbul",
-      price: "₺12,500,000",
-      type: "satilik",
+      type: "konut",
+      listingType: "satilik",
       category: "Villa",
-      bedrooms: 4,
-      bathrooms: 3,
-      area: 250,
-      status: "active",
-      createdAt: "2024-01-15",
-      views: 1245
+      price: 2500000,
+      area: 350,
+      rooms: "4+2",
+      location: "Beşiktaş, İstanbul",
+      status: "aktif",
+      createdAt: "2024-01-20",
+      images: ["image1.jpg", "image2.jpg"]
     },
     {
       id: 2,
-      title: "Merkezi Konumda Modern Daire",
+      title: "Merkezi Konumda Ofis",
+      type: "isyeri",
+      listingType: "kiralik",
+      category: "Ofis",
+      price: 45000,
+      area: 180,
+      rooms: "Açık ofis",
       location: "Şişli, İstanbul",
-      price: "₺8,500/ay",
-      type: "kiralik",
-      category: "Daire",
-      bedrooms: 3,
-      bathrooms: 2,
-      area: 120,
-      status: "active",
-      createdAt: "2024-01-20",
-      views: 892
+      status: "aktif",
+      createdAt: "2024-01-18",
+      images: ["image3.jpg"]
     },
     {
       id: 3,
-      title: "İş Merkezi Büro",
-      location: "Levent, İstanbul",
-      price: "₺45,000/ay",
-      type: "kiralik",
-      category: "Ofis",
-      bedrooms: 0,
-      bathrooms: 2,
-      area: 180,
-      status: "pending",
-      createdAt: "2024-01-25",
-      views: 345
+      title: "Modern Daire",
+      type: "konut",
+      listingType: "satilik",
+      category: "Daire",
+      price: 850000,
+      area: 120,
+      rooms: "3+1",
+      location: "Kadıköy, İstanbul",
+      status: "beklemede",
+      createdAt: "2024-01-15",
+      images: ["image4.jpg", "image5.jpg", "image6.jpg"]
+    },
+    {
+      id: 4,
+      title: "Yatırım Amaçlı Arsa",
+      type: "arsa",
+      listingType: "satilik",
+      category: "İmarlı Arsa",
+      price: 1200000,
+      area: 800,
+      rooms: "-",
+      location: "Sarıyer, İstanbul",
+      status: "aktif",
+      createdAt: "2024-01-10",
+      images: ["image7.jpg"]
+    },
+    {
+      id: 5,
+      title: "Rezidans Daire",
+      type: "konut",
+      listingType: "kiralik",
+      category: "Rezidans",
+      price: 25000,
+      area: 140,
+      rooms: "2+1",
+      location: "Etiler, İstanbul",
+      status: "pasif",
+      createdAt: "2024-01-05",
+      images: ["image8.jpg", "image9.jpg"]
     }
   ]);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [showPropertyForm, setShowPropertyForm] = useState(false);
-  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
 
   const filteredProperties = properties.filter(property =>
     property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -91,54 +120,52 @@ export default function AdminProperties() {
   );
 
   const handleAddProperty = () => {
-    setEditingProperty(null);
-    setShowPropertyForm(true);
+    if (onNavigate) {
+      onNavigate("admin-add-property");
+    }
   };
 
-  const handleEditProperty = (property: Property) => {
-    setEditingProperty(property);
-    setShowPropertyForm(true);
+  const handleEditProperty = (propertyId: number) => {
+    if (onNavigate) {
+      onNavigate("admin-edit-property", propertyId);
+    }
   };
 
   const handleDeleteProperty = (id: number) => {
     if (confirm("Bu ilanı silmek istediğinizden emin misiniz?")) {
       setProperties(properties.filter(p => p.id !== id));
+      toast.success("İlan başarıyla silindi");
     }
-  };
-
-  const handleSaveProperty = (propertyData: any) => {
-    if (editingProperty) {
-      // Update existing property
-      setProperties(properties.map(p => 
-        p.id === editingProperty.id 
-          ? { ...p, ...propertyData }
-          : p
-      ));
-    } else {
-      // Add new property
-      const newProperty: Property = {
-        id: Date.now(),
-        ...propertyData,
-        status: "active" as const,
-        createdAt: new Date().toISOString().split('T')[0],
-        views: 0
-      };
-      setProperties([...properties, newProperty]);
-    }
-    setShowPropertyForm(false);
   };
 
   const getStatusBadge = (status: Property['status']) => {
     switch (status) {
-      case 'active':
+      case 'aktif':
         return <Badge variant="secondary" className="bg-green-100 text-green-800">Aktif</Badge>;
-      case 'pending':
+      case 'pasif':
+        return <Badge variant="secondary" className="bg-gray-100 text-gray-800">Pasif</Badge>;
+      case 'beklemede':
         return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Beklemede</Badge>;
-      case 'sold':
-        return <Badge variant="secondary" className="bg-red-100 text-red-800">Satıldı</Badge>;
       default:
         return <Badge variant="outline">Bilinmiyor</Badge>;
     }
+  };
+
+  const getTypeBadge = (type: Property['type']) => {
+    switch (type) {
+      case 'konut':
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700">Konut</Badge>;
+      case 'isyeri':
+        return <Badge variant="outline" className="bg-purple-50 text-purple-700">İşyeri</Badge>;
+      case 'arsa':
+        return <Badge variant="outline" className="bg-orange-50 text-orange-700">Arsa</Badge>;
+      default:
+        return <Badge variant="outline">Bilinmiyor</Badge>;
+    }
+  };
+
+  const formatPrice = (price: number, listingType: string) => {
+    return `${price.toLocaleString('tr-TR')} TL${listingType === 'kiralik' ? '/ay' : ''}`;
   };
 
   return (
@@ -146,13 +173,69 @@ export default function AdminProperties() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl">İlanlar</h2>
-          <p className="text-gray-600">Tüm ilanları yönetin ve düzenleyin</p>
+          <h2 className="text-2xl">İlan Yönetimi</h2>
+          <p className="text-gray-600">Emlak ilanlarınızı yönetin ve düzenleyin</p>
         </div>
-        <Button onClick={handleAddProperty} className="flex items-center space-x-2">
-          <Plus className="h-4 w-4" />
-          <span>Yeni İlan</span>
-        </Button>
+        <Link href={'addproperty'}>
+          <Button className="flex items-center space-x-2">
+            <Plus className="h-4 w-4" />
+            <span>Yeni İlan</span>
+          </Button>
+        </Link>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <Building2 className="h-8 w-8 text-blue-600" />
+              <div className="ml-4">
+                <p className="text-sm text-muted-foreground">Toplam İlan</p>
+                <p className="text-2xl">{properties.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <Eye className="h-8 w-8 text-green-600" />
+              <div className="ml-4">
+                <p className="text-sm text-muted-foreground">Aktif İlan</p>
+                <p className="text-2xl">{properties.filter(p => p.status === 'aktif').length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <MapPin className="h-8 w-8 text-purple-600" />
+              <div className="ml-4">
+                <p className="text-sm text-muted-foreground">Konut İlanı</p>
+                <p className="text-2xl">{properties.filter(p => p.type === 'konut').length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <Calendar className="h-8 w-8 text-orange-600" />
+              <div className="ml-4">
+                <p className="text-sm text-muted-foreground">Bu Ay Eklenen</p>
+                <p className="text-2xl">
+                  {properties.filter(p => {
+                    const propertyDate = new Date(p.createdAt);
+                    const currentDate = new Date();
+                    return propertyDate.getMonth() === currentDate.getMonth();
+                  }).length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Search and Filters */}
@@ -186,13 +269,14 @@ export default function AdminProperties() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>İlan</TableHead>
-                  <TableHead>Konum</TableHead>
+                  <TableHead>İlan Başlığı</TableHead>
+                  <TableHead>Tür</TableHead>
+                  <TableHead>Kategori</TableHead>
                   <TableHead>Fiyat</TableHead>
-                  <TableHead>Tip</TableHead>
-                  <TableHead>Detaylar</TableHead>
+                  <TableHead>Alan (m²)</TableHead>
+                  <TableHead>Oda</TableHead>
+                  <TableHead>Konum</TableHead>
                   <TableHead>Durum</TableHead>
-                  <TableHead>Görüntülenme</TableHead>
                   <TableHead>Tarih</TableHead>
                   <TableHead>İşlemler</TableHead>
                 </TableRow>
@@ -201,64 +285,53 @@ export default function AdminProperties() {
                 {filteredProperties.map((property) => (
                   <TableRow key={property.id}>
                     <TableCell>
-                      <div>
-                        <div className="line-clamp-1 text-sm">{property.title}</div>
-                        <Badge variant="outline" className="text-xs mt-1">
-                          {property.category}
-                        </Badge>
+                      <div className="max-w-48">
+                        <div className="text-sm truncate">{property.title}</div>
+                        <div className="text-xs text-gray-500 flex items-center mt-1">
+                          <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
+                            property.listingType === 'satilik' ? 'bg-green-500' : 'bg-blue-500'
+                          }`}></span>
+                          {property.listingType === 'satilik' ? 'Satılık' : 'Kiralık'}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center text-sm">
+                      {getTypeBadge(property.type)}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {property.category}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {formatPrice(property.price, property.listingType)}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {property.area} m²
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {property.rooms}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      <div className="flex items-center">
                         <MapPin className="h-3 w-3 mr-1 text-gray-400" />
                         {property.location}
                       </div>
                     </TableCell>
-                    <TableCell className="text-primary">{property.price}</TableCell>
-                    <TableCell>
-                      <Badge variant={property.type === 'satilik' ? 'default' : 'secondary'}>
-                        {property.type === 'satilik' ? 'Satılık' : 'Kiralık'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-3 text-xs text-gray-600">
-                        {property.bedrooms > 0 && (
-                          <div className="flex items-center">
-                            <Bed className="h-3 w-3 mr-1" />
-                            {property.bedrooms}
-                          </div>
-                        )}
-                        <div className="flex items-center">
-                          <Bath className="h-3 w-3 mr-1" />
-                          {property.bathrooms}
-                        </div>
-                        <div className="flex items-center">
-                          <Square className="h-3 w-3 mr-1" />
-                          {property.area}m²
-                        </div>
-                      </div>
-                    </TableCell>
                     <TableCell>
                       {getStatusBadge(property.status)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center text-sm">
-                        <Eye className="h-3 w-3 mr-1 text-gray-400" />
-                        {property.views}
-                      </div>
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">
                       {new Date(property.createdAt).toLocaleDateString('tr-TR')}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditProperty(property)}
-                        >
+                        <Link href={`editproperty/${property.id}`}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                          >
                           <Edit className="h-3 w-3" />
                         </Button>
+                        </Link>
                         <Button
                           variant="outline"
                           size="sm"
@@ -283,28 +356,6 @@ export default function AdminProperties() {
           )}
         </CardContent>
       </Card>
-
-      {/* Property Form Dialog */}
-      <Dialog open={showPropertyForm} onOpenChange={setShowPropertyForm}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingProperty ? 'İlan Düzenle' : 'Yeni İlan Oluştur'}
-            </DialogTitle>
-            <DialogDescription>
-              {editingProperty 
-                ? 'Mevcut ilanın bilgilerini düzenleyebilirsiniz.' 
-                : 'Yeni bir emlak ilanı oluşturmak için aşağıdaki formu doldurun.'
-              }
-            </DialogDescription>
-          </DialogHeader>
-          <PropertyForm
-            property={editingProperty}
-            onSave={handleSaveProperty}
-            onCancel={() => setShowPropertyForm(false)}
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

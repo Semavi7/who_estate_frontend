@@ -318,3 +318,7 @@ html {
 .animate-slide-in-up {
   animation: slide-in-up 0.8s both;
 }
+
+.p-45{
+  padding: calc(var(--spacing) * 4.5);
+}
