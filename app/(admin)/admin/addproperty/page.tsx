@@ -1,5 +1,6 @@
 'use client'
 import { useState } from "react";
+import { Descendant } from "slate";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
@@ -19,6 +20,7 @@ import {
   Image as ImageIcon
 } from "lucide-react";
 import { toast } from "sonner";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
 interface AddPropertyPageProps {
   onNavigate?: (page: string) => void;
@@ -34,7 +36,7 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
     
     // İlan Detayları
     title: "",
-    description: "",
+    description: [{ type: 'paragraph', children: [{ text: '' }] }] as Descendant[],
     price: "",
     grossArea: "",
     netArea: "",
@@ -187,6 +189,8 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
         submitData.append('features', JSON.stringify(value));
       } else if (key === 'coordinates') {
         submitData.append('coordinates', JSON.stringify(value));
+      } else if (key === 'description') {
+        submitData.append('description', JSON.stringify(value));
       } else {
         submitData.append(key, value as string);
       }
@@ -287,15 +291,17 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
           />
         </div>
 
-        <div className="md:col-span-2 space-y-2">
-          <Label htmlFor="description">İlan Açıklaması</Label>
-          <Textarea
-            id="description"
+         <div className="md:col-span-2 space-y-2">
+          <Label htmlFor="description">İlan Açıklaması *</Label>
+          <RichTextEditor
             value={formData.description}
-            onChange={(e) => handleInputChange('description', e.target.value)}
+            onChange={(value) => handleInputChange('description', value)}
             placeholder="İlan detaylarını yazın..."
-            className="min-h-32"
+            className="min-h-100"
           />
+          <p className="text-xs text-gray-500">
+            Zengin metin düzenleyici ile formatlamalar, linkler ve resimler ekleyebilirsiniz.
+          </p>
         </div>
 
         <div className="space-y-2">
