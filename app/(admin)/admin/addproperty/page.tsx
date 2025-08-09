@@ -40,11 +40,18 @@ import { toast } from "sonner";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
+import PropertySubmitData from "@/dto/createproperty.dto";
 
 interface ImageObject {
   id: string;
   file: File;
   preview: string;
+}
+
+interface FeatureOption {
+  id: string;
+  category: string;
+  value: string
 }
 
 function SortableImageItem({ id, image, onRemove }: { id: any; image: ImageObject; onRemove: (id: string) => void }) {
@@ -93,7 +100,8 @@ function SortableImageItem({ id, image, onRemove }: { id: any; image: ImageObjec
 export default function AddPropertyPage() {
   const router = useRouter()
   const [categoryConfig, setCategoryConfig] = useState<Record<string, any>>({})
-  const [featureOptions, setFeatureOptions] = useState<Record<string, string[]>>({})
+  const [allFeatureOptions, setAllFeatureOptions] = useState<FeatureOption[]>([])
+  const [groupedFeatureOptions, setGroupedFeatureOptions] = useState<Record<string, FeatureOption[]>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -120,6 +128,9 @@ export default function AddPropertyPage() {
     parking: "",
     usageStatus: "",
     deedStatus: "",
+    furnished: "",
+    dues: "",
+    eligibleForLoan: "",
     
     // Adres
     city: "",
@@ -280,27 +291,63 @@ export default function AddPropertyPage() {
       return;
     }
 
+    try {
+      const dataForApi: PropertySubmitData = {
+      title: formData.title,
+      description: JSON.stringify(formData.description),
+      price: Number(formData.price),
+      gross: Number(formData.grossArea),
+      net: Number(formData.netArea),
+      numberOfRoom: formData.rooms,
+      buildingAge: Number(formData.buildingAge),
+      floor: Number(formData.floor),
+      numberOfFloors: Number(formData.totalFloors),
+      heating: formData.heating,
+      numberOfBathrooms: Number(formData.bathrooms),
+      kitchen: formData.kitchen,
+      balcony: Number(formData.balcony),
+      lift: formData.elevator,
+      parking: formData.parking,
+      furnished: formData.furnished,
+      availability: formData.usageStatus,
+      dues: Number(formData.dues),
+      eligibleForLoan: formData.eligibleForLoan,
+      titleDeedStatus: formData.deedStatus,
+      propertyType: formData.propertyType,
+      listingType: formData.listingType,
+      subType: formData.subType,
+      location: JSON.stringify({
+        city: formData.city,
+        district: formData.district,
+        neighborhood: formData.neighborhood,
+        geo: {
+          type: 'Point',
+          coordinates: [
+            formData.coordinates.lng,
+            formData.coordinates.lat
+          ]
+        }
+      }),
+      selectedFeatures: JSON.stringify(groupFeatures(formData.features, featureOptions))
+    }
+
     // Create FormData for API submission
     const submitData = new FormData();
     
     // Add all form fields
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key === 'images') {
-        (value as ImageObject[]).forEach((imageObj) => {
-          submitData.append('images', imageObj.file);
-        });
-      } else if (key === 'features') {
-        submitData.append('features', JSON.stringify(value));
-      } else if (key === 'coordinates') {
-        submitData.append('coordinates', JSON.stringify(value));
-      } else if (key === 'description') {
-        submitData.append('description', JSON.stringify(value));
-      } else {
-        submitData.append(key, value as string);
+    Object.keys(dataForApi).forEach(key => {
+      const formKey = key as keyof PropertySubmitData
+      const value = dataForApi[formKey]
+      if(value !== undefined && value !== null){
+        submitData.append(formKey, String(value))
       }
-    });
+    })
 
-    try {
+    formData.images.forEach((imageObj) => {
+      submitData.append('images', imageObj.file, imageObj.file.name)
+    })
+
+    toast.loading("İlan kaydediliyor...")
       // API call would go here
       console.log("Form data to submit:", formData);
       toast.success("İlan başarıyla oluşturuldu");
@@ -335,7 +382,14 @@ export default function AddPropertyPage() {
         ])
 
         setCategoryConfig(categoriesResponse.data)
-        setFeatureOptions(featuresResponse.data)
+        const featuresData: FeatureOption[] = featuresResponse.data
+        setAllFeatureOptions(featuresData)
+        const groupedData = featuresData.reduce((acc, option) => {
+          const { category } = option
+          if(!acc[category]){
+            acc[category] =
+          }
+        })
       } catch (error) {
         console.error("Form verileri çekilirken hata oluştu:", error)
         toast.error("Gerekli veriler yüklenemedi. Lütfen sayfayı yenileyin.")
