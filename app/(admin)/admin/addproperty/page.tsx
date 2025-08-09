@@ -1,6 +1,23 @@
 'use client'
-import { useState } from "react";
-import { Descendant } from "slate";
+import { useState, useEffect } from "react";
+import { Descendant, Span } from "slate";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
@@ -10,29 +27,80 @@ import { Textarea } from "../../../../components/ui/textarea";
 import { Checkbox } from "../../../../components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../../../components/ui/accordion";
 import { Badge } from "../../../../components/ui/badge";
-import { 
-  ArrowLeft, 
-  Save, 
-  Upload, 
-  X, 
-  MapPin, 
+import {
+  ArrowLeft,
+  Save,
+  Upload,
+  X,
+  MapPin,
   GripVertical,
   Image as ImageIcon
 } from "lucide-react";
 import { toast } from "sonner";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { useRouter } from "next/navigation";
+import api from "@/lib/axios";
 
-interface AddPropertyPageProps {
-  onNavigate?: (page: string) => void;
+interface ImageObject {
+  id: string;
+  file: File;
+  preview: string;
 }
 
-export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
+function SortableImageItem({ id, image, onRemove }: { id: any; image: ImageObject; onRemove: (id: string) => void }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 'auto',
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} className="relative group">
+      <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+        <img src={image.preview} alt={image.file.name} className="w-full h-full object-cover" />
+      </div>
+      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => onRemove(id)}
+          className="h-6 w-6 p-0"
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
+      <div
+        className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 p-1 rounded-md cursor-grab"
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4 text-white" />
+      </div>
+      <p className="text-xs text-center mt-1 truncate">{image.file.name}</p>
+    </div>
+  );
+}
+
+export default function AddPropertyPage() {
+  const router = useRouter()
+  const [categoryConfig, setCategoryConfig] = useState<Record<string, any>>({})
+  const [featureOptions, setFeatureOptions] = useState<Record<string, string[]>>({})
+  const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     // Kategori
     propertyType: "",
     listingType: "",
-    category: "",
+    subType: "",
     
     // İlan Detayları
     title: "",
@@ -64,7 +132,7 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
     features: [] as string[],
     
     // Fotoğraflar
-    images: [] as File[]
+    images: [] as ImageObject[]
   });
 
   const propertyTypes = [
@@ -139,6 +207,32 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
     ]
   };
 
+  const groupFeatures = (selected: string[], allFeatures: typeof featuresData) => {
+    const grouped: Record<string, string[]> = {}
+
+    for (const category in allFeatures){
+      const categoryKey = category as keyof typeof allFeatures
+      const selectedInCategory = allFeatures[categoryKey].filter(feature => selected.includes(feature))
+      if(selectedInCategory.length > 0){
+        grouped[categoryKey] = selectedInCategory
+      }
+    }
+    return grouped
+  }
+
+  const getPropertyTypes = () => Object.keys(categoryConfig)
+  
+  const getListingTypes = (propertyType: string) => {
+    if(!propertyTypes || !categoryConfig[propertyType]) return []
+    return Object.keys(categoryConfig[propertyType])
+  }
+
+  const getSubTypes = (propertyType: string, listingType: string) => {
+    if(!propertyType || !listingType || !categoryConfig[propertyType]?.[listingType]) return []
+    return categoryConfig[propertyType][listingType]
+
+  }
+
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -154,7 +248,11 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
 
   const handleImageUpload = (files: FileList | null) => {
     if (files) {
-      const newImages = Array.from(files);
+      const newImages: ImageObject[] = Array.from(files).map(file => ({
+        id: `${file.name}-${Date.now()}-${Math.random()}`,
+        file,
+        preview: URL.createObjectURL(file)
+      }));
       setFormData(prev => ({
         ...prev,
         images: [...prev.images, ...newImages]
@@ -162,11 +260,17 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
     }
   };
 
-  const handleImageRemove = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
+  const handleImageRemove = (id: string) => {
+    setFormData(prev => {
+      const imageToRemove = prev.images.find(img => img.id === id);
+      if (imageToRemove) {
+        URL.revokeObjectURL(imageToRemove.preview);
+      }
+      return {
+        ...prev,
+        images: prev.images.filter((img) => img.id !== id)
+      };
+    });
   };
 
   const handleSubmit = async () => {
@@ -182,8 +286,8 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
     // Add all form fields
     Object.entries(formData).forEach(([key, value]) => {
       if (key === 'images') {
-        (value as File[]).forEach((file: File) => {
-          submitData.append('images', file);
+        (value as ImageObject[]).forEach((imageObj) => {
+          submitData.append('images', imageObj.file);
         });
       } else if (key === 'features') {
         submitData.append('features', JSON.stringify(value));
@@ -201,9 +305,7 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
       console.log("Form data to submit:", formData);
       toast.success("İlan başarıyla oluşturuldu");
       
-      if (onNavigate) {
-        onNavigate("admin-properties");
-      }
+      router.push('/admin/properties')
     } catch (error) {
       toast.error("İlan oluşturulurken hata oluştu");
     }
@@ -217,6 +319,57 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
     { id: 5, title: "Fotoğraflar", description: "Görseller ve medya" }
   ];
 
+  useEffect(() => {
+    // Cleanup object URLs on component unmount
+    return () => {
+      formData.images.forEach(image => URL.revokeObjectURL(image.preview));
+    };
+  }, []);
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        const [categoriesResponse, featuresResponse] = await Promise.all([
+          api.get('/properties/categories'),
+          api.get('/feature-options')
+        ])
+
+        setCategoryConfig(categoriesResponse.data)
+        setFeatureOptions(featuresResponse.data)
+      } catch (error) {
+        console.error("Form verileri çekilirken hata oluştu:", error)
+        toast.error("Gerekli veriler yüklenemedi. Lütfen sayfayı yenileyin.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchInitialData()
+  },[])
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setFormData(prev => {
+        const oldIndex = prev.images.findIndex(img => img.id === active.id);
+        const newIndex = prev.images.findIndex(img => img.id === over.id);
+        if (oldIndex === -1 || newIndex === -1) return prev;
+        return {
+          ...prev,
+          images: arrayMove(prev.images, oldIndex, newIndex),
+        };
+      });
+    }
+  };
+
   const renderStep1 = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -227,8 +380,8 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
               <SelectValue placeholder="Emlak tipini seçin" />
             </SelectTrigger>
             <SelectContent>
-              {propertyTypes.map(type => (
-                <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+              {getPropertyTypes().map(type => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -236,13 +389,13 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
 
         <div className="space-y-2">
           <Label htmlFor="listingType">İlan Tipi *</Label>
-          <Select value={formData.listingType} onValueChange={(value) => handleInputChange('listingType', value)}>
+          <Select value={formData.listingType} onValueChange={(value) => handleInputChange('listingType', value)} disabled={!formData.propertyType}>
             <SelectTrigger>
               <SelectValue placeholder="İlan tipini seçin" />
             </SelectTrigger>
             <SelectContent>
-              {listingTypes.map(type => (
-                <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+              {getListingTypes(formData.propertyType).map(type => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -251,16 +404,16 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
         <div className="space-y-2">
           <Label htmlFor="category">Kategori *</Label>
           <Select 
-            value={formData.category} 
-            onValueChange={(value) => handleInputChange('category', value)}
+            value={formData.subType} 
+            onValueChange={(value) => handleInputChange('subType', value)}
             disabled={!formData.propertyType}
           >
             <SelectTrigger>
               <SelectValue placeholder="Kategori seçin" />
             </SelectTrigger>
             <SelectContent>
-              {getCategoriesByType().map(category => (
-                <SelectItem key={category.value} value={category.value}>{category.label}</SelectItem>
+              {getSubTypes(formData.propertyType, formData.listingType).map((type: any) => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -270,8 +423,10 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
       {formData.propertyType && (
         <div className="bg-blue-50 p-4 rounded-lg">
           <div className="text-sm text-blue-900">
-            <strong>Seçilen Kategori:</strong> {propertyTypes.find(t => t.value === formData.propertyType)?.label} - {listingTypes.find(t => t.value === formData.listingType)?.label}
-            {formData.category && ` - ${getCategoriesByType().find(c => c.value === formData.category)?.label}`}
+            <strong>Seçilen Kategori:</strong>
+            <span>{formData.propertyType}</span>
+            {formData.listingType && <span> &gt; {formData.listingType}</span>}
+            {formData.subType && <span> &gt; {formData.subType}</span>}
           </div>
         </div>
       )}
@@ -543,16 +698,12 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
   const renderStep4 = () => (
     <div className="space-y-6">
       <Accordion type="multiple" className="w-full">
-        {Object.entries(featuresData).map(([category, features]) => (
+        {Object.entries(featureOptions).map(([category, features]) => (
           <AccordionItem key={category} value={category}>
             <AccordionTrigger>
               <div className="flex items-center justify-between w-full">
                 <span>
-                  {category === 'cephe' && 'Cephe Özellikleri'}
-                  {category === 'icOzellikler' && 'İç Özellikler'}
-                  {category === 'disOzellikler' && 'Dış Özellikler'}
-                  {category === 'ulasim' && 'Ulaşım'}
-                  {category === 'manzara' && 'Manzara'}
+                  {category}
                 </span>
                 <Badge variant="secondary" className="ml-2">
                   {features.filter(f => formData.features.includes(f)).length}/{features.length}
@@ -581,7 +732,6 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
           </AccordionItem>
         ))}
       </Accordion>
-
       <Card>
         <CardHeader>
           <CardTitle>Seçilen Özellikler ({formData.features.length})</CardTitle>
@@ -605,6 +755,9 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
       </Card>
     </div>
   );
+  if (isLoading) {
+    return <div>Yükleniyor...</div>
+  }
 
   const renderStep5 = () => (
     <div className="space-y-6">
@@ -643,37 +796,22 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
             <CardTitle>Yüklenen Fotoğraflar ({formData.images.length})</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {formData.images.map((image, index) => (
-                <div key={index} className="relative group">
-                  <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                    <div className="w-full h-full flex items-center justify-center">
-                      <ImageIcon className="h-8 w-8 text-gray-400" />
-                    </div>
-                  </div>
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleImageRemove(index)}
-                      className="h-6 w-6 p-0"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-6 px-2 text-xs"
-                    >
-                      <GripVertical className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  <p className="text-xs text-center mt-1 truncate">{image.name}</p>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={formData.images.map(i => i.id)}
+                strategy={rectSortingStrategy}
+              >
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {formData.images.map((image) => (
+                    <SortableImageItem key={image.id} id={image.id} image={image} onRemove={handleImageRemove} />
+                  ))}
                 </div>
-              ))}
-            </div>
+              </SortableContext>
+            </DndContext>
           </CardContent>
         </Card>
       )}
@@ -687,7 +825,7 @@ export default function AddPropertyPage({ onNavigate }: AddPropertyPageProps) {
         <div className="flex items-center space-x-4">
           <Button 
             variant="outline" 
-            onClick={() => onNavigate && onNavigate("admin-properties")}
+            onClick={() => router.push('/admin/properties')}
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
