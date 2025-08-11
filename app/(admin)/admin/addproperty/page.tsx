@@ -41,6 +41,7 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import PropertySubmitData from "@/dto/createproperty.dto";
+import { MapPicker } from "@/components/ui/mappicker";
 
 interface ImageObject {
   id: string;
@@ -48,10 +49,9 @@ interface ImageObject {
   preview: string;
 }
 
-interface FeatureOption {
-  id: string;
-  category: string;
-  value: string
+interface City {
+  code: string;
+  name: string;
 }
 
 function SortableImageItem({ id, image, onRemove }: { id: any; image: ImageObject; onRemove: (id: string) => void }) {
@@ -99,9 +99,10 @@ function SortableImageItem({ id, image, onRemove }: { id: any; image: ImageObjec
 
 export default function AddPropertyPage() {
   const router = useRouter()
+  const [cities, setCities] = useState<City[]>([])
+  const [districtsAndNeighborhoods, setDistrictsAndNeighborhoods] = useState<Record<string, string[]>>({})
   const [categoryConfig, setCategoryConfig] = useState<Record<string, any>>({})
-  const [allFeatureOptions, setAllFeatureOptions] = useState<FeatureOption[]>([])
-  const [groupedFeatureOptions, setGroupedFeatureOptions] = useState<Record<string, FeatureOption[]>>({})
+  const [featureOptions, setFeatureOptions] = useState<Record<string, string[]>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -109,7 +110,7 @@ export default function AddPropertyPage() {
     propertyType: "",
     listingType: "",
     subType: "",
-    
+
     // İlan Detayları
     title: "",
     description: [{ type: 'paragraph', children: [{ text: '' }] }] as Descendant[],
@@ -131,122 +132,69 @@ export default function AddPropertyPage() {
     furnished: "",
     dues: "",
     eligibleForLoan: "",
-    
+
     // Adres
     city: "",
     district: "",
     neighborhood: "",
     address: "",
     coordinates: { lat: 0, lng: 0 },
-    
+
     // Detay Bilgi
     features: [] as string[],
-    
+
     // Fotoğraflar
     images: [] as ImageObject[]
   });
 
-  const propertyTypes = [
-    { value: "konut", label: "Konut" },
-    { value: "isyeri", label: "İşyeri" },
-    { value: "arsa", label: "Arsa" }
-  ];
 
-  const listingTypes = [
-    { value: "satilik", label: "Satılık" },
-    { value: "kiralik", label: "Kiralık" }
-  ];
-
-  const konutCategories = [
-    { value: "daire", label: "Daire" },
-    { value: "villa", label: "Villa" },
-    { value: "rezidans", label: "Rezidans" },
-    { value: "mustakil", label: "Müstakil Ev" },
-    { value: "dubleks", label: "Dubleks" },
-    { value: "triplex", label: "Triplex" }
-  ];
-
-  const isyeriCategories = [
-    { value: "ofis", label: "Ofis" },
-    { value: "magaza", label: "Mağaza" },
-    { value: "depo", label: "Depo" },
-    { value: "fabrika", label: "Fabrika" },
-    { value: "atölye", label: "Atölye" },
-    { value: "plaza", label: "Plaza" }
-  ];
-
-  const arsaCategories = [
-    { value: "imarli", label: "İmarlı Arsa" },
-    { value: "imarsiz", label: "İmarsız Arsa" },
-    { value: "tarla", label: "Tarla" },
-    { value: "bahce", label: "Bahçe" }
-  ];
-
-  const getCategoriesByType = () => {
-    switch (formData.propertyType) {
-      case "konut": return konutCategories;
-      case "isyeri": return isyeriCategories;
-      case "arsa": return arsaCategories;
-      default: return [];
-    }
-  };
-
-  const featuresData = {
-    cephe: [
-      "Kuzey Cephe", "Güney Cephe", "Doğu Cephe", "Batı Cephe",
-      "Köşe Başı", "Cadde Üzeri", "Sokak Arası"
-    ],
-    icOzellikler: [
-      "Ankastre Mutfak", "Beyaz Eşya", "Klima", "Şömine",
-      "Jacuzzi", "Sauna", "Giyinme Odası", "Çamaşırlık",
-      "Kiler", "Balkon", "Teras", "Bahçe"
-    ],
-    disOzellikler: [
-      "Havuz", "Barbekü", "Garaj", "Bahçe", "Güvenlik",
-      "Kapıcı", "Spor Salonu", "Çocuk Parkı", "Sosyal Tesis",
-      "İdari Ofis", "Güvenlik Kamerası", "Alarm Sistemi"
-    ],
-    ulasim: [
-      "Otobüs Durağı", "Metro", "Tramvay", "Vapur İskelesi",
-      "Havaalanı", "E-5 Yakını", "TEM Yakını", "Ana Yol Üzeri",
-      "Sahil Yolu", "Köprü Bağlantısı"
-    ],
-    manzara: [
-      "Deniz Manzarası", "Boğaz Manzarası", "Orman Manzarası",
-      "Şehir Manzarası", "Dağ Manzarası", "Park Manzarası",
-      "Havuz Manzarası", "Bahçe Manzarası"
-    ]
-  };
-
-  const groupFeatures = (selected: string[], allFeatures: typeof featuresData) => {
+  const groupFeatures = (selected: string[], allOptions: Record<string, string[]>): Record<string, string[]> => {
     const grouped: Record<string, string[]> = {}
 
-    for (const category in allFeatures){
-      const categoryKey = category as keyof typeof allFeatures
-      const selectedInCategory = allFeatures[categoryKey].filter(feature => selected.includes(feature))
-      if(selectedInCategory.length > 0){
-        grouped[categoryKey] = selectedInCategory
+    for (const category in allOptions) {
+      if (Object.prototype.hasOwnProperty.call(allOptions, category)) {
+        const categoryFeatures = allOptions[category];
+        const selectedInCategory = selected.filter(feature => categoryFeatures.includes(feature));
+
+        if (selectedInCategory.length > 0) {
+          grouped[category] = selectedInCategory;
+        }
       }
     }
     return grouped
   }
 
   const getPropertyTypes = () => Object.keys(categoryConfig)
-  
+
   const getListingTypes = (propertyType: string) => {
-    if(!propertyTypes || !categoryConfig[propertyType]) return []
+    if (!categoryConfig[propertyType]) return []
     return Object.keys(categoryConfig[propertyType])
   }
 
   const getSubTypes = (propertyType: string, listingType: string) => {
-    if(!propertyType || !listingType || !categoryConfig[propertyType]?.[listingType]) return []
+    if (!propertyType || !listingType || !categoryConfig[propertyType]?.[listingType]) return []
     return categoryConfig[propertyType][listingType]
 
   }
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+    setFormData(prev => {
+      const newState = { ...prev, [field]: value };
+
+      // Şehir değişirse, ilçe ve mahalleyi sıfırla
+      if (field === 'city') {
+        newState.district = "";
+        newState.neighborhood = "";
+        setDistrictsAndNeighborhoods({}); // İlçe listesini de temizle
+      }
+      // İlçe değişirse, mahalleyi sıfırla
+      if (field === 'district') {
+        newState.neighborhood = ""
+      }
+
+      return newState
+    })
+  }
 
   const handleFeatureToggle = (feature: string) => {
     setFormData(prev => ({
@@ -293,65 +241,65 @@ export default function AddPropertyPage() {
 
     try {
       const dataForApi: PropertySubmitData = {
-      title: formData.title,
-      description: JSON.stringify(formData.description),
-      price: Number(formData.price),
-      gross: Number(formData.grossArea),
-      net: Number(formData.netArea),
-      numberOfRoom: formData.rooms,
-      buildingAge: Number(formData.buildingAge),
-      floor: Number(formData.floor),
-      numberOfFloors: Number(formData.totalFloors),
-      heating: formData.heating,
-      numberOfBathrooms: Number(formData.bathrooms),
-      kitchen: formData.kitchen,
-      balcony: Number(formData.balcony),
-      lift: formData.elevator,
-      parking: formData.parking,
-      furnished: formData.furnished,
-      availability: formData.usageStatus,
-      dues: Number(formData.dues),
-      eligibleForLoan: formData.eligibleForLoan,
-      titleDeedStatus: formData.deedStatus,
-      propertyType: formData.propertyType,
-      listingType: formData.listingType,
-      subType: formData.subType,
-      location: JSON.stringify({
-        city: formData.city,
-        district: formData.district,
-        neighborhood: formData.neighborhood,
-        geo: {
-          type: 'Point',
-          coordinates: [
-            formData.coordinates.lng,
-            formData.coordinates.lat
-          ]
-        }
-      }),
-      selectedFeatures: JSON.stringify(groupFeatures(formData.features, featureOptions))
-    }
-
-    // Create FormData for API submission
-    const submitData = new FormData();
-    
-    // Add all form fields
-    Object.keys(dataForApi).forEach(key => {
-      const formKey = key as keyof PropertySubmitData
-      const value = dataForApi[formKey]
-      if(value !== undefined && value !== null){
-        submitData.append(formKey, String(value))
+        title: formData.title,
+        description: JSON.stringify(formData.description),
+        price: Number(formData.price),
+        gross: Number(formData.grossArea),
+        net: Number(formData.netArea),
+        numberOfRoom: formData.rooms,
+        buildingAge: Number(formData.buildingAge),
+        floor: Number(formData.floor),
+        numberOfFloors: Number(formData.totalFloors),
+        heating: formData.heating,
+        numberOfBathrooms: Number(formData.bathrooms),
+        kitchen: formData.kitchen,
+        balcony: Number(formData.balcony),
+        lift: formData.elevator,
+        parking: formData.parking,
+        furnished: formData.furnished,
+        availability: formData.usageStatus,
+        dues: Number(formData.dues),
+        eligibleForLoan: formData.eligibleForLoan,
+        titleDeedStatus: formData.deedStatus,
+        propertyType: formData.propertyType,
+        listingType: formData.listingType,
+        subType: formData.subType,
+        location: JSON.stringify({
+          city: formData.city,
+          district: formData.district,
+          neighborhood: formData.neighborhood,
+          geo: {
+            type: 'Point',
+            coordinates: [
+              formData.coordinates.lng,
+              formData.coordinates.lat
+            ]
+          }
+        }),
+        selectedFeatures: JSON.stringify(groupFeatures(formData.features, featureOptions))
       }
-    })
 
-    formData.images.forEach((imageObj) => {
-      submitData.append('images', imageObj.file, imageObj.file.name)
-    })
+      // Create FormData for API submission
+      const submitData = new FormData();
 
-    toast.loading("İlan kaydediliyor...")
+      // Add all form fields
+      Object.keys(dataForApi).forEach(key => {
+        const formKey = key as keyof PropertySubmitData
+        const value = dataForApi[formKey]
+        if (value !== undefined && value !== null) {
+          submitData.append(formKey, String(value))
+        }
+      })
+
+      formData.images.forEach((imageObj) => {
+        submitData.append('images', imageObj.file, imageObj.file.name)
+      })
+
+      toast.loading("İlan kaydediliyor...")
       // API call would go here
-      console.log("Form data to submit:", formData);
+      console.log("Form data to submit:", dataForApi);
       toast.success("İlan başarıyla oluşturuldu");
-      
+
       router.push('/admin/properties')
     } catch (error) {
       toast.error("İlan oluşturulurken hata oluştu");
@@ -382,14 +330,7 @@ export default function AddPropertyPage() {
         ])
 
         setCategoryConfig(categoriesResponse.data)
-        const featuresData: FeatureOption[] = featuresResponse.data
-        setAllFeatureOptions(featuresData)
-        const groupedData = featuresData.reduce((acc, option) => {
-          const { category } = option
-          if(!acc[category]){
-            acc[category] =
-          }
-        })
+        setFeatureOptions(featuresResponse.data)
       } catch (error) {
         console.error("Form verileri çekilirken hata oluştu:", error)
         toast.error("Gerekli veriler yüklenemedi. Lütfen sayfayı yenileyin.")
@@ -399,7 +340,73 @@ export default function AddPropertyPage() {
     }
 
     fetchInitialData()
-  },[])
+  }, [])
+
+  useEffect(() => {
+    const fetchAdressInCities = async () => {
+      try {
+        const res = await api.get('/properties/adress')
+        setCities(res.data)
+      } catch (error) {
+
+      }
+    }
+    fetchAdressInCities()
+  }, [])
+
+  useEffect(() => {
+    if (!formData.city) return;
+
+    const fetchDistricts = async () => {
+      const selectedCity = cities.find(c => c.name === formData.city)
+      if (!selectedCity) return
+      try {
+        const res = await api.get(`/properties/adress/${selectedCity.code}`)
+        setDistrictsAndNeighborhoods(res.data)
+      } catch (error) {
+        console.error("İlçe verileri çekilirken hata oluştu:", error)
+        toast.error("İlçe verileri yüklenemedi.")
+        setDistrictsAndNeighborhoods({})
+      }
+    }
+    fetchDistricts();
+  }, [formData.city, cities])
+
+  useEffect(() => {
+    // Sadece il, ilçe ve mahalle seçiliyse devam et
+    if (!formData.city || !formData.district || !formData.neighborhood) {
+      return;
+    }
+
+    const geocodeAddress = async () => {
+      const address = `${formData.neighborhood}, ${formData.district}, ${formData.city}, Turkey`
+      
+      const url = `/api/geocode?address=${encodeURIComponent(address)}`
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (response.ok && data.location) {
+          handleInputChange('coordinates', data.location)
+          toast.info("Adres haritada bulundu ve işaretlendi.")
+        } else {
+          console.error('Geocoding Başarısız:', data);
+          const errorMessage = data.details === 'ZERO_RESULTS'
+            ? "Bu adres için haritada sonuç bulunamadı."
+            : `Harita Hatası: ${data.error || 'Bilinmeyen bir sorun oluştu.'}`;
+        }
+      } catch (error) {
+        console.error('Geocoding request error:', error)
+        toast.error("Harita servisine bağlanırken bir hata oluştu.")
+      }
+    }
+    const timer = setTimeout(() => {
+      geocodeAddress();
+    }, 500)
+    return () => clearTimeout(timer);
+
+  }, [formData.neighborhood]); 
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -457,8 +464,8 @@ export default function AddPropertyPage() {
 
         <div className="space-y-2">
           <Label htmlFor="category">Kategori *</Label>
-          <Select 
-            value={formData.subType} 
+          <Select
+            value={formData.subType}
             onValueChange={(value) => handleInputChange('subType', value)}
             disabled={!formData.propertyType}
           >
@@ -500,7 +507,7 @@ export default function AddPropertyPage() {
           />
         </div>
 
-         <div className="md:col-span-2 space-y-2">
+        <div className="md:col-span-2 space-y-2">
           <Label htmlFor="description">İlan Açıklaması *</Label>
           <RichTextEditor
             value={formData.description}
@@ -677,56 +684,42 @@ export default function AddPropertyPage() {
               <SelectValue placeholder="İl seçin" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="istanbul">İstanbul</SelectItem>
-              <SelectItem value="ankara">Ankara</SelectItem>
-              <SelectItem value="izmir">İzmir</SelectItem>
-              <SelectItem value="antalya">Antalya</SelectItem>
-              <SelectItem value="bursa">Bursa</SelectItem>
+              {cities.map((citiy) => (
+                <SelectItem key={citiy.code} value={citiy.name}>
+                  {citiy.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="district">İlçe *</Label>
-          <Select value={formData.district} onValueChange={(value) => handleInputChange('district', value)}>
+          <Select value={formData.district} onValueChange={(value) => handleInputChange('district', value)} disabled={!formData.city}>
             <SelectTrigger>
               <SelectValue placeholder="İlçe seçin" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="besiktas">Beşiktaş</SelectItem>
-              <SelectItem value="sisli">Şişli</SelectItem>
-              <SelectItem value="kadikoy">Kadıköy</SelectItem>
-              <SelectItem value="bakirkoy">Bakırköy</SelectItem>
-              <SelectItem value="uskudar">Üsküdar</SelectItem>
+              {Object.keys(districtsAndNeighborhoods).map(district => (
+                <SelectItem key={district} value={district}>{district}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="neighborhood">Mahalle</Label>
-          <Select value={formData.neighborhood} onValueChange={(value) => handleInputChange('neighborhood', value)}>
+          <Select value={formData.neighborhood} onValueChange={(value) => handleInputChange('neighborhood', value)} disabled={!formData.district}>
             <SelectTrigger>
               <SelectValue placeholder="Mahalle seçin" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="levent">Levent</SelectItem>
-              <SelectItem value="etiler">Etiler</SelectItem>
-              <SelectItem value="bebek">Bebek</SelectItem>
-              <SelectItem value="ortakoy">Ortaköy</SelectItem>
+              {formData.district && districtsAndNeighborhoods[formData.district]?.map(neighborhood => (
+                <SelectItem key={neighborhood} value={neighborhood}>{neighborhood}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="address">Detay Adres</Label>
-        <Textarea
-          id="address"
-          value={formData.address}
-          onChange={(e) => handleInputChange('address', e.target.value)}
-          placeholder="Sokak, cadde, bina no, daire no..."
-          className="min-h-20"
-        />
       </div>
 
       <Card>
@@ -737,12 +730,13 @@ export default function AddPropertyPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="bg-gray-100 h-64 rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-600">Google Maps entegrasyonu burada olacak</p>
-              <p className="text-sm text-gray-500">Konum işaretleyip koordinatları alacağız</p>
-            </div>
+          <div className="bg-gray-100 h-180 rounded-lg flex items-center justify-center">
+            <MapPicker
+              center={formData.coordinates.lat === 0 
+                  ? { lat: 41.0082, lng: 28.9784 } 
+                  : formData.coordinates}
+              onLocationChange={(coords) => handleInputChange('coordinates', coords)}
+            />
           </div>
         </CardContent>
       </Card>
@@ -795,8 +789,8 @@ export default function AddPropertyPage() {
             {formData.features.map(feature => (
               <Badge key={feature} variant="secondary" className="flex items-center space-x-1">
                 <span>{feature}</span>
-                <X 
-                  className="h-3 w-3 cursor-pointer" 
+                <X
+                  className="h-3 w-3 cursor-pointer"
                   onClick={() => handleFeatureToggle(feature)}
                 />
               </Badge>
@@ -877,8 +871,8 @@ export default function AddPropertyPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => router.push('/admin/properties')}
             className="flex items-center space-x-2"
           >
@@ -902,11 +896,10 @@ export default function AddPropertyPage() {
           <div className="flex items-center justify-between">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
-                <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                  currentStep >= step.id 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'bg-gray-200 text-gray-600'
-                }`}>
+                <div className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= step.id
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-gray-200 text-gray-600'
+                  }`}>
                   {step.id}
                 </div>
                 <div className="ml-3">
@@ -914,9 +907,8 @@ export default function AddPropertyPage() {
                   <div className="text-xs text-gray-500">{step.description}</div>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className={`mx-4 h-px flex-1 ${
-                    currentStep > step.id ? 'bg-primary' : 'bg-gray-200'
-                  }`} />
+                  <div className={`mx-4 h-px flex-1 ${currentStep > step.id ? 'bg-primary' : 'bg-gray-200'
+                    }`} />
                 )}
               </div>
             ))}
@@ -949,7 +941,7 @@ export default function AddPropertyPage() {
             >
               Önceki Adım
             </Button>
-            
+
             {currentStep < 5 ? (
               <Button
                 onClick={() => setCurrentStep(Math.min(5, currentStep + 1))}
