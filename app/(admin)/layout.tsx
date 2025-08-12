@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Toaster } from "sonner";
 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -121,6 +122,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     {children}
                 </main>
             </div>
+            <Toaster richColors position="top-right"/>
         </div>
     );
 }

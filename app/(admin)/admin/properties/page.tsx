@@ -1,15 +1,15 @@
 'use client'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
 import { Badge } from "../../../../components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../components/ui/table";
-import { 
-  Search, 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
   Filter,
   Building2,
   MapPin,
@@ -18,149 +18,37 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import api from "@/lib/axios";
+import PropertyGetData from "@/dto/getproperty.dto";
 
-interface Property {
-  id: number;
-  title: string;
-  type: "konut" | "isyeri" | "arsa";
-  listingType: "satilik" | "kiralik";
-  category: string;
-  price: number;
-  area: number;
-  rooms: string;
-  location: string;
-  status: "aktif" | "pasif" | "beklemede";
-  createdAt: string;
-  images: string[];
-}
 
-interface AdminPropertiesProps {
-  onNavigate?: (page: string, propertyId?: number) => void;
-}
-
-export default function AdminProperties({ onNavigate }: AdminPropertiesProps) {
-  const [properties, setProperties] = useState<Property[]>([
-    {
-      id: 1,
-      title: "Deniz Manzaralı Lüks Villa",
-      type: "konut",
-      listingType: "satilik",
-      category: "Villa",
-      price: 2500000,
-      area: 350,
-      rooms: "4+2",
-      location: "Beşiktaş, İstanbul",
-      status: "aktif",
-      createdAt: "2024-01-20",
-      images: ["image1.jpg", "image2.jpg"]
-    },
-    {
-      id: 2,
-      title: "Merkezi Konumda Ofis",
-      type: "isyeri",
-      listingType: "kiralik",
-      category: "Ofis",
-      price: 45000,
-      area: 180,
-      rooms: "Açık ofis",
-      location: "Şişli, İstanbul",
-      status: "aktif",
-      createdAt: "2024-01-18",
-      images: ["image3.jpg"]
-    },
-    {
-      id: 3,
-      title: "Modern Daire",
-      type: "konut",
-      listingType: "satilik",
-      category: "Daire",
-      price: 850000,
-      area: 120,
-      rooms: "3+1",
-      location: "Kadıköy, İstanbul",
-      status: "beklemede",
-      createdAt: "2024-01-15",
-      images: ["image4.jpg", "image5.jpg", "image6.jpg"]
-    },
-    {
-      id: 4,
-      title: "Yatırım Amaçlı Arsa",
-      type: "arsa",
-      listingType: "satilik",
-      category: "İmarlı Arsa",
-      price: 1200000,
-      area: 800,
-      rooms: "-",
-      location: "Sarıyer, İstanbul",
-      status: "aktif",
-      createdAt: "2024-01-10",
-      images: ["image7.jpg"]
-    },
-    {
-      id: 5,
-      title: "Rezidans Daire",
-      type: "konut",
-      listingType: "kiralik",
-      category: "Rezidans",
-      price: 25000,
-      area: 140,
-      rooms: "2+1",
-      location: "Etiler, İstanbul",
-      status: "pasif",
-      createdAt: "2024-01-05",
-      images: ["image8.jpg", "image9.jpg"]
-    }
-  ]);
+export default function AdminProperties() {
+  const [properties, setProperties] = useState<PropertyGetData[]>([]);
 
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredProperties = properties.filter(property =>
     property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    property.location.toLowerCase().includes(searchTerm.toLowerCase())
+    property.location.city.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddProperty = () => {
-    if (onNavigate) {
-      onNavigate("admin-add-property");
+  const fetchProperties = async () => {
+    try {
+      const res = await api.get('/properties')
+      setProperties(res.data)
+    } catch (error) {
+      toast.error("Veri alınırken bir hata oluştu.")
     }
-  };
+  }
 
-  const handleEditProperty = (propertyId: number) => {
-    if (onNavigate) {
-      onNavigate("admin-edit-property", propertyId);
-    }
-  };
+  useEffect(() => {
+    fetchProperties()
+  },[])
 
-  const handleDeleteProperty = (id: number) => {
+  const handleDeleteProperty = (id: string) => {
     if (confirm("Bu ilanı silmek istediğinizden emin misiniz?")) {
-      setProperties(properties.filter(p => p.id !== id));
+      setProperties(properties.filter(p => p._id !== id));
       toast.success("İlan başarıyla silindi");
-    }
-  };
-
-  const getStatusBadge = (status: Property['status']) => {
-    switch (status) {
-      case 'aktif':
-        return <Badge variant="secondary" className="bg-green-100 text-green-800">Aktif</Badge>;
-      case 'pasif':
-        return <Badge variant="secondary" className="bg-gray-100 text-gray-800">Pasif</Badge>;
-      case 'beklemede':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Beklemede</Badge>;
-      default:
-        return <Badge variant="outline">Bilinmiyor</Badge>;
-    }
-  };
-
-  const getTypeBadge = (type: Property['type']) => {
-    switch (type) {
-      case 'konut':
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700">Konut</Badge>;
-      case 'isyeri':
-        return <Badge variant="outline" className="bg-purple-50 text-purple-700">İşyeri</Badge>;
-      case 'arsa':
-        return <Badge variant="outline" className="bg-orange-50 text-orange-700">Arsa</Badge>;
-      default:
-        return <Badge variant="outline">Bilinmiyor</Badge>;
     }
   };
 
@@ -203,7 +91,7 @@ export default function AdminProperties({ onNavigate }: AdminPropertiesProps) {
               <Eye className="h-8 w-8 text-green-600" />
               <div className="ml-4">
                 <p className="text-sm text-muted-foreground">Aktif İlan</p>
-                <p className="text-2xl">{properties.filter(p => p.status === 'aktif').length}</p>
+                {/* <p className="text-2xl">{properties.filter(p => p.status === 'aktif').length}</p> */}
               </div>
             </div>
           </CardContent>
@@ -214,7 +102,7 @@ export default function AdminProperties({ onNavigate }: AdminPropertiesProps) {
               <MapPin className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
                 <p className="text-sm text-muted-foreground">Konut İlanı</p>
-                <p className="text-2xl">{properties.filter(p => p.type === 'konut').length}</p>
+                <p className="text-2xl">{properties.filter(p => p.propertyType === 'Konut').length}</p>
               </div>
             </div>
           </CardContent>
@@ -283,59 +171,58 @@ export default function AdminProperties({ onNavigate }: AdminPropertiesProps) {
               </TableHeader>
               <TableBody>
                 {filteredProperties.map((property) => (
-                  <TableRow key={property.id}>
+                  <TableRow key={property._id}>
                     <TableCell>
                       <div className="max-w-48">
                         <div className="text-sm truncate">{property.title}</div>
                         <div className="text-xs text-gray-500 flex items-center mt-1">
-                          <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
-                            property.listingType === 'satilik' ? 'bg-green-500' : 'bg-blue-500'
-                          }`}></span>
+                          <span className={`inline-block w-2 h-2 rounded-full mr-2 ${property.listingType === 'satilik' ? 'bg-green-500' : 'bg-blue-500'
+                            }`}></span>
                           {property.listingType === 'satilik' ? 'Satılık' : 'Kiralık'}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      {getTypeBadge(property.type)}
+                      {property.propertyType}
                     </TableCell>
                     <TableCell className="text-sm">
-                      {property.category}
+                      {property.subType}
                     </TableCell>
                     <TableCell className="text-sm">
                       {formatPrice(property.price, property.listingType)}
                     </TableCell>
                     <TableCell className="text-sm">
-                      {property.area} m²
+                      {property.net} m²
                     </TableCell>
                     <TableCell className="text-sm">
-                      {property.rooms}
+                      {property.numberOfRoom}
                     </TableCell>
                     <TableCell className="text-sm">
                       <div className="flex items-center">
                         <MapPin className="h-3 w-3 mr-1 text-gray-400" />
-                        {property.location}
+                        {property.location.city}
                       </div>
                     </TableCell>
                     <TableCell>
-                      {getStatusBadge(property.status)}
+                      {property.location.city}
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">
                       {new Date(property.createdAt).toLocaleDateString('tr-TR')}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
-                        <Link href={`editproperty/${property.id}`}>
+                        <Link href={`editproperty/${property._id}`}>
                           <Button
                             variant="outline"
                             size="sm"
                           >
-                          <Edit className="h-3 w-3" />
-                        </Button>
+                            <Edit className="h-3 w-3" />
+                          </Button>
                         </Link>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDeleteProperty(property.id)}
+                          onClick={() => handleDeleteProperty(property._id)}
                           className="text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="h-3 w-3" />

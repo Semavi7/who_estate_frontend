@@ -23,7 +23,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 interface EditPropertyPageProps {
-  params: Promise<{ id: number }>
+  params: Promise<{ id: string }>
 }
 
 export default function EditPropertyPage({ params }: EditPropertyPageProps) {

@@ -1,6 +1,6 @@
 'use client'
-import { useState, useEffect } from "react";
-import { Descendant, Span } from "slate";
+import { useState, useEffect } from "react"
+import { Descendant, Span } from "slate"
 import {
   DndContext,
   closestCenter,
@@ -9,24 +9,23 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
-} from '@dnd-kit/core';
+} from '@dnd-kit/core'
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
   rectSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
-import { Button } from "../../../../components/ui/button";
-import { Input } from "../../../../components/ui/input";
-import { Label } from "../../../../components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../../components/ui/select";
-import { Textarea } from "../../../../components/ui/textarea";
-import { Checkbox } from "../../../../components/ui/checkbox";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../../../components/ui/accordion";
-import { Badge } from "../../../../components/ui/badge";
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card"
+import { Button } from "../../../../components/ui/button"
+import { Input } from "../../../../components/ui/input"
+import { Label } from "../../../../components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../../components/ui/select"
+import { Checkbox } from "../../../../components/ui/checkbox"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../../../components/ui/accordion"
+import { Badge } from "../../../../components/ui/badge"
 import {
   ArrowLeft,
   Save,
@@ -35,23 +34,23 @@ import {
   MapPin,
   GripVertical,
   Image as ImageIcon
-} from "lucide-react";
-import { toast } from "sonner";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import { useRouter } from "next/navigation";
-import api from "@/lib/axios";
-import PropertySubmitData from "@/dto/createproperty.dto";
-import { MapPicker } from "@/components/ui/mappicker";
+} from "lucide-react"
+import { toast } from "sonner"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
+import { useRouter } from "next/navigation"
+import api from "@/lib/axios"
+import PropertySubmitData from "@/dto/createproperty.dto"
+import { MapPicker } from "@/components/ui/mappicker"
 
 interface ImageObject {
-  id: string;
-  file: File;
-  preview: string;
+  id: string
+  file: File
+  preview: string
 }
 
 interface City {
-  code: string;
-  name: string;
+  code: string
+  name: string
 }
 
 function SortableImageItem({ id, image, onRemove }: { id: any; image: ImageObject; onRemove: (id: string) => void }) {
@@ -62,14 +61,14 @@ function SortableImageItem({ id, image, onRemove }: { id: any; image: ImageObjec
     transform,
     transition,
     isDragging,
-  } = useSortable({ id });
+  } = useSortable({ id })
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     zIndex: isDragging ? 10 : 'auto',
     opacity: isDragging ? 0.5 : 1,
-  };
+  }
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} className="relative group">
@@ -94,7 +93,7 @@ function SortableImageItem({ id, image, onRemove }: { id: any; image: ImageObjec
       </div>
       <p className="text-xs text-center mt-1 truncate">{image.file.name}</p>
     </div>
-  );
+  )
 }
 
 export default function AddPropertyPage() {
@@ -104,7 +103,7 @@ export default function AddPropertyPage() {
   const [categoryConfig, setCategoryConfig] = useState<Record<string, any>>({})
   const [featureOptions, setFeatureOptions] = useState<Record<string, string[]>>({})
   const [isLoading, setIsLoading] = useState(true)
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
     // Kategori
     propertyType: "",
@@ -127,7 +126,7 @@ export default function AddPropertyPage() {
     balcony: "",
     elevator: "",
     parking: "",
-    usageStatus: "",
+    availability: "",
     deedStatus: "",
     furnished: "",
     dues: "",
@@ -145,7 +144,7 @@ export default function AddPropertyPage() {
 
     // Fotoğraflar
     images: [] as ImageObject[]
-  });
+  })
 
 
   const groupFeatures = (selected: string[], allOptions: Record<string, string[]>): Record<string, string[]> => {
@@ -153,11 +152,11 @@ export default function AddPropertyPage() {
 
     for (const category in allOptions) {
       if (Object.prototype.hasOwnProperty.call(allOptions, category)) {
-        const categoryFeatures = allOptions[category];
-        const selectedInCategory = selected.filter(feature => categoryFeatures.includes(feature));
+        const categoryFeatures = allOptions[category]
+        const selectedInCategory = selected.filter(feature => categoryFeatures.includes(feature))
 
         if (selectedInCategory.length > 0) {
-          grouped[category] = selectedInCategory;
+          grouped[category] = selectedInCategory
         }
       }
     }
@@ -179,13 +178,13 @@ export default function AddPropertyPage() {
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => {
-      const newState = { ...prev, [field]: value };
+      const newState = { ...prev, [field]: value }
 
       // Şehir değişirse, ilçe ve mahalleyi sıfırla
       if (field === 'city') {
-        newState.district = "";
-        newState.neighborhood = "";
-        setDistrictsAndNeighborhoods({}); // İlçe listesini de temizle
+        newState.district = ""
+        newState.neighborhood = ""
+        setDistrictsAndNeighborhoods({}) // İlçe listesini de temizle
       }
       // İlçe değişirse, mahalleyi sıfırla
       if (field === 'district') {
@@ -202,8 +201,8 @@ export default function AddPropertyPage() {
       features: prev.features.includes(feature)
         ? prev.features.filter(f => f !== feature)
         : [...prev.features, feature]
-    }));
-  };
+    }))
+  }
 
   const handleImageUpload = (files: FileList | null) => {
     if (files) {
@@ -211,32 +210,32 @@ export default function AddPropertyPage() {
         id: `${file.name}-${Date.now()}-${Math.random()}`,
         file,
         preview: URL.createObjectURL(file)
-      }));
+      }))
       setFormData(prev => ({
         ...prev,
         images: [...prev.images, ...newImages]
-      }));
+      }))
     }
-  };
+  }
 
   const handleImageRemove = (id: string) => {
     setFormData(prev => {
-      const imageToRemove = prev.images.find(img => img.id === id);
+      const imageToRemove = prev.images.find(img => img.id === id)
       if (imageToRemove) {
-        URL.revokeObjectURL(imageToRemove.preview);
+        URL.revokeObjectURL(imageToRemove.preview)
       }
       return {
         ...prev,
         images: prev.images.filter((img) => img.id !== id)
-      };
-    });
-  };
+      }
+    })
+  }
 
   const handleSubmit = async () => {
     // Form validation
     if (!formData.title || !formData.propertyType || !formData.listingType) {
-      toast.error("Lütfen zorunlu alanları doldurun");
-      return;
+      toast.error("Lütfen zorunlu alanları doldurun")
+      return
     }
 
     try {
@@ -257,7 +256,7 @@ export default function AddPropertyPage() {
         lift: formData.elevator,
         parking: formData.parking,
         furnished: formData.furnished,
-        availability: formData.usageStatus,
+        availability: formData.availability,
         dues: Number(formData.dues),
         eligibleForLoan: formData.eligibleForLoan,
         titleDeedStatus: formData.deedStatus,
@@ -280,7 +279,7 @@ export default function AddPropertyPage() {
       }
 
       // Create FormData for API submission
-      const submitData = new FormData();
+      const submitData = new FormData()
 
       // Add all form fields
       Object.keys(dataForApi).forEach(key => {
@@ -296,15 +295,15 @@ export default function AddPropertyPage() {
       })
 
       toast.loading("İlan kaydediliyor...")
-      // API call would go here
-      console.log("Form data to submit:", dataForApi);
-      toast.success("İlan başarıyla oluşturuldu");
+      api.post('/properties', submitData)
+      console.log("Form data to submit:", dataForApi)
+      toast.success("İlan başarıyla oluşturuldu")
 
       router.push('/admin/properties')
     } catch (error) {
-      toast.error("İlan oluşturulurken hata oluştu");
+      toast.error("İlan oluşturulurken hata oluştu")
     }
-  };
+  }
 
   const steps = [
     { id: 1, title: "Kategori", description: "Emlak türü ve kategorisi" },
@@ -312,14 +311,14 @@ export default function AddPropertyPage() {
     { id: 3, title: "Adres Bilgileri", description: "Konum ve adres" },
     { id: 4, title: "Detay Bilgi", description: "Ek özellikler" },
     { id: 5, title: "Fotoğraflar", description: "Görseller ve medya" }
-  ];
+  ]
 
   useEffect(() => {
     // Cleanup object URLs on component unmount
     return () => {
-      formData.images.forEach(image => URL.revokeObjectURL(image.preview));
-    };
-  }, []);
+      formData.images.forEach(image => URL.revokeObjectURL(image.preview))
+    }
+  }, [])
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -355,7 +354,7 @@ export default function AddPropertyPage() {
   }, [])
 
   useEffect(() => {
-    if (!formData.city) return;
+    if (!formData.city) return
 
     const fetchDistricts = async () => {
       const selectedCity = cities.find(c => c.name === formData.city)
@@ -369,32 +368,32 @@ export default function AddPropertyPage() {
         setDistrictsAndNeighborhoods({})
       }
     }
-    fetchDistricts();
+    fetchDistricts()
   }, [formData.city, cities])
 
   useEffect(() => {
     // Sadece il, ilçe ve mahalle seçiliyse devam et
     if (!formData.city || !formData.district || !formData.neighborhood) {
-      return;
+      return
     }
 
     const geocodeAddress = async () => {
       const address = `${formData.neighborhood}, ${formData.district}, ${formData.city}, Turkey`
-      
+
       const url = `/api/geocode?address=${encodeURIComponent(address)}`
 
       try {
-        const response = await fetch(url);
-        const data = await response.json();
+        const response = await fetch(url)
+        const data = await response.json()
 
         if (response.ok && data.location) {
           handleInputChange('coordinates', data.location)
           toast.info("Adres haritada bulundu ve işaretlendi.")
         } else {
-          console.error('Geocoding Başarısız:', data);
+          console.error('Geocoding Başarısız:', data)
           const errorMessage = data.details === 'ZERO_RESULTS'
             ? "Bu adres için haritada sonuç bulunamadı."
-            : `Harita Hatası: ${data.error || 'Bilinmeyen bir sorun oluştu.'}`;
+            : `Harita Hatası: ${data.error || 'Bilinmeyen bir sorun oluştu.'}`
         }
       } catch (error) {
         console.error('Geocoding request error:', error)
@@ -402,34 +401,34 @@ export default function AddPropertyPage() {
       }
     }
     const timer = setTimeout(() => {
-      geocodeAddress();
+      geocodeAddress()
     }, 500)
-    return () => clearTimeout(timer);
+    return () => clearTimeout(timer)
 
-  }, [formData.neighborhood]); 
+  }, [formData.neighborhood])
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
-  );
+  )
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+    const { active, over } = event
 
     if (over && active.id !== over.id) {
       setFormData(prev => {
-        const oldIndex = prev.images.findIndex(img => img.id === active.id);
-        const newIndex = prev.images.findIndex(img => img.id === over.id);
-        if (oldIndex === -1 || newIndex === -1) return prev;
+        const oldIndex = prev.images.findIndex(img => img.id === active.id)
+        const newIndex = prev.images.findIndex(img => img.id === over.id)
+        if (oldIndex === -1 || newIndex === -1) return prev
         return {
           ...prev,
           images: arrayMove(prev.images, oldIndex, newIndex),
-        };
-      });
+        }
+      })
     }
-  };
+  }
 
   const renderStep1 = () => (
     <div className="space-y-6">
@@ -486,13 +485,13 @@ export default function AddPropertyPage() {
           <div className="text-sm text-blue-900">
             <strong>Seçilen Kategori:</strong>
             <span>{formData.propertyType}</span>
-            {formData.listingType && <span> &gt; {formData.listingType}</span>}
-            {formData.subType && <span> &gt; {formData.subType}</span>}
+            {formData.listingType && <span> &gt {formData.listingType}</span>}
+            {formData.subType && <span> &gt {formData.subType}</span>}
           </div>
         </div>
       )}
     </div>
-  );
+  )
 
   const renderStep2 = () => (
     <div className="space-y-6">
@@ -554,6 +553,28 @@ export default function AddPropertyPage() {
         </div>
 
         <div className="space-y-2">
+          <Label htmlFor="buildingAge">Bina Yaşı</Label>
+          <Input
+            id="buildingAge"
+            type="number"
+            value={formData.buildingAge}
+            onChange={(e) => handleInputChange('buildingAge', e.target.value)}
+            placeholder="0"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="dues">Aidat</Label>
+          <Input
+            id="dues"
+            type="number"
+            value={formData.dues}
+            onChange={(e) => handleInputChange('dues', e.target.value)}
+            placeholder="0"
+          />
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="rooms">Oda Sayısı</Label>
           <Select value={formData.rooms} onValueChange={(value) => handleInputChange('rooms', value)}>
             <SelectTrigger>
@@ -575,19 +596,90 @@ export default function AddPropertyPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="buildingAge">Bina Yaşı</Label>
-          <Select value={formData.buildingAge} onValueChange={(value) => handleInputChange('buildingAge', value)}>
+          <Label htmlFor="buildingAge">Kullanım Durumu</Label>
+          <Select value={formData.availability} onValueChange={(value) => handleInputChange('availability', value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Bina yaşını seçin" />
+              <SelectValue placeholder="Kullanım durumunu seçin" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="0">0 (Sıfır Bina)</SelectItem>
-              <SelectItem value="1-5">1-5 Yaş</SelectItem>
-              <SelectItem value="6-10">6-10 Yaş</SelectItem>
-              <SelectItem value="11-15">11-15 Yaş</SelectItem>
-              <SelectItem value="16-20">16-20 Yaş</SelectItem>
-              <SelectItem value="21-25">21-25 Yaş</SelectItem>
-              <SelectItem value="26+">26+ Yaş</SelectItem>
+              <SelectItem value="dolu">dolu</SelectItem>
+              <SelectItem value="boş">boş</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="buildingAge">Kredi Durumu</Label>
+          <Select value={formData.eligibleForLoan} onValueChange={(value) => handleInputChange('eligibleForLoan', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Kredi durumunu seçin" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="uygun">uygun</SelectItem>
+              <SelectItem value="uygun değil">uygun değil</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="buildingAge">Eşyalı</Label>
+          <Select value={formData.furnished} onValueChange={(value) => handleInputChange('furnished', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Eşya durumunu seçin" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="evet">evet</SelectItem>
+              <SelectItem value="hayır">hayır</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="buildingAge">Mutfak</Label>
+          <Select value={formData.kitchen} onValueChange={(value) => handleInputChange('kitchen', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Mutfak durumunu seçin" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="açık">açık</SelectItem>
+              <SelectItem value="kapalı">kapalı</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="buildingAge">Tapu Durumu</Label>
+          <Select value={formData.deedStatus} onValueChange={(value) => handleInputChange('deedStatus', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Tapu durumunu seçin" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Kat Mülküyetli">Kat Mülküyetli</SelectItem>
+              <SelectItem value="Kat İrtifaklı">Kat İrtifaklı</SelectItem>
+              <SelectItem value="Hisseli Tapu">Hisseli Tapu</SelectItem>
+              <SelectItem value="Müstakil Tapulu">Müstakil Tapulu</SelectItem>
+              <SelectItem value="Arsa Tapulu">Arsa Tapulu</SelectItem>
+              <SelectItem value="Kooperatif Hisseli Tapu">Kooperatif Hisseli Tapu</SelectItem>
+              <SelectItem value="İntifa Hakkı Tesisli">İntifa Hakkı Tesisli</SelectItem>
+              <SelectItem value="Yurt Dışı Tapulu">Yurt Dışı Tapulu</SelectItem>
+              <SelectItem value="Tapu Kaydı Yok">Tapu Kaydı Yok</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="buildingAge">Balkon</Label>
+          <Select value={formData.balcony} onValueChange={(value) => handleInputChange('balcony', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Balkon adedini seçin" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">0</SelectItem>
+              <SelectItem value="1">1</SelectItem>
+              <SelectItem value="2">1</SelectItem>
+              <SelectItem value="3">3</SelectItem>
+              <SelectItem value="4">4</SelectItem>
+              <SelectItem value="5">5</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -672,7 +764,7 @@ export default function AddPropertyPage() {
         </div>
       </div>
     </div>
-  );
+  )
 
   const renderStep3 = () => (
     <div className="space-y-6">
@@ -732,16 +824,16 @@ export default function AddPropertyPage() {
         <CardContent>
           <div className="bg-gray-100 h-180 rounded-lg flex items-center justify-center">
             <MapPicker
-              center={formData.coordinates.lat === 0 
-                  ? { lat: 41.0082, lng: 28.9784 } 
-                  : formData.coordinates}
+              center={formData.coordinates.lat === 0
+                ? { lat: 41.0082, lng: 28.9784 }
+                : formData.coordinates}
               onLocationChange={(coords) => handleInputChange('coordinates', coords)}
             />
           </div>
         </CardContent>
       </Card>
     </div>
-  );
+  )
 
   const renderStep4 = () => (
     <div className="space-y-6">
@@ -802,7 +894,7 @@ export default function AddPropertyPage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
   if (isLoading) {
     return <div>Yükleniyor...</div>
   }
@@ -818,8 +910,8 @@ export default function AddPropertyPage() {
             className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer"
             onClick={() => document.getElementById('file-upload')?.click()}
             onDrop={(e) => {
-              e.preventDefault();
-              handleImageUpload(e.dataTransfer.files);
+              e.preventDefault()
+              handleImageUpload(e.dataTransfer.files)
             }}
             onDragOver={(e) => e.preventDefault()}
           >
@@ -864,7 +956,7 @@ export default function AddPropertyPage() {
         </Card>
       )}
     </div>
-  );
+  )
 
   return (
     <div className="space-y-6">
@@ -958,5 +1050,5 @@ export default function AddPropertyPage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
