@@ -8,6 +8,7 @@ import {
     User,
     Users,
     MessageSquare,
+    Settings,
     Globe,
     LogOut,
     Menu,
@@ -24,6 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const menuItems = [
         { id: "admin-dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
         { id: "admin-properties", icon: Building2, label: "İlanlar", path: "/admin/properties" },
+        { id: "admin-features", icon: Settings, label: "Özellik Yönetimi", path: "/admin/features"  },
         { id: "admin-profile", icon: User, label: "Kullanıcı Bilgileri", path: "/admin/profile" },
         { id: "admin-users", icon: Users, label: "Kullanıcılar", path: "/admin/users" },
         { id: "admin-messages", icon: MessageSquare, label: "Mesajlar", path: "/admin/messages" },
