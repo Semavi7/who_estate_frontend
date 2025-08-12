@@ -195,6 +195,7 @@ html {
     opacity: 0;
     transform: translateY(40px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -203,16 +204,31 @@ html {
 
 /* Animasyonu uygulayacak ve başlangıçta gizleyecek ana sınıf */
 .animate-on-load {
-  opacity: 0; /* Animasyon başlayana kadar elementi gizli tutar */
+  opacity: 0;
+  /* Animasyon başlayana kadar elementi gizli tutar */
   animation: fadeInAndUp 0.8s ease-out forwards;
 }
 
 /* Farklı gecikme süreleri için yardımcı sınıflar */
-.delay-3000ms { animation-delay: 3s; }
-.delay-3500ms { animation-delay: 3.5s; }
-.delay-3700ms { animation-delay: 3.7s; }
-.delay-3900ms { animation-delay: 3.9s; }
-.delay-4100ms { animation-delay: 4.1s; }
+.delay-3000ms {
+  animation-delay: 3s;
+}
+
+.delay-3500ms {
+  animation-delay: 3.5s;
+}
+
+.delay-3700ms {
+  animation-delay: 3.7s;
+}
+
+.delay-3900ms {
+  animation-delay: 3.9s;
+}
+
+.delay-4100ms {
+  animation-delay: 4.1s;
+}
 
 
 .hero-background {
@@ -221,23 +237,49 @@ html {
 
 /* Header animations */
 @keyframes slide-down {
-  from { transform: translateY(-100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(-100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
 }
 
 @keyframes fade-in-left {
-  from { opacity: 0; transform: translateX(-50px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fade-in-right {
-  from { opacity: 0; transform: translateX(50px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .animate-header {
@@ -245,7 +287,9 @@ html {
   animation: slide-down 0.8s 3.2s ease-out forwards;
 }
 
-.animate-logo, .animate-nav, .animate-cta {
+.animate-logo,
+.animate-nav,
+.animate-cta {
   opacity: 0;
 }
 
@@ -273,15 +317,26 @@ html {
   max-height: 100vh;
   opacity: 1;
 }
+
 /* Hero Section Animations */
 @keyframes hero-fade-in {
-  from { opacity: 0.7; }
-  to { opacity: 0.4; }
+  from {
+    opacity: 0.7;
+  }
+
+  to {
+    opacity: 0.4;
+  }
 }
 
 @keyframes hero-fade-in-initial {
-  from { opacity: 0; }
-  to { opacity: 0.7; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 0.7;
+  }
 }
 
 .animate-hero-overlay {
@@ -293,18 +348,39 @@ html {
 }
 
 @keyframes slide-in-left {
-  from { transform: translateX(-100px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(-100px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 @keyframes slide-in-right {
-  from { transform: translateX(100px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(100px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 @keyframes slide-in-up {
-  from { transform: translateY(50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .animate-slide-in-left {
@@ -319,8 +395,16 @@ html {
   animation: slide-in-up 0.8s both;
 }
 
-.p-45{
+.p-45 {
   padding: calc(var(--spacing) * 4.5);
+}
+
+.py-35 {
+  padding-block: calc(var(--spacing) * 3.5)
+}
+
+.py-45 {
+  padding-block: calc(var(--spacing) * 4.5)
 }
 
 /* Rich Text Editor Styles */
@@ -475,5 +559,3 @@ html {
 .prose u {
   text-decoration: underline;
 }
-
-

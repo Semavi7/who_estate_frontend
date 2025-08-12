@@ -38,7 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Sidebar */}
             <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-64'} flex flex-col`}>
                 {/* Sidebar Header */}
-                <div className="p-45 border-b border-gray-200">
+                <div className="p-4 border-b border-gray-200">
                     <div className="flex items-center justify-between">
                         {!sidebarCollapsed && (
                             <div className="flex items-center space-x-2">
@@ -52,7 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             variant="ghost"
                             size="sm"
                             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                            className="p-2"
+                            className="py-45"
                         >
                             {sidebarCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
                         </Button>
@@ -95,7 +95,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Main Content */}
             <div className="flex-1 flex flex-col">
                 {/* Top Navbar */}
-                <header className="bg-white border-b border-gray-200 px-6 py-4">
+                <header className="bg-white border-b border-gray-200 px-6 py-35">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-xl text-gray-900">
