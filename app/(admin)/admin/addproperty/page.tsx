@@ -895,9 +895,6 @@ export default function AddPropertyPage() {
       </Card>
     </div>
   )
-  if (isLoading) {
-    return <div>Yükleniyor...</div>
-  }
 
   const renderStep5 = () => (
     <div className="space-y-6">
@@ -957,6 +954,17 @@ export default function AddPropertyPage() {
       )}
     </div>
   )
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-gray-600">İlan verileri yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -21,12 +21,18 @@ export default interface PropertyGetData {
     eligibleForLoan: string
     titleDeedStatus: string
     location: {
-        city: string
+        city: string,
+        district: string,
+        neighborhood: string,
+        geo: {
+            type: string,
+            coordinates: number[]
+        }
     }
     propertyType: string
     listingType: string
     subType?: string
-    selectedFeatures?: string
+    selectedFeatures: string[],
     images: string[]
-    createdAt: Date
+    createdAt: string 
 }
