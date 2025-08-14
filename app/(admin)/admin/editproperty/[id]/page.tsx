@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, use } from "react"
+import { useState, useEffect, use, useRef } from "react"
 import { Descendant, Span } from "slate"
 import {
   DndContext,
@@ -101,8 +101,51 @@ function SortableImageItem({ id, image, onRemove }: { id: any; image: ImageObjec
   )
 }
 
+function SortableUrlImageItem({ id, image, onRemove }: { id: string; image: string; onRemove: (id: string) => void }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 'auto',
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} className="relative group">
+      <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+        <img src={image} alt="Property Image" className="w-full h-full object-cover" />
+      </div>
+      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => onRemove(id)}
+          className="h-6 w-6 p-0"
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
+      <div
+        className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 p-1 rounded-md cursor-grab"
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4 text-white" />
+      </div>
+    </div>
+  );
+}
+
 export default function EditPropertyPage({ params }: EditPropertyPageProps) {
   const router = useRouter()
+  const isInitialMount = useRef(true)
   const { id } = use(params)
   const [cities, setCities] = useState<City[]>([])
   const [districtsAndNeighborhoods, setDistrictsAndNeighborhoods] = useState<Record<string, string[]>>({})
@@ -110,7 +153,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
   const [featureOptions, setFeatureOptions] = useState<Record<string, string[]>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
-  const [images, setImages] = useState({images: [] as ImageObject[]})
+  const [images, setImages] = useState({ images: [] as ImageObject[] })
+  const [coord, setCoord] = useState({ coordinates: { lat: 0, lng: 0 } })
   const [properties, setProperties] = useState<PropertyGetData>({
     _id: "",
     title: "",
@@ -209,7 +253,9 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
       if (field === 'location.district') {
         newState.location.neighborhood = ""
       }
-
+      if (field === 'description') {
+        newState.description = JSON.stringify(value);
+      }
       return newState
     })
   }
@@ -250,6 +296,13 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
     })
   }
 
+  const handleExistingImageRemove = (imageUrlToRemove: string) => {
+    setProperties(prev => ({
+      ...prev,
+      images: prev.images.filter(url => url !== imageUrlToRemove)
+    }))
+  }
+
   const handleSubmit = async () => {
     // Form validation
     if (!properties.title || !properties.propertyType || !properties.listingType) {
@@ -257,10 +310,12 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
       return
     }
 
+    const toastId = toast.loading("İlan kaydediliyor...")
+
     try {
       const dataForApi: PropertySubmitData = {
         title: properties.title,
-        description: JSON.stringify(properties.description),
+        description: properties.description,
         price: Number(properties.price),
         gross: Number(properties.gross),
         net: Number(properties.net),
@@ -289,18 +344,18 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
           geo: {
             type: 'Point',
             coordinates: [
-              properties.location.geo.coordinates[0],
-              properties.location.geo.coordinates[1]
+              coord.coordinates.lng,
+              coord.coordinates.lat
             ]
           }
         }),
         selectedFeatures: JSON.stringify(groupFeatures(properties.selectedFeatures, featureOptions))
       }
 
-      
+
       const submitData = new FormData()
 
-      
+
       Object.keys(dataForApi).forEach(key => {
         const formKey = key as keyof PropertySubmitData
         const value = dataForApi[formKey]
@@ -308,19 +363,20 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
           submitData.append(formKey, String(value))
         }
       })
+      if (images.images.length > 0) {
+        images.images.forEach((imageObj) => {
+          submitData.append('newImages', imageObj.file, imageObj.file.name)
+        })
+      }
 
-      images.images.forEach((imageObj) => {
-        submitData.append('newImages', imageObj.file, imageObj.file.name)
-      })
-
-      toast.loading("İlan kaydediliyor...")
-      api.put(`/properties/${id}`, submitData)
+      submitData.append('existingImageUrls', JSON.stringify(properties.images))
+      await api.put(`/properties/${id}`, submitData)
       console.log("Form data to submit:", dataForApi)
-      toast.success("İlan başarıyla güncellendi")
+      toast.success("İlan başarıyla güncellendi", { id: toastId })
 
       router.push('/admin/properties')
     } catch (error) {
-      toast.error("İlan oluşturulurken hata oluştu")
+      toast.error("İlan oluşturulurken hata oluştu", { id: toastId })
     }
   }
 
@@ -406,41 +462,39 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
     fetchDistricts()
   }, [properties.location.city, cities])
 
-  useEffect(() => {
-    // Sadece il, ilçe ve mahalle seçiliyse devam et
+
+  const geocodeAddress = async () => {
     if (!properties.location.city || !properties.location.district || !properties.location.neighborhood) {
       return
     }
+    const address = `${properties.location.neighborhood}, ${properties.location.district}, ${properties.location.city}, Turkey`;
 
-    const geocodeAddress = async () => {
-      const address = `${properties.location.neighborhood}, ${properties.location.district}, ${properties.location.city}, Turkey`
+    const url = `/api/geocode?address=${encodeURIComponent(address)}`
 
-      const url = `/api/geocode?address=${encodeURIComponent(address)}`
+    try {
+      const response = await fetch(url)
+      const data = await response.json()
+      console.log('data', data)
 
-      try {
-        const response = await fetch(url)
-        const data = await response.json()
-
-        if (response.ok && data.location) {
-          handleInputChange('coordinates', data.location)
-          toast.info("Adres haritada bulundu ve işaretlendi.")
-        } else {
-          console.error('Geocoding Başarısız:', data)
-          const errorMessage = data.details === 'ZERO_RESULTS'
-            ? "Bu adres için haritada sonuç bulunamadı."
-            : `Harita Hatası: ${data.error || 'Bilinmeyen bir sorun oluştu.'}`
-        }
-      } catch (error) {
-        console.error('Geocoding request error:', error)
-        toast.error("Harita servisine bağlanırken bir hata oluştu.")
+      if (response.ok && data.location) {
+        setCoord({ coordinates: { lat: data.location.lat, lng: data.location.lng } })
+        toast.info("Adres haritada bulundu ve işaretlendi.")
+      } else {
+        console.error('Geocoding Başarısız:', data)
+        const errorMessage = data.details === 'ZERO_RESULTS'
+          ? "Bu adres için haritada sonuç bulunamadı."
+          : `Harita Hatası: ${data.error || 'Bilinmeyen bir sorun oluştu.'}`
       }
+    } catch (error) {
+      console.error('Geocoding request error:', error)
+      toast.error("Harita servisine bağlanırken bir hata oluştu.")
     }
-    const timer = setTimeout(() => {
-      geocodeAddress()
-    }, 500)
-    return () => clearTimeout(timer)
+  }
 
-  }, [properties.location.neighborhood])
+  const handleNeighborhoodInputChange = (value: string) => {
+    setProperties({...properties, location: {...properties.location, neighborhood: value}})
+    geocodeAddress()
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -461,6 +515,18 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
           ...prev,
           images: arrayMove(prev.images, oldIndex, newIndex),
         }
+      })
+
+      setProperties(prev => {
+        const oldIndex = prev.images.findIndex(url => url === active.id)
+        const newIndex = prev.images.findIndex(url => url === over.id)
+        if (oldIndex !== -1 && newIndex !== -1) {
+          return {
+            ...prev,
+            images: arrayMove(prev.images, oldIndex, newIndex),
+          }
+        }
+        return prev
       })
     }
   }
@@ -822,7 +888,7 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
 
         <div className="space-y-2">
           <Label htmlFor="district">İlçe *</Label>
-          <Select value={properties.location.district} onValueChange={(value) => handleInputChange('location.district', value)} disabled={!properties.location.district}>
+          <Select value={properties.location.district} onValueChange={(value) => handleInputChange('location.district', value)} disabled={!properties.location.city}>
             <SelectTrigger>
               <SelectValue placeholder="İlçe seçin" />
             </SelectTrigger>
@@ -836,7 +902,7 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
 
         <div className="space-y-2">
           <Label htmlFor="neighborhood">Mahalle</Label>
-          <Select value={properties.location.neighborhood} onValueChange={(value) => handleInputChange('location.neighborhood', value)} disabled={!properties.location.district}>
+          <Select value={properties.location.neighborhood} onValueChange={(value) => handleNeighborhoodInputChange(value)} disabled={!properties.location.district}>
             <SelectTrigger>
               <SelectValue placeholder="Mahalle seçin" />
             </SelectTrigger>
@@ -859,8 +925,10 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
         <CardContent>
           <div className="bg-gray-100 h-180 rounded-lg flex items-center justify-center">
             <MapPicker
-              center={{ lat: properties.location.geo.coordinates[1], lng: properties.location.geo.coordinates[0] }}
-              onLocationChange={(coords) => handleInputChange('location.geo.coordinates', coords)}
+              center={coord.coordinates.lat === 0
+                ? { lat: properties.location.geo.coordinates[1], lng: properties.location.geo.coordinates[0] }
+                : coord.coordinates}
+              onLocationChange={(coords) => setCoord({ ...coord, coordinates: coords })}
             />
           </div>
         </CardContent>
@@ -960,10 +1028,10 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
         </CardContent>
       </Card>
 
-      {properties.images.length > 0 && (
+      {images.images.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Yüklenen Fotoğraflar ({properties.images.length})</CardTitle>
+            <CardTitle>Yüklenecek Fotoğraflar ({images.images.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <DndContext
@@ -978,6 +1046,32 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {images.images.map((image) => (
                     <SortableImageItem key={image.id} id={image.id} image={image} onRemove={handleImageRemove} />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          </CardContent>
+        </Card>
+      )}
+
+      {properties.images.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Yüklenen Fotoğraflar ({properties.images.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={properties.images.map(i => i)}
+                strategy={rectSortingStrategy}
+              >
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {properties.images.map((image) => (
+                    <SortableUrlImageItem key={image} id={image} image={image} onRemove={handleExistingImageRemove} />
                   ))}
                 </div>
               </SortableContext>
