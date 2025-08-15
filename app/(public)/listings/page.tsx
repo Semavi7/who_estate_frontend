@@ -16,13 +16,13 @@ import api from "@/lib/axios";
 
 export default function PropertyListings() {
   const [filters, setFilters] = useState({
-    location: "",
-    type: "all",
-    category: "all",
-    bedrooms: "all",
+    city: "",
+    listingType: "",
+    subType: "",
+    numberOfRoom: "",
     priceRange: [0, 50000000],
     areaRange: [0, 1000],
-    age: "all",
+    buildingAge: "all",
     floor: ""
   });
   const [properties, setProperties] = useState<PropertyGetData[]>([])
@@ -30,22 +30,21 @@ export default function PropertyListings() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
 
-  const applyFilters = () => {
-    let filtered = properties.filter(property => {
-      if (filters.location && !property.location.city.toLowerCase().includes(filters.location.toLowerCase())) return false;
-      if (filters.type !== "all" && property.propertyType !== filters.type) return false;
-      if (filters.category !== "all" && property.listingType !== filters.category) return false;
-      if (filters.bedrooms !== "all" && property.numberOfRoom.toString() !== filters.bedrooms) return false;
+  const applyFilters = async () => {
+    try {
+      const queryParams = new URLSearchParams()
 
-      // const price = parseInt(property.price.replace(/[^\d]/g, ''));
-      if (property.price < filters.priceRange[0] || property.price > filters.priceRange[1]) return false;
+      if(filters.city) queryParams.append('city', filters.city)
+      if(filters.numberOfRoom) queryParams.append('numberOfRoom', filters.numberOfRoom)
 
-      if (property.net < filters.areaRange[0] || property.net > filters.areaRange[1]) return false;
+      const res = await api.get(`/properties/query?${queryParams.toString()}`)
+      setFilteredProperties(res.data)
+      if(res.data.length === 0) toast.info('Bu kriterlere uygun ilan bulunamadı.')        
+    } catch (error) {
+      toast.error('Filtreleme sırasında bir hata oluştu.')
+    }
 
-      return true;
-    });
-
-    setFilteredProperties(filtered);
+    
   };
 
   const fetchProperties = async () => {
@@ -144,10 +143,10 @@ export default function PropertyListings() {
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Şehir, ilçe ara..."
+                    placeholder="Şehir ara..."
                     className="pl-10"
-                    value={filters.location}
-                    onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+                    value={filters.city}
+                    onChange={(e) => setFilters({ ...filters, city: e.target.value })}
                   />
                 </div>
               </div>
@@ -155,14 +154,13 @@ export default function PropertyListings() {
               {/* Property Type */}
               <div className="space-y-2">
                 <label className="text-sm text-gray-600">İlan Tipi</label>
-                <Select value={filters.type} onValueChange={(value) => setFilters({ ...filters, type: value })}>
+                <Select value={filters.listingType} onValueChange={(value) => setFilters({ ...filters, listingType: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Tümü" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tümü</SelectItem>
-                    <SelectItem value="satilik">Satılık</SelectItem>
-                    <SelectItem value="kiralik">Kiralık</SelectItem>
+                    <SelectItem value="Satilik">Satılık</SelectItem>
+                    <SelectItem value="Kiralik">Kiralık</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -170,12 +168,11 @@ export default function PropertyListings() {
               {/* Property Category */}
               <div className="space-y-2">
                 <label className="text-sm text-gray-600">Emlak Tipi</label>
-                <Select value={filters.category} onValueChange={(value) => setFilters({ ...filters, category: value })}>
+                <Select value={filters.subType} onValueChange={(value) => setFilters({ ...filters, subType: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Tümü" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tümü</SelectItem>
                     <SelectItem value="daire">Daire</SelectItem>
                     <SelectItem value="villa">Villa</SelectItem>
                     <SelectItem value="ofis">Ofis</SelectItem>
@@ -187,17 +184,16 @@ export default function PropertyListings() {
               {/* Bedrooms */}
               <div className="space-y-2">
                 <label className="text-sm text-gray-600">Oda Sayısı</label>
-                <Select value={filters.bedrooms} onValueChange={(value) => setFilters({ ...filters, bedrooms: value })}>
+                <Select value={filters.numberOfRoom} onValueChange={(value) => setFilters({ ...filters, numberOfRoom: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Farketmez" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Farketmez</SelectItem>
-                    <SelectItem value="1">1+0</SelectItem>
-                    <SelectItem value="2">2+1</SelectItem>
-                    <SelectItem value="3">3+1</SelectItem>
-                    <SelectItem value="4">4+1</SelectItem>
-                    <SelectItem value="5">5+1</SelectItem>
+                    <SelectItem value="1+1">1+1</SelectItem>
+                    <SelectItem value="2+1">2+1</SelectItem>
+                    <SelectItem value="3+1">3+1</SelectItem>
+                    <SelectItem value="4+1">4+1</SelectItem>
+                    <SelectItem value="5+1">5+1</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -237,17 +233,16 @@ export default function PropertyListings() {
               {/* Building Age */}
               <div className="space-y-2">
                 <label className="text-sm text-gray-600">Bina Yaşı</label>
-                <Select value={filters.age} onValueChange={(value) => setFilters({ ...filters, age: value })}>
+                <Select value={filters.buildingAge} onValueChange={(value) => setFilters({ ...filters, buildingAge: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Farketmez" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Farketmez</SelectItem>
-                    <SelectItem value="0-2">0-2 Yaş</SelectItem>
-                    <SelectItem value="3-5">3-5 Yaş</SelectItem>
-                    <SelectItem value="6-10">6-10 Yaş</SelectItem>
-                    <SelectItem value="11-15">11-15 Yaş</SelectItem>
-                    <SelectItem value="16+">16+ Yaş</SelectItem>
+                    <SelectItem value="1">1 Yaş</SelectItem>
+                    <SelectItem value="2">2 Yaş</SelectItem>
+                    <SelectItem value="3">3 Yaş</SelectItem>
+                    <SelectItem value="4">4 Yaş</SelectItem>
+                    <SelectItem value="5">5 Yaş</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
