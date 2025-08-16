@@ -1,6 +1,5 @@
 'use client'
-import { useState, useEffect, use, useRef } from "react"
-import { Descendant, Span } from "slate"
+import { useState, useEffect, use } from "react"
 import {
   DndContext,
   closestCenter,
@@ -145,7 +144,6 @@ function SortableUrlImageItem({ id, image, onRemove }: { id: string; image: stri
 
 export default function EditPropertyPage({ params }: EditPropertyPageProps) {
   const router = useRouter()
-  const isInitialMount = useRef(true)
   const { id } = use(params)
   const [cities, setCities] = useState<City[]>([])
   const [districtsAndNeighborhoods, setDistrictsAndNeighborhoods] = useState<Record<string, string[]>>({})
@@ -371,7 +369,6 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
 
       submitData.append('existingImageUrls', JSON.stringify(properties.images))
       await api.put(`/properties/${id}`, submitData)
-      console.log("Form data to submit:", dataForApi)
       toast.success("İlan başarıyla güncellendi", { id: toastId })
 
       router.push('/admin/properties')
@@ -812,11 +809,11 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectValue placeholder="Isıtma tipini seçin" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="merkezi">Merkezi Sistem</SelectItem>
-              <SelectItem value="kombi">Kombi</SelectItem>
-              <SelectItem value="klima">Klima</SelectItem>
-              <SelectItem value="soba">Soba</SelectItem>
-              <SelectItem value="yok">Yok</SelectItem>
+              <SelectItem value="Merkezi Sistem">Merkezi Sistem</SelectItem>
+              <SelectItem value="Kombi">Kombi</SelectItem>
+              <SelectItem value="Klima">Klima</SelectItem>
+              <SelectItem value="Soba">Soba</SelectItem>
+              <SelectItem value="Yok">Yok</SelectItem>
             </SelectContent>
           </Select>
         </div>

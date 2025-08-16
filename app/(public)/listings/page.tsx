@@ -1,69 +1,151 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Search, MapPin, Bath, Square, Filter, Heart, Camera, HousePlus, CalendarClock } from "lucide-react";
+import { Search, MapPin, Square, Filter, HousePlus, CalendarClock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ImageWithFallback } from "@/components/figma/ImageWithFallback";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import Link from "next/link";
 import PropertyGetData from "@/dto/getproperty.dto";
 import { toast } from "sonner";
 import api from "@/lib/axios";
+import { Label } from "@/components/ui/label";
+import { useSearchParams } from "next/navigation";
 
+interface City {
+  code: string
+  name: string
+}
 
 export default function PropertyListings() {
+  const searchParams = useSearchParams()
   const [filters, setFilters] = useState({
-    city: "",
-    listingType: "",
-    subType: "",
+    city: searchParams.get('city') || "",
+    district: "",
+    neighborhood: "",
+    propertyType: "",
+    listingType: searchParams.get('listingType') || "",
+    subType: searchParams.get('subType') || "",
     numberOfRoom: "",
-    priceRange: [0, 50000000],
-    areaRange: [0, 1000],
-    buildingAge: "all",
+    minPrice:"",
+    maxPrice:"",
+    minNet: "",
+    maxNet:"",
+    buildingAge: "",
     floor: ""
   });
   const [properties, setProperties] = useState<PropertyGetData[]>([])
-  const [filteredProperties, setFilteredProperties] = useState(properties);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [filteredProperties, setFilteredProperties] = useState(properties)
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const [cities, setCities] = useState<City[]>([])
+  const [districtsAndNeighborhoods, setDistrictsAndNeighborhoods] = useState<Record<string, string[]>>({})
+  const [sortedAndFilteredProperties, setSortedAndFilteredProperties] = useState<PropertyGetData[]>([])
+  const [sortBy, setSortBy] = useState("newest")
 
 
   const applyFilters = async () => {
     try {
       const queryParams = new URLSearchParams()
 
-      if(filters.city) queryParams.append('city', filters.city)
-      if(filters.numberOfRoom) queryParams.append('numberOfRoom', filters.numberOfRoom)
+      if (filters.city) queryParams.append('city', filters.city)
+      if (filters.district) queryParams.append('district', filters.district)
+      if (filters.neighborhood) queryParams.append('neighborhood', filters.neighborhood)
+      if (filters.numberOfRoom) queryParams.append('numberOfRoom', filters.numberOfRoom)
+      if (filters.maxPrice) queryParams.append('maxPrice', filters.maxPrice)
+      if (filters.minPrice) queryParams.append('minPrice', filters.minPrice)
+      if (filters.maxNet) queryParams.append('maxNet', filters.maxNet)
+      if (filters.minNet) queryParams.append('minNet', filters.minNet)
+      if (filters.buildingAge) queryParams.append('buildingAge', filters.buildingAge)
+      if (filters.floor) queryParams.append('floor', filters.floor)
 
       const res = await api.get(`/properties/query?${queryParams.toString()}`)
       setFilteredProperties(res.data)
-      if(res.data.length === 0) toast.info('Bu kriterlere uygun ilan bulunamadı.')        
+      if (res.data.length === 0) toast.info('Bu kriterlere uygun ilan bulunamadı.')
     } catch (error) {
       toast.error('Filtreleme sırasında bir hata oluştu.')
     }
 
-    
+
   };
 
   const fetchProperties = async () => {
     try {
       const res = await api.get('/properties')
       setProperties(res.data)
-      console.log('res.data', res.data)
+      setFilteredProperties(res.data)
     } catch (error) {
       toast.error("Veri alınırken bir hata oluştu.")
     }
   }
 
   useEffect(() => {
-    fetchProperties()
+    const fetchAdressInCities = async () => {
+      try {
+        const res = await api.get('/properties/adress')
+        setCities(res.data)
+      } catch (error) {
+
+      }
+    }
+    fetchAdressInCities()
   }, [])
 
   useEffect(() => {
-  setFilteredProperties(properties);
-}, [properties])
+    if (!filters.city) return
+
+    const fetchDistricts = async () => {
+      const selectedCity = cities.find(c => c.name === filters.city)
+      if (!selectedCity) return
+      try {
+        const res = await api.get(`/properties/adress/${selectedCity.code}`)
+        setDistrictsAndNeighborhoods(res.data)
+      } catch (error) {
+        console.error("İlçe verileri çekilirken hata oluştu:", error)
+        toast.error("İlçe verileri yüklenemedi.")
+        setDistrictsAndNeighborhoods({})
+      }
+    }
+    fetchDistricts()
+  }, [filters.city, cities])
+
+  useEffect(() => {
+    const hasSearchParams = Array.from(searchParams.keys()).length > 0
+    if(hasSearchParams){
+      applyFilters()
+    }
+    else{
+      fetchProperties()
+    }
+  }, [])
+
+  useEffect(() => {
+  let sortedProperties = [...filteredProperties]
+  switch (sortBy) {
+    case 'newest':
+      sortedProperties.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      break
+    case 'oldest':
+      sortedProperties.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      break
+    case 'price-low':
+      sortedProperties.sort((a, b) => a.price - b.price)
+      break
+    case 'price-high':
+      sortedProperties.sort((a, b) => b.price - a.price)
+      break
+    case 'area-small':
+      sortedProperties.sort((a, b) => a.net - b.net)
+      break
+    case 'area-large':
+      sortedProperties.sort((a, b) => b.net - a.net)
+      break
+    default:
+      break
+  }
+  setSortedAndFilteredProperties(sortedProperties)
+}, [sortBy, filteredProperties])
 
   const PropertyCard = ({ property }: { property: PropertyGetData }) => (
     <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
@@ -84,7 +166,7 @@ export default function PropertyListings() {
       </div>
 
       <CardContent className="p-4">
-        <div className="text-2xl text-primary mb-2">{property.price}</div>
+        <div className="text-2xl text-primary mb-2">{property.price.toLocaleString('tr-TR')}₺</div>
         <h3 className="text-lg mb-2 line-clamp-1">{property.title}</h3>
         <div className="flex items-center text-gray-600 mb-3">
           <MapPin className="h-4 w-4 mr-1" />
@@ -139,19 +221,68 @@ export default function PropertyListings() {
 
               {/* Location */}
               <div className="space-y-2">
-                <label className="text-sm text-gray-600">İl/İlçe</label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Şehir ara..."
-                    className="pl-10"
-                    value={filters.city}
-                    onChange={(e) => setFilters({ ...filters, city: e.target.value })}
-                  />
-                </div>
+                <Label htmlFor="city">İl</Label>
+                <Select value={filters.city} onValueChange={(value) => setFilters({ ...filters, city: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="İl seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cities.map((citiy) => (
+                      <SelectItem key={citiy.code} value={citiy.name}>
+                        {citiy.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="district">İlçe</Label>
+                <Select value={filters.district} onValueChange={(value) => setFilters({ ...filters, district: value })} disabled={!filters.city}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="İlçe seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(districtsAndNeighborhoods).map(district => (
+                      <SelectItem key={district} value={district}>{district}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="neighborhood">Mahalle</Label>
+                <Select value={filters.neighborhood} onValueChange={(value) => setFilters({ ...filters, neighborhood: value })} disabled={!filters.district}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Mahalle seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filters.district && districtsAndNeighborhoods[filters.district]?.map(neighborhood => (
+                      <SelectItem key={neighborhood} value={neighborhood}>{neighborhood}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Property Type */}
+
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600">Kategori Tipi</label>
+                <Select value={filters.subType} onValueChange={(value) => setFilters({ ...filters, propertyType: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Tümü" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Konut">Konut</SelectItem>
+                    <SelectItem value="İş Yeri">İş Yeri</SelectItem>
+                    <SelectItem value="Arsa">Arsa</SelectItem>
+                    <SelectItem value="Bina">Bina</SelectItem>
+                    <SelectItem value="Devre Mülk">Devre Mülk</SelectItem>
+                    <SelectItem value="Turistik Tesis">Turistik Tesis</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <label className="text-sm text-gray-600">İlan Tipi</label>
                 <Select value={filters.listingType} onValueChange={(value) => setFilters({ ...filters, listingType: value })}>
@@ -161,6 +292,12 @@ export default function PropertyListings() {
                   <SelectContent>
                     <SelectItem value="Satilik">Satılık</SelectItem>
                     <SelectItem value="Kiralik">Kiralık</SelectItem>
+                    <SelectItem value="Turistik Günlük Kiralık">Turistik Günlük Kiralık</SelectItem>
+                    <SelectItem value="Devren Satılık Konut">Devren Satılık Konut</SelectItem>
+                    <SelectItem value="Devren Satılık">Devren Satılık</SelectItem>
+                    <SelectItem value="Devren Kiralık">Devren Kiralık</SelectItem>
+                    <SelectItem value="Devren Kiralık">Devren Kiralık</SelectItem>
+                    <SelectItem value="Kat Karşılığı Satılık">Kat Karşılığı Satılık</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -173,10 +310,10 @@ export default function PropertyListings() {
                     <SelectValue placeholder="Tümü" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="daire">Daire</SelectItem>
-                    <SelectItem value="villa">Villa</SelectItem>
-                    <SelectItem value="ofis">Ofis</SelectItem>
-                    <SelectItem value="dukkkan">Dükkan</SelectItem>
+                    <SelectItem value="Daire">Daire</SelectItem>
+                    <SelectItem value="Villa">Villa</SelectItem>
+                    <SelectItem value="Ofis">Ofis</SelectItem>
+                    <SelectItem value="Dükkkan">Dükkan</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -189,69 +326,85 @@ export default function PropertyListings() {
                     <SelectValue placeholder="Farketmez" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="1+0">1+0</SelectItem>
                     <SelectItem value="1+1">1+1</SelectItem>
                     <SelectItem value="2+1">2+1</SelectItem>
                     <SelectItem value="3+1">3+1</SelectItem>
                     <SelectItem value="4+1">4+1</SelectItem>
+                    <SelectItem value="4+2">4+2</SelectItem>
                     <SelectItem value="5+1">5+1</SelectItem>
+                    <SelectItem value="5+2">5+2</SelectItem>
+                    <SelectItem value="6+1">6+1</SelectItem>
+                    <SelectItem value="6+2">6+2</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Price Range */}
-              <div className="space-y-3">
-                <label className="text-sm text-gray-600">Fiyat Aralığı (₺)</label>
-                <Slider
-                  value={filters.priceRange}
-                  onValueChange={(value: number[]) => setFilters({ ...filters, priceRange: value })}
-                  max={50000000}
-                  step={100000}
-                  className="w-full"
+
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600">Max Fiyat</label>
+                <Input
+                  value={Number(filters.maxPrice).toLocaleString('tr-TR')}
+                  onChange={(e) => {
+                    const unformattedValue = e.target.value.replace(/\./g, '')
+                    setFilters({ ...filters, maxPrice: unformattedValue })
+                  }}
                 />
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>{filters.priceRange[0].toLocaleString('tr-TR')} ₺</span>
-                  <span>{filters.priceRange[1].toLocaleString('tr-TR')} ₺</span>
-                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600">Min Fiyat</label>
+                <Input
+                  value={Number(filters.minPrice).toLocaleString('tr-TR')}
+                  onChange={(e) => {
+                    const unformattedValue = e.target.value.replace(/\./g, '')
+                    setFilters({ ...filters, minPrice: unformattedValue })
+                  }}
+                />
               </div>
 
               {/* Area Range */}
-              <div className="space-y-3">
-                <label className="text-sm text-gray-600">Net Metrekare</label>
-                <Slider
-                  value={filters.areaRange}
-                  onValueChange={(value: number[]) => setFilters({ ...filters, areaRange: value })}
-                  max={1000}
-                  step={10}
-                  className="w-full"
+
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600">Max Net</label>
+                <Input
+                  placeholder="örn: 100"
+                  value={filters.maxNet}
+                  onChange={(e) => {
+                    setFilters({ ...filters, maxNet: e.target.value })
+                  }}
                 />
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>{filters.areaRange[0]} m²</span>
-                  <span>{filters.areaRange[1]} m²</span>
-                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600">Min Net</label>
+                <Input
+                  placeholder="örn: 0"
+                  value={filters.minNet}
+                  onChange={(e) => {
+                    setFilters({ ...filters, minNet: e.target.value })
+                  }}
+                />
               </div>
 
               {/* Building Age */}
               <div className="space-y-2">
                 <label className="text-sm text-gray-600">Bina Yaşı</label>
-                <Select value={filters.buildingAge} onValueChange={(value) => setFilters({ ...filters, buildingAge: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Farketmez" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 Yaş</SelectItem>
-                    <SelectItem value="2">2 Yaş</SelectItem>
-                    <SelectItem value="3">3 Yaş</SelectItem>
-                    <SelectItem value="4">4 Yaş</SelectItem>
-                    <SelectItem value="5">5 Yaş</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  placeholder="örn: 0"
+                  value={filters.buildingAge}
+                  onChange={(e) => {
+                    setFilters({ ...filters, buildingAge: e.target.value })
+                  }}
+                />
               </div>
 
               {/* Floor */}
               <div className="space-y-2">
                 <label className="text-sm text-gray-600">Bulunduğu Kat</label>
                 <Input
-                  placeholder="örn: 3, Zemin, Villa"
+                  placeholder="örn: 3"
                   value={filters.floor}
                   onChange={(e) => setFilters({ ...filters, floor: e.target.value })}
                 />
@@ -270,9 +423,9 @@ export default function PropertyListings() {
               <p className="text-gray-600">
                 {filteredProperties.length} ilan bulundu
               </p>
-              <Select>
+              <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Sıralama" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="newest">En Yeni</SelectItem>
@@ -286,12 +439,12 @@ export default function PropertyListings() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredProperties.map(property => (
+              {sortedAndFilteredProperties.map(property => (
                 <PropertyCard key={property._id} property={property} />
               ))}
             </div>
 
-            {filteredProperties.length === 0 && (
+            {sortedAndFilteredProperties.length === 0 && (
               <div className="text-center py-12">
                 <div className="text-gray-400 mb-4">
                   <Search className="h-16 w-16 mx-auto" />

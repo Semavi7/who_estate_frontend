@@ -1,3 +1,5 @@
+'use client'
+import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import {
@@ -8,14 +10,48 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Search, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import api from "@/lib/axios";
 
 interface HeroSectionProps {
   showContent?: boolean;
 }
 
+interface City {
+  code: string
+  name: string
+}
+
 export default function HeroSection({
   showContent = true,
 }: HeroSectionProps) {
+  const router = useRouter()
+  const [location, setLocation] = useState("")
+  const [listingType, setListingType] = useState("")
+  const [propertyType, setPropertyType] = useState("")
+  const [cities, setCities] = useState<City[]>([])
+
+  useEffect(() => {
+    const fetchAdressInCities = async () => {
+      try {
+        const res = await api.get('/properties/adress')
+        setCities(res.data)
+      } catch (error) {
+
+      }
+    }
+    fetchAdressInCities()
+  }, [])
+
+  const handleSearch = () => {
+    const queryParams = new URLSearchParams()
+
+    if (location) queryParams.append("city", location)
+    if (listingType) queryParams.append("listingType", listingType)
+    if (propertyType) queryParams.append("subType", propertyType)
+
+    router.push(`/listings?${queryParams.toString()}`)
+  }
   return (
     <section
       className="hero-background relative min-h-screen bg-cover bg-center bg-no-repeat pt-16 md:pt-24"
@@ -63,30 +99,35 @@ export default function HeroSection({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               <div className="space-y-2 md:col-span-1">
                 <label className="text-sm text-gray-600">
-                  İl/İlçe
+                  İl
                 </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Şehir seçin"
-                    className="pl-10 border-gray-200 focus:border-primary h-10"
-                  />
-                </div>
+                <Select value={location} onValueChange={setLocation}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="İl seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cities.map((citiy) => (
+                      <SelectItem key={citiy.code} value={citiy.name}>
+                        {citiy.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2 md:col-span-1">
                 <label className="text-sm text-gray-600">
                   İlan Tipi
                 </label>
-                <Select>
+                <Select onValueChange={setListingType} value={listingType}>
                   <SelectTrigger className="border-gray-200 focus:border-primary h-10">
                     <SelectValue placeholder="Satılık/Kiralık" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="satilik">
+                    <SelectItem value="Satilik">
                       Satılık
                     </SelectItem>
-                    <SelectItem value="kiralik">
+                    <SelectItem value="Kiralik">
                       Kiralık
                     </SelectItem>
                   </SelectContent>
@@ -97,15 +138,15 @@ export default function HeroSection({
                 <label className="text-sm text-gray-600">
                   Emlak Tipi
                 </label>
-                <Select>
+                <Select onValueChange={setPropertyType} value={propertyType}>
                   <SelectTrigger className="border-gray-200 focus:border-primary h-10">
                     <SelectValue placeholder="Konut/İşyeri" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="daire">Daire</SelectItem>
-                    <SelectItem value="villa">Villa</SelectItem>
-                    <SelectItem value="ofis">Ofis</SelectItem>
-                    <SelectItem value="dukkkan">
+                    <SelectItem value="Daire">Daire</SelectItem>
+                    <SelectItem value="Villa">Villa</SelectItem>
+                    <SelectItem value="Ofis">Ofis</SelectItem>
+                    <SelectItem value="Dükkkan">
                       Dükkan
                     </SelectItem>
                   </SelectContent>
@@ -116,7 +157,9 @@ export default function HeroSection({
                 <label className="text-sm text-gray-600 lg:invisible">
                   Ara
                 </label>
-                <Button className="w-full h-10 bg-primary hover:bg-primary/90">
+                <Button className="w-full h-10 bg-primary hover:bg-primary/90"
+                onClick={handleSearch}
+                >
                   <Search className="h-4 w-4 mr-2" />
                   Ara
                 </Button>
@@ -128,16 +171,16 @@ export default function HeroSection({
                 Popüler Aramalar:
               </span>
               <button className="text-sm text-primary hover:text-primary/80 transition-colors">
-                Beşiktaş Kiralık
+                Ankara Kiralık
               </button>
               <button className="text-sm text-primary hover:text-primary/80 transition-colors">
-                Kadıköy Satılık
+                İzmir Satılık
               </button>
               <button className="text-sm text-primary hover:text-primary/80 transition-colors">
-                Şişli Daire
+                Bursa Daire
               </button>
               <button className="text-sm text-primary hover:text-primary/80 transition-colors">
-                Bakırköy Villa
+                Antalya Villa
               </button>
             </div>
           </div>

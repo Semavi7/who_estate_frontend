@@ -93,7 +93,7 @@ export default function Header({ showHeader = true }: HeaderProps) {
             <div
               className="flex items-center space-x-4 animate-cta"
             >
-              <Link href="admin/dashboard">
+              <Link href="/admin/dashboard">
                 <Button className="hidden md:inline-flex">
                   Yönetim Paneli
                 </Button>
@@ -119,7 +119,7 @@ export default function Header({ showHeader = true }: HeaderProps) {
               <Link className="text-foreground hover:text-primary transition-colors" href={'/contact'}>İletişim</Link>
               <div className="pt-4 border-t border-gray-200 space-y-2">
                 <Button onClick={handleLoginClick} variant="outline" className="w-full">Giriş Yap</Button>
-                <Link href="admin/dashboard" className="w-full">
+                <Link href="/admin/dashboard" className="w-full">
                   <Button className="w-full">Yönetim Paneli</Button>
                 </Link>
               </div>

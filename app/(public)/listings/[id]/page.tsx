@@ -1,125 +1,82 @@
 'use client'
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
 import { Separator } from "../../../../components/ui/separator";
 import { Input } from "../../../../components/ui/input";
 import { Textarea } from "../../../../components/ui/textarea";
-import { 
-  ArrowLeft, 
-  MapPin, 
-  Bed, 
-  Bath, 
-  Square, 
-  Calendar, 
-  Car, 
-  ArrowUpDown, 
-  Phone, 
-  Mail, 
+import {
+  ArrowLeft,
+  MapPin,
+  Bed,
+  Bath,
+  Square,
+  Calendar,
+  Car,
+  ArrowUpDown,
+  Phone,
+  Mail,
   Heart,
   Share2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Check
 } from "lucide-react";
 import { ImageWithFallback } from "../../../../components/figma/ImageWithFallback";
 import Link from "next/link";
+import PropertyGetData from "@/dto/getproperty.dto";
+import api from "@/lib/axios";
+import { RichTextRenderer } from "@/components/ui/rich-text-renderer";
+import { GoogleMap, MarkerF, useLoadScript } from "@react-google-maps/api";
+import { toast } from "sonner";
 
-interface PropertyDetailPageProps {
-  propertyId?: number;
-  onNavigate?: (page: string) => void;
+interface EditPropertyPageProps {
+  params: Promise<{ id: string }>
 }
+const libraries: ('places' | 'drawing' | 'geometry' | 'visualization')[] = ['places']
 
-interface Property {
-  id: number;
-  title: string;
-  price: number;
-  location: string;
-  type: "konut" | "isyeri" | "arsa";
-  listingType: "satilik" | "kiralik";
-  category: string;
-  grossArea: number;
-  netArea: number;
-  rooms: string;
-  buildingAge: string;
-  floor: string;
-  totalFloors: string;
-  bathrooms: string;
-  heating: string;
-  elevator: string;
-  parking: string;
-  description: string;
-  address: string;
-  features: string[];
-  images: string[];
-  agent: {
-    name: string;
-    phone: string;
-    email: string;
-  };
-}
-
-export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyDetailPageProps) {
-  const [property, setProperty] = useState<Property | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+export default function PropertyDetailPage({ params }: EditPropertyPageProps) {
+  const { id } = use(params)
+  const [property, setProperty] = useState<PropertyGetData | null>(null)
+  const [allFeatures, setAllFeatures] = useState<Record<string, string[]>>({})
+  const [loading, setLoading] = useState(true)
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [contactForm, setContactForm] = useState({
     name: "",
     phone: "",
     email: "",
     message: ""
-  });
+  })
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+    libraries,
+  })
 
-  // Mock data - in real app this would come from API
   useEffect(() => {
-    const loadProperty = async () => {
-      setTimeout(() => {
-        const mockProperty: Property = {
-          id: propertyId || 1,
-          title: "Deniz Manzaralı Lüks Villa",
-          price: 2500000,
-          location: "Beşiktaş, İstanbul",
-          type: "konut",
-          listingType: "satilik",
-          category: "Villa",
-          grossArea: 350,
-          netArea: 300,
-          rooms: "4+2",
-          buildingAge: "1-5",
-          floor: "3",
-          totalFloors: "3",
-          bathrooms: "3",
-          heating: "Merkezi Sistem",
-          elevator: "Yok",
-          parking: "Kapalı Otopark",
-          description: "Muhteşem deniz manzaralı, modern donanımlı villa. Özel bahçe ve havuz mevcut. Beşiktaş'ın en prestijli semtinde, denize sıfır konumda. Tüm odalar deniz manzaralı olup, geniş terasları mevcuttur. Ankastre mutfak, klima, güvenlik sistemi gibi tüm modern konforlar bulunmaktadır.",
-          address: "Bebek Mahallesi, Deniz Caddesi No: 15, Beşiktaş/İstanbul",
-          features: [
-            "Deniz Manzarası", "Güney Cephe", "Havuz", "Bahçe", 
-            "Ankastre Mutfak", "Klima", "Güvenlik", "Teras",
-            "Kapıcı", "Sosyal Tesis", "Spor Salonu"
-          ],
-          images: [
-            "https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-          ],
-          agent: {
-            name: "Ahmet Yılmaz",
-            phone: "+90 (532) 123 4567",
-            email: "ahmet@emlakpro.com"
-          }
-        };
+    const loadProperty = async (id: string) => {
+      try {
+        const res = await api.get(`/properties/${id}`)
+        setProperty(res.data)
+      } catch (error) {
+        toast.error("İlan çekilirken hata oluştu")
+      } finally {
+        setLoading(false)
+      }
+    }
 
-        setProperty(mockProperty);
-        setLoading(false);
-      }, 1000);
-    };
+    const loadAllFeatures = async () => {
+      try {
+        const res = await api.get('/feature-options')
+        setAllFeatures(res.data)
+      } catch (error) {
+        toast.error("Kategoriler çekilirken hata oluştu")
+      }
+    }
 
-    loadProperty();
-  }, [propertyId]);
+    loadProperty(id)
+    loadAllFeatures()
+  }, [id]);
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,12 +92,18 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
 
   const getTypeBadge = (type: string) => {
     switch (type) {
-      case 'konut':
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700">Konut</Badge>;
-      case 'isyeri':
-        return <Badge variant="outline" className="bg-purple-50 text-purple-700">İşyeri</Badge>;
-      case 'arsa':
-        return <Badge variant="outline" className="bg-orange-50 text-orange-700">Arsa</Badge>;
+      case 'Konut':
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700">Konut</Badge>
+      case 'İşyeri':
+        return <Badge variant="outline" className="bg-purple-50 text-purple-700">İşyeri</Badge>
+      case 'Arsa':
+        return <Badge variant="outline" className="bg-orange-50 text-emerald-700">Arsa</Badge>
+      case 'Bina':
+        return <Badge variant="outline" className="bg-orange-50 text-orange-700">Bina</Badge>
+      case 'Devre Mülk':
+        return <Badge variant="outline" className="bg-orange-50 text-orange-700">Devre Mülk</Badge>
+      case 'Turistik Tesis':
+        return <Badge variant="outline" className="bg-orange-50 text-shadow-amber-700">Turistik Tesis</Badge>
       default:
         return <Badge variant="outline">Bilinmiyor</Badge>;
     }
@@ -148,7 +111,7 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
 
   const nextImage = () => {
     if (property) {
-      setSelectedImageIndex((prev) => 
+      setSelectedImageIndex((prev) =>
         prev === property.images.length - 1 ? 0 : prev + 1
       );
     }
@@ -156,7 +119,7 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
 
   const prevImage = () => {
     if (property) {
-      setSelectedImageIndex((prev) => 
+      setSelectedImageIndex((prev) =>
         prev === 0 ? property.images.length - 1 : prev - 1
       );
     }
@@ -225,7 +188,7 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  
+
                   {/* Image Navigation */}
                   {property.images.length > 1 && (
                     <>
@@ -243,20 +206,10 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
                       </button>
                     </>
                   )}
-                  
+
                   {/* Image Counter */}
                   <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
                     {selectedImageIndex + 1} / {property.images.length}
-                  </div>
-                  
-                  {/* Action Buttons */}
-                  <div className="absolute top-4 right-4 flex space-x-2">
-                    <Button variant="outline" size="sm" className="bg-white/80 hover:bg-white">
-                      <Heart className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" className="bg-white/80 hover:bg-white">
-                      <Share2 className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
 
@@ -268,9 +221,8 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
                         <button
                           key={index}
                           onClick={() => setSelectedImageIndex(index)}
-                          className={`flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden ${
-                            selectedImageIndex === index ? 'ring-2 ring-primary' : ''
-                          }`}
+                          className={`flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden ${selectedImageIndex === index ? 'ring-2 ring-primary' : ''
+                            }`}
                         >
                           <ImageWithFallback
                             src={image}
@@ -291,19 +243,19 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
-                      {getTypeBadge(property.type)}
+                      {getTypeBadge(property.propertyType)}
                       <Badge variant="secondary" className={
-                        property.listingType === 'satilik' 
-                          ? 'bg-green-100 text-green-800' 
+                        property.listingType === 'Satilik'
+                          ? 'bg-green-100 text-green-800'
                           : 'bg-blue-100 text-blue-800'
                       }>
-                        {property.listingType === 'satilik' ? 'Satılık' : 'Kiralık'}
+                        {property.listingType}
                       </Badge>
                     </div>
                     <CardTitle className="text-2xl">{property.title}</CardTitle>
                     <div className="flex items-center text-gray-600">
                       <MapPin className="h-4 w-4 mr-1" />
-                      {property.location}
+                      {property.location.city} - {property.location.district} - {property.location.neighborhood}
                     </div>
                   </div>
                   <div className="text-right">
@@ -319,17 +271,17 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <Square className="h-6 w-6 mx-auto mb-1 text-gray-600" />
                     <div className="text-sm text-gray-600">Brüt Alan</div>
-                    <div>{property.grossArea} m²</div>
+                    <div>{property.gross} m²</div>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <Bed className="h-6 w-6 mx-auto mb-1 text-gray-600" />
                     <div className="text-sm text-gray-600">Oda Sayısı</div>
-                    <div>{property.rooms}</div>
+                    <div>{property.numberOfRoom}</div>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <Bath className="h-6 w-6 mx-auto mb-1 text-gray-600" />
                     <div className="text-sm text-gray-600">Banyo</div>
-                    <div>{property.bathrooms}</div>
+                    <div>{property.numberOfBathrooms}</div>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <Calendar className="h-6 w-6 mx-auto mb-1 text-gray-600" />
@@ -343,7 +295,9 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
                 {/* Description */}
                 <div>
                   <h3 className="text-lg mb-3">İlan Açıklaması</h3>
-                  <p className="text-gray-700 leading-relaxed">{property.description}</p>
+                  <div className="text-gray-700 leading-relaxed">
+                    <RichTextRenderer data={property.description} />
+                  </div>
                 </div>
 
                 <Separator />
@@ -352,24 +306,42 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
                 <div>
                   <h3 className="text-lg mb-3">Emlak Detayları</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Kategori:</span>
-                        <span>{property.category}</span>
+                        <span>{property.subType}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Brüt Alan:</span>
-                        <span>{property.grossArea} m²</span>
+                        <span>{property.gross} m²</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Net Alan:</span>
-                        <span>{property.netArea} m²</span>
+                        <span>{property.net} m²</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Kat:</span>
-                        <span>{property.floor} / {property.totalFloors}</span>
+                        <span className="text-gray-600"> Toplam Kat Sayısı:</span>
+                        <span>{property.numberOfFloors}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600"> Mutfak:</span>
+                        <span>{property.kitchen}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600"> Mobilyalı:</span>
+                        <span>{property.furnished}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600"> Aidat:</span>
+                        <span>{property.dues}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600"> Tapu Durumu:</span>
+                        <span>{property.titleDeedStatus}</span>
                       </div>
                     </div>
+
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Isıtma:</span>
@@ -379,7 +351,7 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
                         <span className="text-gray-600">Asansör:</span>
                         <span className="flex items-center">
                           <ArrowUpDown className="h-4 w-4 mr-1" />
-                          {property.elevator}
+                          {property.lift}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
@@ -389,6 +361,22 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
                           {property.parking}
                         </span>
                       </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Bulunduğu Kat:</span>
+                        <span>{property.floor}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600"> Balkon Sayısı:</span>
+                        <span>{property.balcony}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600"> Uygunluk Durumu:</span>
+                        <span>{property.availability}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600"> Krediye Uygunluk:</span>
+                        <span>{property.eligibleForLoan}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -397,12 +385,23 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
 
                 {/* Features */}
                 <div>
-                  <h3 className="text-lg mb-3">Özellikler</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {property.features.map((feature, index) => (
-                      <Badge key={index} variant="secondary" className="bg-blue-50 text-blue-700">
-                        {feature}
-                      </Badge>
+                  <h3 className="text-lg mb-4">Özellikler</h3>
+                  <div className="space-y-6">
+                    {Object.entries(allFeatures).map(([category, features]: any) => (
+                      <div key={category}>
+                        <h4 className="font-semibold mb-3 text-gray-800 border-b pb-2">{category}</h4>
+                        <ul className="flex flex-wrap gap-x-6 gap-y-3 pt-2">
+                          {features.map((feature: any) => {
+                            const isSelected = property.selectedFeatures[category]?.includes(feature);
+                            return (
+                              <div key={feature} className={`flex items-center text-sm ${isSelected ? 'text-gray-900' : 'text-gray-500 line-through'}`}>
+                                <Check className={`h-4 w-4 mr-2 ${isSelected ? 'text-green-500' : 'text-gray-300'}`} />
+                                <span>{feature}</span>
+                              </div>
+                            );
+                          })}
+                        </ul>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -414,8 +413,17 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
                   <h3 className="text-lg mb-3">Adres</h3>
                   <div className="flex items-start space-x-2">
                     <MapPin className="h-5 w-5 text-gray-600 mt-0.5" />
-                    <p className="text-gray-700">{property.address}</p>
+                    <p className="text-gray-700">{property.location.city} - {property.location.district} - {property.location.neighborhood}</p>
                   </div>
+                </div>
+                <div className="bg-gray-100 h-180 rounded-lg flex items-center justify-center">
+                  {!isLoaded ? <div>Harita yüklenemedi.</div> : <GoogleMap
+                    mapContainerStyle={{ width: '100%', height: '100%' }}
+                    zoom={15}
+                    center={{ lat: property.location.geo.coordinates[1], lng: property.location.geo.coordinates[0] }}
+                  >
+                    <MarkerF position={{ lat: property.location.geo.coordinates[1], lng: property.location.geo.coordinates[0] }} />
+                  </GoogleMap>}
                 </div>
               </CardContent>
             </Card>
@@ -430,18 +438,18 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <div className="text-lg">{property.agent.name}</div>
+                  <div className="text-lg"></div>
                   <div className="text-sm text-gray-600">Emlak Uzmanı</div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Phone className="h-4 w-4 text-gray-600" />
-                    <span>{property.agent.phone}</span>
+                    <span></span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Mail className="h-4 w-4 text-gray-600" />
-                    <span>{property.agent.email}</span>
+                    <span></span>
                   </div>
                 </div>
 
@@ -519,7 +527,7 @@ export default function PropertyDetailPage({ propertyId, onNavigate }: PropertyD
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>m² Başına</span>
-                    <span>{Math.round(property.price / property.grossArea).toLocaleString('tr-TR')} TL/m²</span>
+                    <span>{Math.round(property.price / property.gross).toLocaleString('tr-TR')} TL/m²</span>
                   </div>
                   <Separator />
                   <Button className="w-full" size="lg">

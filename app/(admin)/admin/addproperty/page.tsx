@@ -238,6 +238,8 @@ export default function AddPropertyPage() {
       return
     }
 
+    const toastId = toast.loading("İlan kaydediliyor...")
+
     try {
       const dataForApi: PropertySubmitData = {
         title: formData.title,
@@ -294,14 +296,12 @@ export default function AddPropertyPage() {
         submitData.append('images', imageObj.file, imageObj.file.name)
       })
 
-      toast.loading("İlan kaydediliyor...")
-      api.post('/properties', submitData)
-      console.log("Form data to submit:", dataForApi)
-      toast.success("İlan başarıyla oluşturuldu")
+      await api.post('/properties', submitData)
+      toast.success("İlan başarıyla oluşturuldu", { id: toastId })
 
       router.push('/admin/properties')
     } catch (error) {
-      toast.error("İlan oluşturulurken hata oluştu")
+      toast.error("İlan oluşturulurken hata oluştu", { id: toastId })
     }
   }
 
@@ -523,9 +523,12 @@ export default function AddPropertyPage() {
           <Label htmlFor="price">Fiyat (TL) *</Label>
           <Input
             id="price"
-            type="number"
-            value={formData.price}
-            onChange={(e) => handleInputChange('price', e.target.value)}
+            type="text"
+            value={Number(formData.price).toLocaleString('tr-TR')}
+            onChange={(e) => {
+              const unformattedValue = e.target.value.replace(/\./g, '') 
+              handleInputChange('price', unformattedValue)
+            }}
             placeholder="0"
           />
         </div>
@@ -711,11 +714,11 @@ export default function AddPropertyPage() {
               <SelectValue placeholder="Isıtma tipini seçin" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="merkezi">Merkezi Sistem</SelectItem>
-              <SelectItem value="kombi">Kombi</SelectItem>
-              <SelectItem value="klima">Klima</SelectItem>
-              <SelectItem value="soba">Soba</SelectItem>
-              <SelectItem value="yok">Yok</SelectItem>
+              <SelectItem value="Merkezi Sistem">Merkezi Sistem</SelectItem>
+              <SelectItem value="Kombi">Kombi</SelectItem>
+              <SelectItem value="Klima">Klima</SelectItem>
+              <SelectItem value="Soba">Soba</SelectItem>
+              <SelectItem value="Yok">Yok</SelectItem>
             </SelectContent>
           </Select>
         </div>
