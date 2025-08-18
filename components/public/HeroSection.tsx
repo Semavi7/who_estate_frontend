@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { Search, MapPin } from "lucide-react";
+import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "@/lib/axios";
 

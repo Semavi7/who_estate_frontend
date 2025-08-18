@@ -17,8 +17,6 @@ import {
   ArrowUpDown,
   Phone,
   Mail,
-  Heart,
-  Share2,
   ChevronLeft,
   ChevronRight,
   Check
@@ -185,7 +183,7 @@ export default function PropertyDetailPage({ params }: EditPropertyPageProps) {
                     <ImageWithFallback
                       src={property.images[selectedImageIndex]}
                       alt={property.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain object-center"
                     />
                   </div>
 

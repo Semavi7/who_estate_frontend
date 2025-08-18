@@ -485,8 +485,8 @@ export default function AddPropertyPage() {
           <div className="text-sm text-blue-900">
             <strong>Seçilen Kategori:</strong>
             <span>{formData.propertyType}</span>
-            {formData.listingType && <span> &gt {formData.listingType}</span>}
-            {formData.subType && <span> &gt {formData.subType}</span>}
+            {formData.listingType && <span> & {formData.listingType}</span>}
+            {formData.subType && <span> & {formData.subType}</span>}
           </div>
         </div>
       )}
@@ -512,7 +512,7 @@ export default function AddPropertyPage() {
             value={formData.description}
             onChange={(value) => handleInputChange('description', value)}
             placeholder="İlan detaylarını yazın..."
-            className="min-h-100"
+            className="min-h-96"
           />
           <p className="text-xs text-gray-500">
             Zengin metin düzenleyici ile formatlamalar, linkler ve resimler ekleyebilirsiniz.

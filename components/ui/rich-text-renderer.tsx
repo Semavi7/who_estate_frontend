@@ -47,16 +47,21 @@ const Leaf = ({ leaf }: { leaf: CustomText }) => {
 
 // Elementleri render eder (paragraf, liste, link vb.)
 const Element = ({ element }: { element: CustomElement }) => {
-  const style = { textAlign: element.align };
+  const style: React.CSSProperties = { textAlign: element.align };
   const children = <Serialize nodes={element.children} />;
+
+  // Boş paragraf kontrolü
+  const isEmpty = element.children.length === 1 &&
+    Text.isText(element.children[0]) &&
+    element.children[0].text === '';
 
   switch (element.type) {
     case 'bulleted-list':
-      return <ul style={style}>{children}</ul>;
+      return <ul style={style} className="my-4 ml-6 list-disc">{children}</ul>;
     case 'numbered-list':
-      return <ol style={style}>{children}</ol>;
+      return <ol style={style} className="my-4 ml-6 list-decimal">{children}</ol>;
     case 'list-item':
-      return <li>{children}</li>;
+      return <li className="mb-1">{children}</li>;
     case 'link':
       return (
         <a href={element.url} className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">
@@ -65,12 +70,18 @@ const Element = ({ element }: { element: CustomElement }) => {
       );
     case 'image':
       return (
-        <div>
-          <img src={element.url} alt="" className="block max-w-full max-h-80" />
+        <div style={style} className="my-4">
+          <div className="flex justify-center">
+            <img src={element.url} alt="" className="block max-w-full max-h-80" />
+          </div>
         </div>
       );
     default:
-      return <p style={style}>{children}</p>;
+      return (
+        <p style={style} className="mb-4 last:mb-0">
+          {isEmpty ? '\u00A0' : children}
+        </p>
+      );
   }
 };
 

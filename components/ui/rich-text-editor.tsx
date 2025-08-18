@@ -85,7 +85,7 @@ const TEXT_ALIGN_TYPES = ["left", "center", "right", "justify"];
 
 export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
   ({ value, onChange, placeholder = "İlan açıklamasını yazın...", className = "" }, ref) => {
-    const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+    const editor = useMemo(() => withImages(withHistory(withReact(createEditor()))), []);
 
     const renderElement = useCallback((props: any) => <Element {...props} />, []);
     const renderLeaf = useCallback((props: any) => <Leaf {...props} />, []);
@@ -101,7 +101,7 @@ export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
     };
 
     return (
-      <div className={`rich-text-editor border-2 border-input rounded-md bg-background shadow-sm ${className}`}>
+      <div className={`rich-text-editor border-2 border-input rounded-md bg-background shadow-sm  ${className}`}>
         <Slate editor={editor} initialValue={value} onChange={onChange}>
           <Toolbar>
             <MarkButton format="bold" icon={<Bold className="h-4 w-4" />} title="Kalın (Ctrl+B)" />
@@ -147,7 +147,7 @@ export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
           </Toolbar>
           <div
             ref={ref}
-            className="min-h-32 max-h-64 overflow-y-auto p-3 focus:outline-none"
+            className="min-h-96 max-h-64 overflow-y-auto p-3 focus:outline-none"
           >
             <Editable
               renderElement={renderElement}
@@ -166,8 +166,8 @@ export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
 RichTextEditor.displayName = "RichTextEditor";
 
 const Toolbar = ({ children }: { children: React.ReactNode }) => (
-  <div className="border-b border-input p-2 bg-muted/30">
-    <div className="flex flex-wrap items-center gap-1">{children}</div>
+  <div className="border-b border-input p-2 bg-muted/30 ">
+    <div className="flex flex-wrap items-center gap-1 ">{children}</div>
   </div>
 );
 
@@ -258,8 +258,8 @@ const Element = ({ attributes, children, element }: any) => {
       );
     case "image":
       return (
-        <div {...attributes}>
-          <div contentEditable={false}>
+        <div {...attributes} style={style}>
+          <div contentEditable={false} className="flex justify-center">
             <img src={element.url} className="block max-w-full max-h-80" />
           </div>
           {children}
@@ -275,23 +275,13 @@ const Element = ({ attributes, children, element }: any) => {
 };
 
 const Leaf = ({ attributes, children, leaf }: any) => {
-  const style: React.CSSProperties = {};
-  if (leaf.color) {
-    style.color = leaf.color;
-  }
-  if (leaf.fontSize) {
-    style.fontSize = leaf.fontSize;
-  }
-
-  if (leaf.bold) {
-    children = <strong>{children}</strong>;
-  }
-  if (leaf.italic) {
-    children = <em>{children}</em>;
-  }
-  if (leaf.underline) {
-    children = <u>{children}</u>;
-  }
+  const style: React.CSSProperties = {
+    fontWeight: leaf.bold ? 'bold' : 'normal',
+    fontStyle: leaf.italic ? 'italic' : 'normal',
+    textDecoration: leaf.underline ? 'underline' : 'none',
+    color: leaf.color,
+    fontSize: leaf.fontSize,
+  };
 
   return (
     <span {...attributes} style={style}>
@@ -405,6 +395,7 @@ const insertImage = (editor: Editor, url: string) => {
   const text = { text: "" };
   const image: CustomElement = { type: "image", url, children: [text] };
   Transforms.insertNodes(editor, image);
+  Transforms.insertNodes(editor, { type: 'paragraph', children: [{ text: '' }] }); // Add a new paragraph after the image
 };
 
 const ImageButton = () => {
@@ -521,10 +512,20 @@ const FontSizePicker = () => {
 };
 
 const removeFormat = (editor: Editor) => {
-    const marks = Editor.marks(editor);
-    if (marks) {
-        for (const mark in marks) {
-            Editor.removeMark(editor, mark);
-        }
+  const marks = Editor.marks(editor);
+  if (marks) {
+    for (const mark in marks) {
+      Editor.removeMark(editor, mark);
     }
+  }
+};
+
+const withImages = (editor: Editor) => {
+const { isVoid } = editor;
+
+editor.isVoid = (element) => {
+  return element.type === 'image' ? true : isVoid(element);
+};
+
+return editor;
 };

@@ -156,8 +156,8 @@ export default function PropertyListings() {
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-3 left-3">
-          <Badge variant={property.propertyType === 'satilik' ? 'default' : 'secondary'}>
-            {property.propertyType === 'satilik' ? 'Satılık' : 'Kiralık'}
+          <Badge variant={property.listingType === 'Satılık' ? 'default' : 'secondary'}>
+            {property.listingType === 'Satılık' ? 'Satılık' : 'Kiralık'}
           </Badge>
         </div>
         <div className="absolute bottom-3 right-3 bg-black/60 text-white px-2 py-1 rounded text-sm">

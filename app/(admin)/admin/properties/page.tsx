@@ -176,9 +176,9 @@ export default function AdminProperties() {
                       <div className="max-w-48">
                         <div className="text-sm truncate">{property.title}</div>
                         <div className="text-xs text-gray-500 flex items-center mt-1">
-                          <span className={`inline-block w-2 h-2 rounded-full mr-2 ${property.listingType === 'satilik' ? 'bg-green-500' : 'bg-blue-500'
+                          <span className={`inline-block w-2 h-2 rounded-full mr-2 ${property.listingType === 'Satılık' ? 'bg-green-500' : 'bg-blue-500'
                             }`}></span>
-                          {property.listingType === 'satilik' ? 'Satılık' : 'Kiralık'}
+                          {property.listingType === 'Satılık' ? 'Satılık' : 'Kiralık'}
                         </div>
                       </div>
                     </TableCell>

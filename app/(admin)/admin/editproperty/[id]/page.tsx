@@ -583,8 +583,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
           <div className="text-sm text-blue-900">
             <strong>Seçilen Kategori:</strong>
             <span>{properties.propertyType}</span>
-            {properties.listingType && <span> &gt {properties.listingType}</span>}
-            {properties.subType && <span> &gt {properties.subType}</span>}
+            {properties.listingType && <span> & {properties.listingType}</span>}
+            {properties.subType && <span> & {properties.subType}</span>}
           </div>
         </div>
       )}
@@ -610,7 +610,7 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
             value={JSON.parse(properties.description)}
             onChange={(value) => handleInputChange('description', value)}
             placeholder="İlan detaylarını yazın..."
-            className="min-h-100"
+            className="min-h-96"
           />
           <p className="text-xs text-gray-500">
             Zengin metin düzenleyici ile formatlamalar, linkler ve resimler ekleyebilirsiniz.
