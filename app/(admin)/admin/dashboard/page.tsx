@@ -1,13 +1,13 @@
 'use client'
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   LineChart,
   Line,
@@ -15,24 +15,79 @@ import {
   Pie,
   Cell
 } from "recharts";
-import { 
-  Building2, 
-  Users, 
-  Eye, 
-  TrendingUp, 
-  MessageSquare, 
-  DollarSign 
+import {
+  Building2,
+  Users,
+  Eye,
+  TrendingUp,
+  MessageSquare,
+  DollarSign
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import api from "@/lib/axios";
+import { toast } from "sonner";
+
+interface PieChart {
+  name: string,
+  value: number,
+  color: string
+}
 
 export default function AdminDashboard() {
+  const [monthlyData, setMonthlyData] = useState<
+    { name: string; ilanlar: number; aylıkGörüntülenme: number }[]
+  >([])
+  const [propertyCount, setpropertyCount] = useState({ total: 0 })
+  const [monthlyView, setMonthlyView] = useState(0)
+  const [pieChart, setPieChart] = useState<PieChart[]>([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [ilanRes, viewsRes, toplamRes, monthlyViewRes, pieChartRes] = await Promise.all([
+          api.get("/properties/yearlistings"),
+          api.get("/track-view"),
+          api.get("/properties/count"),
+          api.get("/track-view/month"),
+          api.get('/properties/piechart')
+        ]);
+
+        const ilanData = ilanRes.data
+        const viewsData = viewsRes.data
+
+        const mergedData = ilanData.map((ilan: any) => {
+          const match = viewsData.find((v: any) => v.month === ilan.month)
+          return {
+            name: getMonthName(ilan.month),
+            ilanlar: ilan.count,
+            aylıkGörüntülenme: match ? match.views : 0,
+          }
+        })
+
+        const filteredPieChartData: PieChart[] = pieChartRes.data
+        const filteredPieChart = filteredPieChartData.filter((item: PieChart)=> item.value > 0)
+
+        setMonthlyData(mergedData)
+        setpropertyCount(toplamRes.data)
+        setMonthlyView(monthlyViewRes.data)
+        setPieChart(filteredPieChart)
+      } catch (error) {
+       toast.error('Veriler çekilirken bir hata oluştu.')
+      }
+    }
+
+    fetchData();
+  }, [])
+
+  const getMonthName = (month: string) => {
+    const months = [
+      "Oca", "Şub", "Mar", "Nis", "May", "Haz",
+      "Tem", "Ağu", "Eyl", "Ekm", "Kas", "Ara"
+    ];
+    return months[parseInt(month.split("-")[1], 10) - 1];
+  }
+
   const stats = [
-    {
-      title: "Toplam İlanlar",
-      value: "1,245",
-      change: "+12%",
-      changeType: "positive" as const,
-      icon: Building2
-    },
     {
       title: "Aktif Kullanıcılar",
       value: "8,459",
@@ -41,35 +96,12 @@ export default function AdminDashboard() {
       icon: Users
     },
     {
-      title: "Aylık Görüntülenme",
-      value: "45.2K",
-      change: "+15%",
-      changeType: "positive" as const,
-      icon: Eye
-    },
-    {
       title: "Aylık Gelir",
       value: "₺125,000",
       change: "-3%",
       changeType: "negative" as const,
       icon: DollarSign
     }
-  ];
-
-  const monthlyData = [
-    { name: "Oca", ilanlar: 120, kullanicilar: 800 },
-    { name: "Şub", ilanlar: 140, kullanicilar: 900 },
-    { name: "Mar", ilanlar: 180, kullanicilar: 1100 },
-    { name: "Nis", ilanlar: 160, kullanicilar: 1000 },
-    { name: "May", ilanlar: 200, kullanicilar: 1200 },
-    { name: "Haz", ilanlar: 220, kullanicilar: 1300 }
-  ];
-
-  const propertyTypes = [
-    { name: "Daire", value: 45, color: "#0088FE" },
-    { name: "Villa", value: 30, color: "#00C49F" },
-    { name: "Ofis", value: 15, color: "#FFBB28" },
-    { name: "Dükkan", value: 10, color: "#FF8042" }
   ];
 
   const recentActivities = [
@@ -82,7 +114,28 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm">Toplam İlanlar</CardTitle>
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl">{propertyCount.total}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm">Aylık Görüntülenme</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl">{monthlyView}</div>
+          </CardContent>
+        </Card>
+
         {stats.map((stat, index) => (
           <Card key={index}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -114,7 +167,7 @@ export default function AdminDashboard() {
                 <YAxis />
                 <Tooltip />
                 <Bar dataKey="ilanlar" fill="#030213" name="İlanlar" />
-                <Bar dataKey="kullanicilar" fill="#82ca9d" name="Kullanıcılar" />
+                <Bar dataKey="aylıkGörüntülenme" fill="#82ca9d" name="Aylık Görüntülenme" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -129,15 +182,15 @@ export default function AdminDashboard() {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={propertyTypes}
+                  data={pieChart}
                   cx="50%"
                   cy="50%"
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, value }) => `${name}: %${value}`}
+                  label={({ name, value }) => (value !== undefined && value > 0) ? `${name}: %${Math.floor(value)}` : null}
                 >
-                  {propertyTypes.map((entry, index) => (
+                  {pieChart.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>

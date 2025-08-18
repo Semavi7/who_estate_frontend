@@ -3,7 +3,6 @@ import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { MapPin, Bed, Bath, Square, Heart, Eye, CalendarClock, HousePlus } from "lucide-react";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import PropertyGetData from "@/dto/getproperty.dto";
@@ -39,7 +38,7 @@ export default function FeaturedProperties() {
           {properties.map((property) => (
             <Card key={property._id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden">
               <div className="relative">
-                <ImageWithFallback
+                <img
                   src={property.images[0]}
                   alt={property.title}
                   className="w-full h-44 md:h-48 object-cover group-hover:scale-105 transition-transform duration-300"

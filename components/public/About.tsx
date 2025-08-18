@@ -1,7 +1,6 @@
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Award, Users, Building, Clock } from "lucide-react";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
 
 export default function About() {
   const stats = [
@@ -70,7 +69,7 @@ export default function About() {
           </div>
 
           <div className="relative order-1 lg:order-2">
-            <ImageWithFallback
+            <img
               src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&h=400&fit=crop"
               alt="Emlak Ofisi"
               className="rounded-2xl shadow-xl w-full"

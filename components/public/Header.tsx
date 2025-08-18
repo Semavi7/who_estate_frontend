@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Phone, Mail, MapPin, Menu, X } from "lucide-react";
 import Link from "next/link";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
+import api from "@/lib/axios";
 
 interface HeaderProps {
   showHeader?: boolean;
@@ -33,6 +34,10 @@ export default function Header({ showHeader = true }: HeaderProps) {
     setShowRegisterForm(false);
     setShowLoginForm(true);
   };
+
+  useEffect(()=>{
+    api.post('track-view')
+  },[])
 
   if (!showHeader) return null;
 
