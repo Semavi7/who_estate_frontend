@@ -43,7 +43,7 @@ export default function AdminProperties() {
 
   useEffect(() => {
     fetchProperties()
-  },[])
+  }, [])
 
   const handleDeleteProperty = (id: string) => {
     if (confirm("Bu ilanı silmek istediğinizden emin misiniz?")) {
@@ -126,123 +126,125 @@ export default function AdminProperties() {
         </Card>
       </div>
 
-      {/* Search and Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="İlan başlığı veya konum ile ara..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+      <div className="grid grid-cols-1 gap-6">
+        {/* Search and Filters */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="İlan başlığı veya konum ile ara..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button variant="outline" className="flex items-center space-x-2">
+                <Filter className="h-4 w-4" />
+                <span>Filtreler</span>
+              </Button>
             </div>
-            <Button variant="outline" className="flex items-center space-x-2">
-              <Filter className="h-4 w-4" />
-              <span>Filtreler</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Properties Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>İlan Listesi ({filteredProperties.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>İlan Başlığı</TableHead>
-                  <TableHead>Tür</TableHead>
-                  <TableHead>Kategori</TableHead>
-                  <TableHead>Fiyat</TableHead>
-                  <TableHead>Alan (m²)</TableHead>
-                  <TableHead>Oda</TableHead>
-                  <TableHead>Konum</TableHead>
-                  <TableHead>Durum</TableHead>
-                  <TableHead>Tarih</TableHead>
-                  <TableHead>İşlemler</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProperties.map((property) => (
-                  <TableRow key={property._id}>
-                    <TableCell>
-                      <div className="max-w-48">
-                        <div className="text-sm truncate">{property.title}</div>
-                        <div className="text-xs text-gray-500 flex items-center mt-1">
-                          <span className={`inline-block w-2 h-2 rounded-full mr-2 ${property.listingType === 'Satılık' ? 'bg-green-500' : 'bg-blue-500'
-                            }`}></span>
-                          {property.listingType === 'Satılık' ? 'Satılık' : 'Kiralık'}
+        {/* Properties Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>İlan Listesi ({filteredProperties.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>İlan Başlığı</TableHead>
+                    <TableHead>Tür</TableHead>
+                    <TableHead>Kategori</TableHead>
+                    <TableHead>Fiyat</TableHead>
+                    <TableHead>Alan (m²)</TableHead>
+                    <TableHead>Oda</TableHead>
+                    <TableHead>Konum</TableHead>
+                    <TableHead>Durum</TableHead>
+                    <TableHead>Tarih</TableHead>
+                    <TableHead>İşlemler</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredProperties.map((property) => (
+                    <TableRow key={property._id}>
+                      <TableCell>
+                        <div className="max-w-48">
+                          <div className="text-sm truncate">{property.title}</div>
+                          <div className="text-xs text-gray-500 flex items-center mt-1">
+                            <span className={`inline-block w-2 h-2 rounded-full mr-2 ${property.listingType === 'Satılık' ? 'bg-green-500' : 'bg-blue-500'
+                              }`}></span>
+                            {property.listingType === 'Satılık' ? 'Satılık' : 'Kiralık'}
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {property.propertyType}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {property.subType}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {formatPrice(property.price, property.listingType)}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {property.net} m²
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {property.numberOfRoom}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      <div className="flex items-center">
-                        <MapPin className="h-3 w-3 mr-1 text-gray-400" />
+                      </TableCell>
+                      <TableCell>
+                        {property.propertyType}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {property.subType}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {formatPrice(property.price, property.listingType)}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {property.net} m²
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {property.numberOfRoom}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        <div className="flex items-center">
+                          <MapPin className="h-3 w-3 mr-1 text-gray-400" />
+                          {property.location.city}
+                        </div>
+                      </TableCell>
+                      <TableCell>
                         {property.location.city}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {property.location.city}
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-600">
-                      {new Date(property.createdAt).toLocaleDateString('tr-TR')}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Link href={`editproperty/${property._id}`}>
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-600">
+                        {new Date(property.createdAt).toLocaleDateString('tr-TR')}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Link href={`editproperty/${property._id}`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                          </Link>
                           <Button
                             variant="outline"
                             size="sm"
+                            onClick={() => handleDeleteProperty(property._id)}
+                            className="text-red-600 hover:text-red-700"
                           >
-                            <Edit className="h-3 w-3" />
+                            <Trash2 className="h-3 w-3" />
                           </Button>
-                        </Link>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteProperty(property._id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          {filteredProperties.length === 0 && (
-            <div className="text-center py-8">
-              <div className="text-gray-400 mb-2">İlan bulunamadı</div>
-              <p className="text-sm text-gray-600">Arama kriterlerinizi değiştirerek tekrar deneyin.</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-          )}
-        </CardContent>
-      </Card>
+
+            {filteredProperties.length === 0 && (
+              <div className="text-center py-8">
+                <div className="text-gray-400 mb-2">İlan bulunamadı</div>
+                <p className="text-sm text-gray-600">Arama kriterlerinizi değiştirerek tekrar deneyin.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -32,7 +32,7 @@ export default function AdminProfile() {
 
   const handlePasswordChange = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error("Yeni şifreler eşleşmiyor");
       return;
@@ -91,7 +91,7 @@ export default function AdminProfile() {
                     <Input
                       id="firstName"
                       value={profileData.firstName}
-                      onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
+                      onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
                       className="pl-10"
                     />
                   </div>
@@ -101,7 +101,7 @@ export default function AdminProfile() {
                   <Input
                     id="lastName"
                     value={profileData.lastName}
-                    onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
+                    onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
                   />
                 </div>
               </div>
@@ -114,7 +114,7 @@ export default function AdminProfile() {
                     id="email"
                     type="email"
                     value={profileData.email}
-                    onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
                     className="pl-10"
                   />
                 </div>
@@ -127,7 +127,7 @@ export default function AdminProfile() {
                   <Input
                     id="phone"
                     value={profileData.phone}
-                    onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+                    onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                     className="pl-10"
                   />
                 </div>
@@ -140,7 +140,7 @@ export default function AdminProfile() {
                   <Input
                     id="address"
                     value={profileData.address}
-                    onChange={(e) => setProfileData({...profileData, address: e.target.value})}
+                    onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
                     className="pl-10"
                   />
                 </div>
@@ -152,66 +152,67 @@ export default function AdminProfile() {
             </form>
           </CardContent>
         </Card>
+
+
+        {/* Password Change */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Şifre Değiştir</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
+              <div className="space-y-2">
+                <Label htmlFor="currentPassword">Mevcut Şifre</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">Yeni Şifre</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Yeni Şifre Tekrar</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
+
+              <Button type="submit">Şifreyi Değiştir</Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
-
-      {/* Password Change */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Şifre Değiştir</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Mevcut Şifre</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="currentPassword"
-                  type="password"
-                  value={passwordData.currentPassword}
-                  onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">Yeni Şifre</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="newPassword"
-                  type="password"
-                  value={passwordData.newPassword}
-                  onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Yeni Şifre Tekrar</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={passwordData.confirmPassword}
-                  onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-
-            <Button type="submit">Şifreyi Değiştir</Button>
-          </form>
-        </CardContent>
-      </Card>
     </div>
   );
 }

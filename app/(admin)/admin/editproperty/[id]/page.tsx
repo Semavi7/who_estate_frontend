@@ -489,7 +489,7 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
   }
 
   const handleNeighborhoodInputChange = (value: string) => {
-    setProperties({...properties, location: {...properties.location, neighborhood: value}})
+    setProperties({ ...properties, location: { ...properties.location, neighborhood: value } })
     geocodeAddress()
   }
 
@@ -920,7 +920,7 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="bg-gray-100 h-180 rounded-lg flex items-center justify-center">
+          <div className="bg-gray-100 h-50 md:h-180 rounded-lg flex items-center justify-center">
             <MapPicker
               center={coord.coordinates.lat === 0
                 ? { lat: properties.location.geo.coordinates[1], lng: properties.location.geo.coordinates[0] }
@@ -1092,95 +1092,97 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="outline"
-            onClick={() => router.push('/admin/properties')}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Geri</span>
-          </Button>
-          <div>
-            <h2 className="text-2xl">Yeni İlan Oluştur</h2>
-            <p className="text-gray-600">Emlak ilanı bilgilerini girin</p>
-          </div>
-        </div>
-        <Button onClick={handleSubmit} className="flex items-center space-x-2">
-          <Save className="h-4 w-4" />
-          <span>İlanı Güncelle</span>
-        </Button>
-      </div>
-
-      {/* Progress Steps */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= step.id
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-gray-200 text-gray-600'
-                  }`}>
-                  {step.id}
-                </div>
-                <div className="ml-3">
-                  <div className="text-sm">{step.title}</div>
-                  <div className="text-xs text-gray-500">{step.description}</div>
-                </div>
-                {index < steps.length - 1 && (
-                  <div className={`mx-4 h-px flex-1 ${currentStep > step.id ? 'bg-primary' : 'bg-gray-200'
-                    }`} />
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Form Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{steps[currentStep - 1]?.title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {currentStep === 1 && renderStep1()}
-          {currentStep === 2 && renderStep2()}
-          {currentStep === 3 && renderStep3()}
-          {currentStep === 4 && renderStep4()}
-          {currentStep === 5 && renderStep5()}
-        </CardContent>
-      </Card>
-
-      {/* Navigation */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex justify-between">
+      <div className="grid grid-cols-1 gap-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex flex-col items-start  md:items-center md:flex-row gap-4">
             <Button
               variant="outline"
-              onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
-              disabled={currentStep === 1}
+              onClick={() => router.push('/admin/properties')}
+              className="flex items-center space-x-2"
             >
-              Önceki Adım
+              <ArrowLeft className="h-4 w-4" />
+              <span>Geri</span>
             </Button>
-
-            {currentStep < 5 ? (
-              <Button
-                onClick={() => setCurrentStep(Math.min(5, currentStep + 1))}
-              >
-                Sonraki Adım
-              </Button>
-            ) : (
-              <Button onClick={handleSubmit} className="flex items-center space-x-2">
-                <Save className="h-4 w-4" />
-                <span>İlanı Güncelle</span>
-              </Button>
-            )}
+            <div>
+              <h2 className="text-2xl">İlanı Güncelle</h2>
+              <p className="text-gray-600">Emlak ilanı bilgilerini düzenleyin</p>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+          <Button onClick={handleSubmit} className="flex items-center space-x-2">
+            <Save className="h-4 w-4" />
+            <span>İlanı Güncelle</span>
+          </Button>
+        </div>
+
+        {/* Progress Steps */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-start md:justify-between overflow-x-auto py-4 scrollbar-hide">
+              {steps.map((step, index) => (
+                <div key={step.id} className="flex items-center flex-shrink-0">
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= step.id
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-gray-200 text-gray-600'
+                    }`}>
+                    {step.id}
+                  </div>
+                  <div className="ml-3">
+                    <div className="text-sm">{step.title}</div>
+                    <div className="text-xs text-gray-500">{step.description}</div>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className={`mx-4 h-px flex-1 ${currentStep > step.id ? 'bg-primary' : 'bg-gray-200'
+                      }`} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Form Content */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{steps[currentStep - 1]?.title}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {currentStep === 1 && renderStep1()}
+            {currentStep === 2 && renderStep2()}
+            {currentStep === 3 && renderStep3()}
+            {currentStep === 4 && renderStep4()}
+            {currentStep === 5 && renderStep5()}
+          </CardContent>
+        </Card>
+
+        {/* Navigation */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex justify-between">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
+                disabled={currentStep === 1}
+              >
+                Önceki Adım
+              </Button>
+
+              {currentStep < 5 ? (
+                <Button
+                  onClick={() => setCurrentStep(Math.min(5, currentStep + 1))}
+                >
+                  Sonraki Adım
+                </Button>
+              ) : (
+                <Button onClick={handleSubmit} className="flex items-center space-x-2">
+                  <Save className="h-4 w-4" />
+                  <span>İlanı Güncelle</span>
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

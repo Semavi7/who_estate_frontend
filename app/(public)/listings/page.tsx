@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { Search, MapPin, Square, Filter, HousePlus, CalendarClock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { ImageWithFallback } from "@/components/figma/ImageWithFallback";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -150,7 +149,7 @@ export default function PropertyListings() {
   const PropertyCard = ({ property }: { property: PropertyGetData }) => (
     <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
       <div className="relative">
-        <ImageWithFallback
+        <img
           src={property.images[0]}
           alt={property.title}
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"

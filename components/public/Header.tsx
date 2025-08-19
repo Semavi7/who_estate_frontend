@@ -64,10 +64,10 @@ export default function Header({ showHeader = true }: HeaderProps) {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Button onClick={handleLoginClick} variant="ghost" size="sm" className="text-primary-foreground hover:bg-white/10">
+              <Button onClick={handleLoginClick} variant="ghost" size="sm" className="text-primary-foreground hover:bg-white/10 hover:text-amber-50 cursor-pointer">
                 Giriş Yap
               </Button>
-              <Button onClick={handleRegisterClick} variant="ghost" size="sm" className="text-primary-foreground hover:bg-white/10">
+              <Button onClick={handleRegisterClick} variant="ghost" size="sm" className="text-primary-foreground hover:bg-white/10 hover:text-amber-50 cursor-pointer">
                 Üye Ol
               </Button>
             </div>
@@ -99,7 +99,7 @@ export default function Header({ showHeader = true }: HeaderProps) {
               className="flex items-center space-x-4 animate-cta"
             >
               <Link href="/admin/dashboard">
-                <Button className="hidden md:inline-flex">
+                <Button className="hidden md:inline-flex cursor-pointer">
                   Yönetim Paneli
                 </Button>
               </Link>

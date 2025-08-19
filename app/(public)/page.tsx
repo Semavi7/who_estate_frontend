@@ -8,11 +8,15 @@ export default function Home() {
   return (
     <>
       <main>
-        <HeroSection />
+        <div className="relative">
+          <HeroSection />
+          <div className="absolute bottom-0 left-0 right-0 w-auto h-20 bg-gradient-to-b from-transparent to-green-50"></div>
+        </div>
 
         <div className="animate-on-load delay-3500ms">
           <FeaturedProperties />
         </div>
+
 
         <div className="animate-on-load delay-3700ms">
           <Services />
@@ -25,6 +29,7 @@ export default function Home() {
         <div className="animate-on-load delay-4100ms">
           <Footer />
         </div>
+
       </main>
     </>
   );

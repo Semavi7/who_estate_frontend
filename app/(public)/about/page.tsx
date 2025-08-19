@@ -2,7 +2,6 @@ import { Users, Award, MapPin, Clock, Heart, Shield, Star, TrendingUp } from "lu
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ImageWithFallback } from "@/components/figma/ImageWithFallback";
 
 export default function AboutPage() {
   const stats = [
@@ -123,7 +122,7 @@ export default function AboutPage() {
                 <Button className="mt-6">İletişime Geç</Button>
               </div>
               <div className="relative">
-                <ImageWithFallback 
+                <img
                   src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                   alt="EmlakPro Ofis"
                   className="w-full h-96 object-cover rounded-lg shadow-lg"
@@ -175,7 +174,7 @@ export default function AboutPage() {
             {team.map((member, index) => (
               <Card key={index} className="text-center overflow-hidden">
                 <div className="relative">
-                  <ImageWithFallback 
+                  <img 
                     src={member.image}
                     alt={member.name}
                     className="w-full h-64 object-cover"
