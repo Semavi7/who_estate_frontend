@@ -6,6 +6,9 @@ import Link from "next/link";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
 import api from "@/lib/axios";
+import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import { logout, selectIsAuthenticated } from "@/lib/redux/authSlice";
 
 interface HeaderProps {
   showHeader?: boolean;
@@ -17,13 +20,20 @@ export default function Header({ showHeader = true }: HeaderProps) {
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [showRegisterForm, setShowRegisterForm] = useState(false);
 
+  const isAuthenticated = useSelector(selectIsAuthenticated)
+
+  const dispatch = useDispatch()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    dispatch(logout())
+    router.push('/')
+  }
+
   const handleLoginClick = () => {
     setShowLoginForm(true);
-  };
-
-  const handleRegisterClick = () => {
-    setShowRegisterForm(true);
-  };
+  }
 
   const handleSwitchToRegister = () => {
     setShowLoginForm(false);
@@ -64,12 +74,13 @@ export default function Header({ showHeader = true }: HeaderProps) {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Button onClick={handleLoginClick} variant="ghost" size="sm" className="text-primary-foreground hover:bg-white/10 hover:text-amber-50 cursor-pointer">
+              {isAuthenticated ? (
+                  <Button onClick={handleLogout} variant="ghost" size="sm" className="text-primary-foreground hover:bg-white/10 hover:text-amber-50 cursor-pointer">
+                  Çıkış Yap
+                   </Button>
+              ) : <Button onClick={handleLoginClick} variant="ghost" size="sm" className="text-primary-foreground hover:bg-white/10 hover:text-amber-50 cursor-pointer">
                 Giriş Yap
-              </Button>
-              <Button onClick={handleRegisterClick} variant="ghost" size="sm" className="text-primary-foreground hover:bg-white/10 hover:text-amber-50 cursor-pointer">
-                Üye Ol
-              </Button>
+              </Button>}
             </div>
           </div>
         </div>
@@ -95,14 +106,17 @@ export default function Header({ showHeader = true }: HeaderProps) {
               <Link className="text-foreground hover:text-primary transition-colors" href={'/contact'}>İletişim</Link>
             </nav>
 
-            <div
-              className="flex items-center space-x-4 animate-cta"
-            >
-              <Link href="/admin/dashboard">
+            <div className="flex items-center space-x-4 animate-cta">
+              {
+                isAuthenticated ? (
+                  <Link href="/admin/dashboard">
                 <Button className="hidden md:inline-flex cursor-pointer">
                   Yönetim Paneli
                 </Button>
               </Link>
+                ) : (<></>)
+              }
+              
               {/* Mobile menu button */}
               <Button
                 variant="ghost"

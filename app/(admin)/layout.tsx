@@ -15,23 +15,34 @@ import {
     X
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Toaster } from "sonner";
+import { useDispatch, useSelector } from "react-redux";
+import { logout, selectUser } from "@/lib/redux/authSlice";
 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-     const pathname = usePathname()
-
+    const pathname = usePathname()
+    const user = useSelector(selectUser)
     const menuItems = [
         { id: "admin-dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
         { id: "admin-properties", icon: Building2, label: "İlanlar", path: "/admin/properties" },
-        { id: "admin-features", icon: Settings, label: "Özellik Yönetimi", path: "/admin/features"  },
+        { id: "admin-features", icon: Settings, label: "Özellik Yönetimi", path: "/admin/features" },
         { id: "admin-profile", icon: User, label: "Kullanıcı Bilgileri", path: "/admin/profile" },
         { id: "admin-users", icon: Users, label: "Kullanıcılar", path: "/admin/users" },
         { id: "admin-messages", icon: MessageSquare, label: "Mesajlar", path: "/admin/messages" },
         { id: "home", icon: Globe, label: "Siteye Git", path: "/" },
-    ];
+    ]
+
+    const dispatch = useDispatch()
+    const router = useRouter()
+
+    const handleLogout = async () => {
+        await fetch('/api/auth/logout', { method: 'POST' })
+        dispatch(logout())
+        router.push('/')
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
@@ -85,6 +96,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <div className="p-4 border-t border-gray-200">
                     <button
                         className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                        onClick={handleLogout}
                     >
                         <LogOut className="h-5 w-5" />
                         {!sidebarCollapsed && <span>Çıkış Yap</span>}
@@ -105,8 +117,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <div className="flex items-center space-x-4">
                             <div className="flex items-center space-x-3">
                                 <div className="text-right">
-                                    <div className="text-sm">Admin Kullanıcı</div>
-                                    <div className="text-xs text-gray-500">admin@emlakpro.com</div>
+                                    <div className="text-sm">{user?.name} {user?.surname}</div>
+                                    <div className="text-xs text-gray-500">{user?.email}</div>
                                 </div>
                                 <Avatar>
                                     <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" />
@@ -122,7 +134,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     {children}
                 </main>
             </div>
-            <Toaster richColors position="top-right"/>
+            <Toaster richColors position="top-right" />
         </div>
     );
+}
+
+function dispatch(arg0: any) {
+    throw new Error("Function not implemented.");
 }

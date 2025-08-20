@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ReduxProvider } from "@/lib/redux/provider";
 
 export const metadata: Metadata = {
   title: "Derya Emlak",
@@ -14,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body>
-          {children} 
+          <ReduxProvider>{children}</ReduxProvider> 
       </body>
     </html>
   )

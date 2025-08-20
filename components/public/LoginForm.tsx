@@ -6,6 +6,10 @@ import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
 import { Eye, EyeOff, Mail, Lock, LogIn } from "lucide-react";
 import { toast } from "sonner";
+import { useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
+import api from "@/lib/axios";
+import { loginSuccess } from "@/lib/redux/authSlice";
 
 interface LoginFormProps {
   open: boolean;
@@ -14,40 +18,53 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ open, onOpenChange, onSwitchToRegister }: LoginFormProps) {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: ""
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const dispatch = useDispatch()
+  const router = useRouter() 
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    if (!formData.email || !formData.password) {
+    if (!email || !password) {
       toast.error("Lütfen tüm alanları doldurun");
       return;
     }
 
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    if (!/\S+@\S+\.\S+/.test(email)) {
       toast.error("Geçerli bir e-posta adresi girin");
       return;
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
 
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Başarıyla giriş yaptınız!");
-      onOpenChange(false);
-      setFormData({ email: "", password: "" });
-    }, 1500);
-  };
+    try {
+      const response = await api.post('/auth/login', { email, password})
+      
+      const { access_token: accessToken, ...userData } = response.data
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+      const user = {
+        _id: userData._id,
+        name: userData.name,
+        surname: userData.surname,
+        email: userData.email
+      }
+
+      await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken, user })
+      })
+
+      dispatch(loginSuccess({ user, accessToken }))
+
+      router.push('/admin/dashboard')
+    } catch (error) {
+      toast.error('Giriş Yapılamadı. Lütfen Bilgileriniizi Kontrol Ediniz.')
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -72,8 +89,8 @@ export default function LoginForm({ open, onOpenChange, onSwitchToRegister }: Lo
                 type="email"
                 placeholder="example@email.com"
                 className="pl-10"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
                 required
               />
@@ -89,8 +106,8 @@ export default function LoginForm({ open, onOpenChange, onSwitchToRegister }: Lo
                 type={showPassword ? "text" : "password"}
                 placeholder="Şifrenizi girin"
                 className="pl-10 pr-10"
-                value={formData.password}
-                onChange={(e) => handleInputChange("password", e.target.value)}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
                 required
               />
