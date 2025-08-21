@@ -32,7 +32,12 @@ export default interface PropertyGetData {
     propertyType: string
     listingType: string
     subType?: string
-    selectedFeatures: string[],
+    selectedFeatures: string[]
     images: string[]
+    userId: string
+    userName: string
+    userSurname: string
+    userPhone: number
+    userImage: string
     createdAt: string 
 }

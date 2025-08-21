@@ -19,6 +19,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Toaster } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, selectUser } from "@/lib/redux/authSlice";
+import { persistor } from "@/lib/redux/store";
 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -41,6 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const handleLogout = async () => {
         await fetch('/api/auth/logout', { method: 'POST' })
         dispatch(logout())
+        await persistor.purge()
         router.push('/')
     }
 
@@ -121,8 +123,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     <div className="text-xs text-gray-500">{user?.email}</div>
                                 </div>
                                 <Avatar>
-                                    <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" />
-                                    <AvatarFallback>AU</AvatarFallback>
+                                    <AvatarImage src={user?.image} />
+                                    <AvatarFallback>
+                                        {user?.name ? user.name.charAt(0).toUpperCase() : ''}
+                                        {user?.surname ? user.surname.charAt(0).toUpperCase() : ''}
+                                    </AvatarFallback>
                                 </Avatar>
                             </div>
                         </div>

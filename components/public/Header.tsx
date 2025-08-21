@@ -4,11 +4,11 @@ import { Button } from "../ui/button";
 import { Phone, Mail, MapPin, Menu, X } from "lucide-react";
 import Link from "next/link";
 import LoginForm from "./LoginForm";
-import RegisterForm from "./RegisterForm";
 import api from "@/lib/axios";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { logout, selectIsAuthenticated } from "@/lib/redux/authSlice";
+import { persistor } from "@/lib/redux/store";
 
 interface HeaderProps {
   showHeader?: boolean;
@@ -18,7 +18,6 @@ export default function Header({ showHeader = true }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [showLoginForm, setShowLoginForm] = useState(false);
-  const [showRegisterForm, setShowRegisterForm] = useState(false);
 
   const isAuthenticated = useSelector(selectIsAuthenticated)
 
@@ -28,23 +27,13 @@ export default function Header({ showHeader = true }: HeaderProps) {
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
     dispatch(logout())
+    await persistor.purge()
     router.push('/')
   }
 
   const handleLoginClick = () => {
     setShowLoginForm(true);
   }
-
-  const handleSwitchToRegister = () => {
-    setShowLoginForm(false);
-    setShowRegisterForm(true);
-  };
-
-  const handleSwitchToLogin = () => {
-    setShowRegisterForm(false);
-    setShowLoginForm(true);
-  };
-
   useEffect(()=>{
     api.post('track-view')
   },[])
@@ -150,13 +139,6 @@ export default function Header({ showHeader = true }: HeaderProps) {
       <LoginForm
         open={showLoginForm}
         onOpenChange={setShowLoginForm}
-        onSwitchToRegister={handleSwitchToRegister}
-      />
-
-      <RegisterForm
-        open={showRegisterForm}
-        onOpenChange={setShowRegisterForm}
-        onSwitchToLogin={handleSwitchToLogin}
       />
     </>
   );

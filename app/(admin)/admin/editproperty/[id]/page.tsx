@@ -41,6 +41,8 @@ import api from "@/lib/axios"
 import PropertySubmitData from "@/dto/createproperty.dto"
 import { MapPicker } from "@/components/ui/mappicker"
 import PropertyGetData from "@/dto/getproperty.dto"
+import { useSelector } from "react-redux"
+import { selectUser } from "@/lib/redux/authSlice"
 
 interface ImageObject {
   id: string
@@ -144,6 +146,7 @@ function SortableUrlImageItem({ id, image, onRemove }: { id: string; image: stri
 
 export default function EditPropertyPage({ params }: EditPropertyPageProps) {
   const router = useRouter()
+  const user = useSelector(selectUser)
   const { id } = use(params)
   const [cities, setCities] = useState<City[]>([])
   const [districtsAndNeighborhoods, setDistrictsAndNeighborhoods] = useState<Record<string, string[]>>({})
@@ -189,6 +192,11 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
     subType: "",
     selectedFeatures: [],
     images: [],
+    userId: "",
+    userName: "",
+    userSurname: "",
+    userImage: "",
+    userPhone: 0,
     createdAt: "",
   })
 
@@ -347,6 +355,11 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
             ]
           }
         }),
+        userId: user?._id || '',
+        userName: user?.name || '',
+        userSurname: user?.surname || '',
+        userImage: user?.image || '',
+        userPhone: user?.phonenumber || 0,
         selectedFeatures: JSON.stringify(groupFeatures(properties.selectedFeatures, featureOptions))
       }
 
@@ -393,6 +406,7 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
           const propertydata = res.data
           propertydata.selectedFeatures = Object.values(propertydata.selectedFeatures).flat()
           setProperties(propertydata)
+          setCoord({ coordinates: { lat: propertydata.location.geo.coordinates[1], lng: propertydata.location.geo.coordinates[0] } })
         } catch (error) {
           toast.error("İlan verileri yüklenirken bir hata oluştu.")
         }
@@ -460,11 +474,12 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
   }, [properties.location.city, cities])
 
 
-  const geocodeAddress = async () => {
+  const geocodeAddress = async (neighborhoodValue?: string) => {
+    const currentNeighborhood = neighborhoodValue || properties.location.neighborhood
     if (!properties.location.city || !properties.location.district || !properties.location.neighborhood) {
       return
     }
-    const address = `${properties.location.neighborhood}, ${properties.location.district}, ${properties.location.city}, Turkey`;
+    const address = `${currentNeighborhood}, ${properties.location.district}, ${properties.location.city}, Turkey`;
 
     const url = `/api/geocode?address=${encodeURIComponent(address)}`
 
@@ -490,7 +505,7 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
 
   const handleNeighborhoodInputChange = (value: string) => {
     setProperties({ ...properties, location: { ...properties.location, neighborhood: value } })
-    geocodeAddress()
+    geocodeAddress(value)
   }
 
   const sensors = useSensors(

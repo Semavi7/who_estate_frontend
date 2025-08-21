@@ -1,9 +1,10 @@
 'use client'
 
 import { Provider } from 'react-redux';
-import { store } from './store';
+import { persistor, store } from './store';
 import { AuthInitializer } from './AuthInitializer';
+import { PersistGate } from 'redux-persist/integration/react';
 
 export function ReduxProvider({ children }: { children: React.ReactNode }) {
-  return <Provider store={store}><AuthInitializer>{children}</AuthInitializer></Provider>
+  return <Provider store={store}><PersistGate loading={null} persistor={persistor}><AuthInitializer>{children}</AuthInitializer></PersistGate></Provider>
 }

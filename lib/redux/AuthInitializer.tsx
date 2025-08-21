@@ -32,7 +32,7 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
         const decoded: { user: any; exp: number } = jwtDecode(token)
         
         if (decoded.exp * 1000 > Date.now()) {
-          store.dispatch(loginSuccess({ user: decoded.user, accessToken: token }))
+          store.dispatch(loginSuccess({ user: decoded.user  }))
         } else {
           store.dispatch(logout())
         }

@@ -24,4 +24,9 @@ export default interface PropertySubmitData {
     listingType: string
     subType?: string
     selectedFeatures?: string
+    userId: string
+    userName: string
+    userSurname: string
+    userPhone: number
+    userImage: string
 }

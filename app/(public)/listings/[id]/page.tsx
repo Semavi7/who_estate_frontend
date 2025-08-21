@@ -21,7 +21,6 @@ import {
   ChevronRight,
   Check
 } from "lucide-react";
-import { ImageWithFallback } from "../../../../components/figma/ImageWithFallback";
 import Link from "next/link";
 import PropertyGetData from "@/dto/getproperty.dto";
 import api from "@/lib/axios";
@@ -86,6 +85,17 @@ export default function PropertyDetailPage({ params }: EditPropertyPageProps) {
 
   const formatPrice = (price: number, listingType: string) => {
     return `${price.toLocaleString('tr-TR')} TL${listingType === 'kiralik' ? '/ay' : ''}`;
+  };
+
+  const formatPhoneNumber = (phoneNumber: string) => {
+    // Gelen numara 10 haneli (örn: 5364444444)
+    // Çıktı (0XXX) XXX XX XX şeklinde olacak
+    const cleaned = ('' + phoneNumber).replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{3})(\d{3})(\d{2})(\d{2})$/);
+    if (match) {
+      return `(0${match[1]}) ${match[2]} ${match[3]} ${match[4]}`;
+    }
+    return phoneNumber; // Biçimlendirilemezse orijinalini döndür
   };
 
   const getTypeBadge = (type: string) => {
@@ -180,7 +190,7 @@ export default function PropertyDetailPage({ params }: EditPropertyPageProps) {
                 {/* Main Image */}
                 <div className="relative">
                   <div className="aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
-                    <ImageWithFallback
+                    <img
                       src={property.images[selectedImageIndex]}
                       alt={property.title}
                       className="w-full h-full object-contain object-center"
@@ -222,7 +232,7 @@ export default function PropertyDetailPage({ params }: EditPropertyPageProps) {
                           className={`flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden ${selectedImageIndex === index ? 'ring-2 ring-primary' : ''
                             }`}
                         >
-                          <ImageWithFallback
+                          <img
                             src={image}
                             alt={`${property.title} - ${index + 1}`}
                             className="w-full h-full object-cover"
@@ -430,35 +440,28 @@ export default function PropertyDetailPage({ params }: EditPropertyPageProps) {
           {/* Right Column - Contact */}
           <div className="space-y-6">
             {/* Agent Info */}
-            <Card>
-              <CardHeader>
+            <Card className="flex justify-center">
+              <CardHeader className="flex justify-center">
                 <CardTitle>Emlak Danışmanı</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 flex flex-col items-center text-center">
+                <img src={property.userImage} className="h-36 w-36"/>
                 <div>
-                  <div className="text-lg"></div>
+                  <div className="text-lg">{property.userName} {property.userSurname}</div>
                   <div className="text-sm text-gray-600">Emlak Uzmanı</div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Phone className="h-4 w-4 text-gray-600" />
-                    <span></span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4 text-gray-600" />
-                    <span></span>
+                    <span>{formatPhoneNumber(String(property.userPhone))}</span>
                   </div>
                 </div>
 
-                <div className="flex space-x-2">
-                  <Button className="flex-1">
+                <div className="w-full">
+                  <Button className="w-full" onClick={() => {window.location.href = `tel:${property.userPhone}`}}>
                     <Phone className="h-4 w-4 mr-2" />
                     Ara
-                  </Button>
-                  <Button variant="outline" className="flex-1">
-                    <Mail className="h-4 w-4 mr-2" />
-                    E-posta
                   </Button>
                 </div>
               </CardContent>

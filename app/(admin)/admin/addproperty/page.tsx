@@ -41,6 +41,8 @@ import { useRouter } from "next/navigation"
 import api from "@/lib/axios"
 import PropertySubmitData from "@/dto/createproperty.dto"
 import { MapPicker } from "@/components/ui/mappicker"
+import { useSelector } from "react-redux"
+import { selectUser } from "@/lib/redux/authSlice"
 
 interface ImageObject {
   id: string
@@ -98,6 +100,7 @@ function SortableImageItem({ id, image, onRemove }: { id: any; image: ImageObjec
 
 export default function AddPropertyPage() {
   const router = useRouter()
+  const user = useSelector(selectUser)
   const [cities, setCities] = useState<City[]>([])
   const [districtsAndNeighborhoods, setDistrictsAndNeighborhoods] = useState<Record<string, string[]>>({})
   const [categoryConfig, setCategoryConfig] = useState<Record<string, any>>({})
@@ -277,6 +280,11 @@ export default function AddPropertyPage() {
             ]
           }
         }),
+        userId: user?._id || '',
+        userName: user?.name || '',
+        userSurname: user?.surname || '',
+        userImage: user?.image || '',
+        userPhone: user?.phonenumber || 0,
         selectedFeatures: JSON.stringify(groupFeatures(formData.features, featureOptions))
       }
 
