@@ -41,7 +41,7 @@ export default function LoginForm({ open, onOpenChange }: LoginFormProps) {
     try {
       const response = await api.post('/auth/login', { email, password })
 
-      const { access_token: accessToken, ...userData } = response.data
+      const userData = response.data
 
       const user = {
         _id: userData._id,
