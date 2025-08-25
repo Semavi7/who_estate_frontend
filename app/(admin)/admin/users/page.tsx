@@ -1,5 +1,5 @@
 'use client'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
@@ -19,82 +19,42 @@ import {
   Calendar
 } from "lucide-react";
 import UserForm from "../../../../components/admin/UserForm";
+import api from "@/lib/axios";
+import { toast } from "sonner";
 
-interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: "admin" | "user" | "agent";
-  status: "active" | "inactive" | "pending";
-  avatar?: string;
-  createdAt: string;
-  lastLogin?: string;
-  phone?: string;
+export interface IUser {
+  _id: string
+  name: string
+  surname: string
+  email: string
+  roles: "admin" | "member"
+  image?: string
+  phonenumber?: string
 }
 
 export default function AdminUsers() {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: 1,
-      firstName: "Admin",
-      lastName: "Kullanıcı",
-      email: "admin@emlakpro.com",
-      role: "admin",
-      status: "active",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
-      createdAt: "2024-01-01",
-      lastLogin: "2024-01-25",
-      phone: "+90 (212) 555 0123"
-    },
-    {
-      id: 2,
-      firstName: "Ahmet",
-      lastName: "Yılmaz",
-      email: "ahmet@example.com",
-      role: "agent",
-      status: "active",
-      createdAt: "2024-01-10",
-      lastLogin: "2024-01-24",
-      phone: "+90 (532) 123 4567"
-    },
-    {
-      id: 3,
-      firstName: "Fatma",
-      lastName: "Demir",
-      email: "fatma@example.com",
-      role: "user",
-      status: "active",
-      createdAt: "2024-01-15",
-      lastLogin: "2024-01-23"
-    },
-    {
-      id: 4,
-      firstName: "Mehmet",
-      lastName: "Kaya",
-      email: "mehmet@example.com",
-      role: "user",
-      status: "pending",
-      createdAt: "2024-01-20"
-    },
-    {
-      id: 5,
-      firstName: "Ayşe",
-      lastName: "Öztürk",
-      email: "ayse@example.com",
-      role: "agent",
-      status: "inactive",
-      createdAt: "2024-01-12",
-      lastLogin: "2024-01-18"
-    }
-  ]);
+  const [users, setUsers] = useState<IUser[]>([]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [showUserForm, setShowUserForm] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editingUser, setEditingUser] = useState<IUser | null>(null);
+
+  const getUser = async () => {
+      try {
+        const res = await api.get('/user')
+        setUsers(res.data)
+        console.log('res.data', res.data)
+      } catch (error) {
+        
+      }
+    }
+
+  useEffect(() => {
+    getUser()
+  },[])
 
   const filteredUsers = users.filter(user =>
-    `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    `${user.name} ${user.surname}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -103,63 +63,45 @@ export default function AdminUsers() {
     setShowUserForm(true);
   };
 
-  const handleEditUser = (user: User) => {
+  const handleEditUser = (user: IUser) => {
     setEditingUser(user);
     setShowUserForm(true);
   };
 
-  const handleDeleteUser = (id: number) => {
-    if (confirm("Bu kullanıcıyı silmek istediğinizden emin misiniz?")) {
-      setUsers(users.filter(u => u.id !== id));
-    }
+  const handleDeleteUser = async (id: string) => {
+    toast('Kullanıcıyı Silmek İstediğinizden Eminmisiniz?', {
+      action: {
+        label: 'Sil',
+        onClick: async () => {
+          try {
+            await api.delete(`/user/${id}`)
+            setUsers(users.filter(u => u._id !== id))
+            toast.success("Kullanıcı başarıyla silindi")
+          } catch {
+            toast.error("Kullanıcı silinirken bir hata oluştu.")
+          }
+        }
+      },
+      cancel: {
+        label: 'iptal',
+        onClick: () => toast.info("Kullanıcı silme işlemi iptal edildi.")
+      }
+    })
   };
 
-  const handleSaveUser = (userData: any) => {
-    if (editingUser) {
-      // Update existing user
-      setUsers(users.map(u =>
-        u.id === editingUser.id
-          ? { ...u, ...userData }
-          : u
-      ));
-    } else {
-      // Add new user
-      const newUser: User = {
-        id: Date.now(),
-        ...userData,
-        status: "active" as const,
-        createdAt: new Date().toISOString().split('T')[0]
-      };
-      setUsers([...users, newUser]);
-    }
-    setShowUserForm(false);
-  };
 
-  const getRoleBadge = (role: User['role']) => {
+  const getRoleBadge = (role: IUser['roles']) => {
     switch (role) {
       case 'admin':
         return <Badge variant="default" className="bg-red-100 text-red-800">Admin</Badge>;
-      case 'agent':
+      case 'member':
         return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Emlak Danışmanı</Badge>;
-      case 'user':
-        return <Badge variant="outline">Kullanıcı</Badge>;
       default:
         return <Badge variant="outline">Bilinmiyor</Badge>;
     }
   };
 
-  const getStatusBadge = (status: User['status']) => {
-    switch (status) {
-      case 'active':
-        return <Badge variant="secondary" className="bg-green-100 text-green-800">Aktif</Badge>;
-      case 'inactive':
-        return <Badge variant="secondary" className="bg-gray-100 text-gray-800">Pasif</Badge>;
-      case 'pending':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Beklemede</Badge>;
-      default:
-        return <Badge variant="outline">Bilinmiyor</Badge>;
-    }
-  };
+ 
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
@@ -210,7 +152,7 @@ export default function AdminUsers() {
                 <User className="h-8 w-8 text-purple-600" />
                 <div className="ml-4">
                   <p className="text-sm text-muted-foreground">Emlak Danışmanı</p>
-                  <p className="text-2xl">{users.filter(u => u.role === 'agent').length}</p>
+                  <p className="text-2xl">{users.filter(u => u.roles === 'member').length}</p>
                 </div>
               </div>
             </CardContent>
@@ -263,23 +205,20 @@ export default function AdminUsers() {
                     <TableHead>E-posta</TableHead>
                     <TableHead>Telefon</TableHead>
                     <TableHead>Rol</TableHead>
-                    <TableHead>Durum</TableHead>
-                    <TableHead>Üye Tarihi</TableHead>
-                    <TableHead>Son Giriş</TableHead>
                     <TableHead>İşlemler</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
+                    <TableRow key={user._id}>
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <Avatar className="h-10 w-10">
-                            <AvatarImage src={user.avatar} />
-                            <AvatarFallback>{getInitials(user.firstName, user.lastName)}</AvatarFallback>
+                            <AvatarImage src={user.image} />
+                            <AvatarFallback>{getInitials(user.name, user.surname)}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="text-sm">{user.firstName} {user.lastName}</div>
+                            <div className="text-sm">{user.name} {user.surname}</div>
                           </div>
                         </div>
                       </TableCell>
@@ -290,19 +229,10 @@ export default function AdminUsers() {
                         </div>
                       </TableCell>
                       <TableCell className="text-sm">
-                        {user.phone || "-"}
+                        {user.phonenumber || "-"}
                       </TableCell>
                       <TableCell>
-                        {getRoleBadge(user.role)}
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(user.status)}
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {new Date(user.createdAt).toLocaleDateString('tr-TR')}
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('tr-TR') : "-"}
+                        {getRoleBadge(user.roles)}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
@@ -313,11 +243,11 @@ export default function AdminUsers() {
                           >
                             <Edit className="h-3 w-3" />
                           </Button>
-                          {user.id !== 1 && ( // Prevent deleting admin user
+                          {user.roles !== 'admin' && ( // Prevent deleting admin user
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleDeleteUser(user.id)}
+                              onClick={() => handleDeleteUser(user._id)}
                               className="text-red-600 hover:text-red-700"
                             >
                               <Trash2 className="h-3 w-3" />
@@ -356,8 +286,9 @@ export default function AdminUsers() {
             </DialogHeader>
             <UserForm
               user={editingUser}
-              onSave={handleSaveUser}
               onCancel={() => setShowUserForm(false)}
+              onClose={() => setShowUserForm(false)}
+              onSuccess={getUser}
             />
           </DialogContent>
         </Dialog>

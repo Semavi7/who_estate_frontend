@@ -281,10 +281,6 @@ export default function AddPropertyPage() {
           }
         }),
         userId: user?._id || '',
-        userName: user?.name || '',
-        userSurname: user?.surname || '',
-        userImage: user?.image || '',
-        userPhone: user?.phonenumber || 0,
         selectedFeatures: JSON.stringify(groupFeatures(formData.features, featureOptions))
       }
 

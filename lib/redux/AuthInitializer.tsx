@@ -1,11 +1,14 @@
 'use client'
 
 import { useEffect } from 'react';
-import { useStore } from 'react-redux';
-import { loginSuccess, logout } from './authSlice';
+import { useSelector, useStore } from 'react-redux';
+import { logout, selectIsAuthenticated } from './authSlice';
+import { useRouter } from 'next/navigation';
 
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
-  const store = useStore();
+  const store = useStore()
+  const router = useRouter();
+  const isAuthenticated = useSelector(selectIsAuthenticated)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -25,6 +28,12 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
 
     checkAuth()
   }, [store])
+
+   useEffect(() => {
+    if (!isAuthenticated && window.location.pathname !== '/') { 
+      router.push('/')
+    }
+  }, [isAuthenticated, router])
 
   return <>{children}</>
 }

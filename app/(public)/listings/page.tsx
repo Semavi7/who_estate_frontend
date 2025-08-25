@@ -72,6 +72,7 @@ export default function PropertyListings() {
   const fetchProperties = async () => {
     try {
       const res = await api.get('/properties')
+      console.log('res.data', res.data)
       setProperties(res.data)
       setFilteredProperties(res.data)
     } catch (error) {

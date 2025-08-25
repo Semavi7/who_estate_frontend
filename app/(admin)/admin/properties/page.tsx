@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
-import { Badge } from "../../../../components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../components/ui/table";
 import {
   Search,
@@ -46,11 +45,25 @@ export default function AdminProperties() {
   }, [])
 
   const handleDeleteProperty = (id: string) => {
-    if (confirm("Bu ilanı silmek istediğinizden emin misiniz?")) {
-      setProperties(properties.filter(p => p._id !== id));
-      toast.success("İlan başarıyla silindi");
-    }
-  };
+    toast('İlanı Silmek İstediğinizden Eminmisiniz?', {
+      action: {
+        label: 'Sil',
+        onClick: async () => {
+          try {
+            await api.delete(`/properties/${id}`)
+            setProperties(properties.filter(p => p._id !== id))
+            toast.success("İlan başarıyla silindi")
+          } catch {
+            toast.error("İlan silinirken bir hata oluştu.")
+          }
+        }
+      },
+      cancel: {
+        label: 'iptal',
+        onClick: () => toast.info("İlan silme işlemi iptal edildi.")
+      }
+    })
+  }
 
   const formatPrice = (price: number, listingType: string) => {
     return `${price.toLocaleString('tr-TR')} TL${listingType === 'kiralik' ? '/ay' : ''}`;

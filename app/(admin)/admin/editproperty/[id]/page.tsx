@@ -192,12 +192,16 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
     subType: "",
     selectedFeatures: [],
     images: [],
-    userId: "",
-    userName: "",
-    userSurname: "",
-    userImage: "",
-    userPhone: 0,
-    createdAt: "",
+    user: {
+      _id: "",
+      name: "",
+      surname: "",
+      email: "",
+      image: "",
+      phonenumber: 0,
+      roles: ""
+    },
+    createdAt: ""
   })
 
 
@@ -356,10 +360,6 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
           }
         }),
         userId: user?._id || '',
-        userName: user?.name || '',
-        userSurname: user?.surname || '',
-        userImage: user?.image || '',
-        userPhone: user?.phonenumber || 0,
         selectedFeatures: JSON.stringify(groupFeatures(properties.selectedFeatures, featureOptions))
       }
 
@@ -387,6 +387,7 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
       router.push('/admin/properties')
     } catch (error) {
       toast.error("İlan oluşturulurken hata oluştu", { id: toastId })
+      console.log(error)
     }
   }
 

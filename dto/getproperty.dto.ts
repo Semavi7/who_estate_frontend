@@ -34,10 +34,14 @@ export default interface PropertyGetData {
     subType?: string
     selectedFeatures: string[]
     images: string[]
-    userId: string
-    userName: string
-    userSurname: string
-    userPhone: number
-    userImage: string
-    createdAt: string 
+    user: {
+        _id: string,
+        name: string,
+        surname: string,
+        email: string,
+        image: string,
+        phonenumber: number,
+        roles: string
+    }
+    createdAt: string
 }

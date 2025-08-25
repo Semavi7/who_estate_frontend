@@ -36,6 +36,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { id: "home", icon: Globe, label: "Siteye Git", path: "/" },
     ]
 
+    const filteredMenuItems = menuItems.filter(item => {
+        if(item.id === "admin-users" || item.id === "admin-features"){
+            return user?.role === 'admin'
+        }
+        return true
+    })
+
     const dispatch = useDispatch()
     const router = useRouter()
 
