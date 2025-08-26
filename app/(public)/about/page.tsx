@@ -64,7 +64,7 @@ export default function AboutPage() {
   return (
     <div className="pt-16 md:pt-24 min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary to-primary/80 text-white py-16 md:py-24">
+      <section className="bg-gradient-to-r from-primary to-primary/50 text-white py-16 md:py-24">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl mb-6">Hakkımızda</h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
@@ -78,16 +78,16 @@ export default function AboutPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-primary/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                   <stat.icon className="h-8 w-8 text-primary" />
                 </div>
                 <div className="text-2xl md:text-3xl text-primary mb-2">{stat.value}</div>
-                <div className="text-gray-600">{stat.label}</div>
+                <div className="text-foreground">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -95,13 +95,13 @@ export default function AboutPage() {
       </section>
 
       {/* Story Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
                 <h2 className="text-3xl md:text-4xl mb-6">Hikayemiz</h2>
-                <div className="space-y-4 text-gray-700">
+                <div className="space-y-4 text-foreground">
                   <p>
                     EmlakPro olarak 2009 yılından bu yana emlak sektöründe faaliyet göstermekteyiz. 
                     Kurulduğumuz günden itibaren müşteri memnuniyetini ön planda tutarak, 
@@ -135,11 +135,11 @@ export default function AboutPage() {
       </section>
 
       {/* Values Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl mb-4">Değerlerimiz</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-foreground max-w-2xl mx-auto">
               Müşterilerimize en iyi hizmeti sunabilmek için benimsediğimiz temel değerler
             </p>
           </div>
@@ -148,7 +148,7 @@ export default function AboutPage() {
             {values.map((value, index) => (
               <Card key={index} className="text-center h-full">
                 <CardContent className="p-6">
-                  <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="bg-primary/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <value.icon className="h-8 w-8 text-primary" />
                   </div>
                   <h3 className="text-lg mb-3">{value.title}</h3>
@@ -161,7 +161,7 @@ export default function AboutPage() {
       </section>
 
       {/* Team Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl mb-4">Ekibimiz</h2>
@@ -198,18 +198,15 @@ export default function AboutPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-primary text-white">
+      <section className="py-16 bg-gradient-to-r from-primary to-primary/50 text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl mb-4">Birlikte Çalışalım</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
             Gayrimenkul ihtiyaçlarınız için bizimle iletişime geçin. 
             Uzman ekibimiz size yardımcı olmaktan mutluluk duyacaktır.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="secondary" size="lg">
-              İlan Ver
-            </Button>
-            <Button variant="outline" size="lg" className="text-white border-white hover:bg-white hover:text-primary">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center ">
+            <Button variant="outline" size="lg" className="!bg-background cursor-pointer">
               İletişim
             </Button>
           </div>

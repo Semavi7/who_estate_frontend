@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ReduxProvider } from "@/lib/redux/provider";
+import { Toaster } from "sonner";
+import { ThemeProvider } from "../components/public/theme-provider"
 
 export const metadata: Metadata = {
   title: "Derya Emlak",
@@ -13,9 +15,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr">
+    <html lang="tr" suppressHydrationWarning>
       <body>
-          <ReduxProvider>{children}</ReduxProvider> 
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ReduxProvider>{children}</ReduxProvider>
+          <Toaster richColors position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   )

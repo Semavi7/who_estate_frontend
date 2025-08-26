@@ -27,11 +27,11 @@ export default function About() {
   ];
 
   return (
-    <section className="py-12 md:py-16 bg-gray-50">
+    <section className="py-12 md:py-16 bg-background">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
           <div className="order-2 lg:order-1">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl mb-4 md:mb-6 text-gray-900">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl mb-4 md:mb-6 text-foreground">
               Neden <span className="text-primary">EmlakPro</span>?
             </h2>
             <p className="text-base md:text-lg text-gray-600 mb-6 md:mb-8 leading-relaxed">
@@ -43,21 +43,21 @@ export default function About() {
               <div className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
                 <div>
-                  <h4 className="text-base md:text-lg text-gray-900 mb-1">Güvenilir Platform</h4>
+                  <h4 className="text-base md:text-lg text-foreground mb-1">Güvenilir Platform</h4>
                   <p className="text-sm md:text-base text-gray-600">Tüm ilanlarımız doğrulanmış ve güncel bilgiler içerir</p>
                 </div>
               </div>
               <div className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
                 <div>
-                  <h4 className="text-base md:text-lg text-gray-900 mb-1">Uzman Danışmanlar</h4>
+                  <h4 className="text-base md:text-lg text-text-foreground mb-1">Uzman Danışmanlar</h4>
                   <p className="text-sm md:text-base text-gray-600">Sertifikalı emlak uzmanlarından profesyonel destek</p>
                 </div>
               </div>
               <div className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
                 <div>
-                  <h4 className="text-base md:text-lg text-gray-900 mb-1">Hızlı Süreç</h4>
+                  <h4 className="text-base md:text-lg text-text-foreground mb-1">Hızlı Süreç</h4>
                   <p className="text-sm md:text-base text-gray-600">Dijital çözümlerle emlak işlemlerinizi hızlandırıyoruz</p>
                 </div>
               </div>
@@ -77,7 +77,7 @@ export default function About() {
 
             {/* Stats overlay */}
             <div className="absolute -bottom-4 md:-bottom-6 -left-4 md:-left-6 right-4 md:right-6">
-              <Card className="bg-white shadow-xl">
+              <Card className="bg-background shadow-xl">
                 <CardContent className="p-4 md:p-6">
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {stats.map((stat, index) => (

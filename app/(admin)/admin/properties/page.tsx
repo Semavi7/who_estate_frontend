@@ -19,12 +19,16 @@ import { toast } from "sonner";
 import Link from "next/link";
 import api from "@/lib/axios";
 import PropertyGetData from "@/dto/getproperty.dto";
+import { useSelector } from "react-redux";
+import { selectUser } from "@/lib/redux/authSlice";
 
 
 export default function AdminProperties() {
   const [properties, setProperties] = useState<PropertyGetData[]>([]);
 
   const [searchTerm, setSearchTerm] = useState("");
+
+  const user = useSelector(selectUser)
 
   const filteredProperties = properties.filter(property =>
     property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -33,8 +37,15 @@ export default function AdminProperties() {
 
   const fetchProperties = async () => {
     try {
-      const res = await api.get('/properties')
-      setProperties(res.data)
+      if(user?.role === 'admin'){
+        const res = await api.get('/properties')
+        setProperties(res.data)
+      }
+      else{
+        const res = await api.get(`/properties/query?userId=${user?._id}`)
+        setProperties(res.data)
+      }
+      
     } catch (error) {
       toast.error("Veri alınırken bir hata oluştu.")
     }

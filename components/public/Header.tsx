@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { logout, selectIsAuthenticated } from "@/lib/redux/authSlice";
 import { persistor } from "@/lib/redux/store";
 import ForgotPassword from "./ForgotPassword";
+import { ModeToggle } from "../ui/darkmode";
 
 interface HeaderProps {
   showHeader?: boolean;
@@ -46,7 +47,7 @@ export default function Header({ showHeader = true }: HeaderProps) {
   return (
     <>
       <header
-        className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 animate-header"
+        className="fixed top-0 left-0 right-0 bg-background shadow-sm z-50 animate-header"
       >
         {/* Top bar - hidden on mobile */}
         <div className="bg-primary text-primary-foreground py-2 hidden md:block">
@@ -56,6 +57,7 @@ export default function Header({ showHeader = true }: HeaderProps) {
                 <Phone className="h-4 w-4" />
                 <span>+90 (212) 555 0123</span>
               </div>
+              <ModeToggle/>
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4" />
                 <span>info@emlak.com</span>

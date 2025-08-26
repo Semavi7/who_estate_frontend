@@ -25,10 +25,10 @@ export default function FeaturedProperties() {
   }, [])
 
   return (
-    <section className="py-12 md:py-16 bg-gray-50">
+    <section className="py-12 md:py-16 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8 md:mb-12">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl mb-4 text-gray-900">Öne Çıkan İlanlar</h2>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl mb-4 text-foreground">Öne Çıkan İlanlar</h2>
           <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-4">
             En popüler ve kaliteli emlak ilanlarımızı keşfedin
           </p>

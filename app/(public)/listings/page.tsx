@@ -195,7 +195,7 @@ export default function PropertyListings() {
   );
 
   return (
-    <div className="pt-16 md:pt-24 min-h-screen bg-gray-50">
+    <div className="pt-16 md:pt-24 min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl mb-4">İlanlar</h1>
@@ -216,7 +216,7 @@ export default function PropertyListings() {
               </Button>
             </div>
 
-            <div className={`bg-white p-6 rounded-lg shadow-sm space-y-6 ${showMobileFilters ? 'block' : 'hidden lg:block'}`}>
+            <Card className={`bg-card p-6 rounded-lg shadow-sm space-y-6 ${showMobileFilters ? 'block' : 'hidden lg:block'}`}>
               <h3 className="text-lg mb-4">Arama Filtreleri</h3>
 
               {/* Location */}
@@ -414,7 +414,7 @@ export default function PropertyListings() {
                 <Search className="h-4 w-4 mr-2" />
                 Filtrele
               </Button>
-            </div>
+            </Card>
           </div>
 
           {/* Properties Grid */}

@@ -189,7 +189,7 @@ export default function PropertyDetailPage({ params }: EditPropertyPageProps) {
               <CardContent className="p-0">
                 {/* Main Image */}
                 <div className="relative">
-                  <div className="aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
+                  <div className="aspect-video bg-background rounded-t-lg overflow-hidden">
                     <img
                       src={property.images[selectedImageIndex]}
                       alt={property.title}
@@ -202,13 +202,13 @@ export default function PropertyDetailPage({ params }: EditPropertyPageProps) {
                     <>
                       <button
                         onClick={prevImage}
-                        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all"
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-muted-foreground hover:bg-muted-foreground/80 rounded-full p-2 shadow-lg transition-all"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </button>
                       <button
                         onClick={nextImage}
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all"
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-muted-foreground hover:bg-muted-foreground/80 rounded-full p-2 shadow-lg transition-all"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </button>
@@ -276,37 +276,37 @@ export default function PropertyDetailPage({ params }: EditPropertyPageProps) {
               <CardContent className="space-y-6">
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <Card className="text-center p-3 rounded-lg">
                     <Square className="h-6 w-6 mx-auto mb-1 text-gray-600" />
                     <div className="text-sm text-gray-600">Brüt Alan</div>
                     <div>{property.gross} m²</div>
-                  </div>
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  </Card>
+                  <Card className="text-center p-3  rounded-lg">
                     <Bed className="h-6 w-6 mx-auto mb-1 text-gray-600" />
                     <div className="text-sm text-gray-600">Oda Sayısı</div>
                     <div>{property.numberOfRoom}</div>
-                  </div>
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  </Card>
+                  <Card className="text-center p-3  rounded-lg">
                     <Bath className="h-6 w-6 mx-auto mb-1 text-gray-600" />
                     <div className="text-sm text-gray-600">Banyo</div>
                     <div>{property.numberOfBathrooms}</div>
-                  </div>
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  </Card>
+                  <Card className="text-center p-3  rounded-lg">
                     <Calendar className="h-6 w-6 mx-auto mb-1 text-gray-600" />
                     <div className="text-sm text-gray-600">Bina Yaşı</div>
                     <div>{property.buildingAge}</div>
-                  </div>
+                  </Card>
                 </div>
 
                 <Separator />
 
                 {/* Description */}
-                <div>
-                  <h3 className="text-lg mb-3">İlan Açıklaması</h3>
+                <Card>
+                  <h3 className="text-lg p-3">İlan Açıklaması</h3>
                   <div className="text-gray-700 leading-relaxed">
                     <RichTextRenderer data={property.description} />
                   </div>
-                </div>
+                </Card>
 
                 <Separator />
 

@@ -59,6 +59,8 @@ export default function LoginForm({ open, onOpenChange, onOpenForgotPassword }: 
       router.push('/admin/dashboard')
     } catch (error) {
       toast.error('Giriş Yapılamadı. Lütfen Bilgileriniizi Kontrol Ediniz.')
+    } finally{
+      setIsLoading(false)
     }
   }
 

@@ -16,10 +16,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Toaster } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, selectUser } from "@/lib/redux/authSlice";
 import { persistor } from "@/lib/redux/store";
+import { ModeToggle } from "@/components/ui/darkmode";
 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -54,18 +54,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="min-h-screen bg-background text-foreground flex">
             {/* Sidebar */}
-            <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-64'} flex flex-col`}>
+            <div className={`bg-sidebar text-sidebar-foreground border-r border-accent transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-64'} flex flex-col`}>
                 {/* Sidebar Header */}
-                <div className="p-4 border-b border-gray-200">
+                <div className="p-4 border-b border-accent">
                     <div className="flex items-center justify-between">
                         {!sidebarCollapsed && (
                             <div className="flex items-center space-x-2">
                                 <div className="bg-primary text-primary-foreground p-2 rounded-lg">
                                     <div className="h-5 w-5 flex items-center justify-center text-sm">🏠</div>
                                 </div>
-                                <span className="text-lg">Admin Panel</span>
+                                <span className="text-lg text-sidebar-foreground">Admin Panel</span>
                             </div>
                         )}
                         <Button
@@ -89,8 +89,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
                                         // Artık burası hata vermeyecek çünkü 'pathname' yukarıda tanımlı.
                                         pathname === item.path
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'text-gray-700 hover:bg-gray-100'
+                                            ? 'bg-sidebar text-sidebar-foreground'
+                                            : 'text-gray-500 hover:bg-gray-700'
                                         } ${sidebarCollapsed ? "justify-center" : ""}`}
                                 >
                                     <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -102,9 +102,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </nav>
 
                 {/* Logout Button */}
-                <div className="p-4 border-t border-gray-200">
+                <div className="p-4 border-t border-accent">
                     <button
-                        className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                        className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-500  hover:bg-gray-700 hover:text-red-600 transition-colors"
                         onClick={handleLogout}
                     >
                         <LogOut className="h-5 w-5" />
@@ -116,10 +116,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Main Content */}
             <div className="flex-1 flex flex-col">
                 {/* Top Navbar */}
-                <header className="bg-white border-b border-gray-200 px-6 py-35">
+                <header className="bg-sidebar border-b border-accent px-6 py-35">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-xl text-gray-900">
+                            <h1 className="text-xl ">
                                 {menuItems.find(item => item.path === pathname)?.label || "Dashboard"}
                             </h1>
                         </div>
@@ -136,6 +136,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         {user?.surname ? user.surname.charAt(0).toUpperCase() : ''}
                                     </AvatarFallback>
                                 </Avatar>
+                                <ModeToggle/>
                             </div>
                         </div>
                     </div>
@@ -146,7 +147,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     {children}
                 </main>
             </div>
-            <Toaster richColors position="top-right" />
         </div>
     );
 }

@@ -58,7 +58,7 @@ export default function HeroSection() {
     >
       {/* Dark overlay for better text readability */}
       <div
-        className={`absolute inset-0 bg-black/20 transition-opacity duration-1000 ${showOverlay ? 'opacity-100' : 'opacity-0'}`} />
+        className={`absolute inset-0 bg-black/25 animate-fadeIn`} />
 
 
       <div className="relative z-10 container mx-auto px-4 py-12 md:py-20 min-h-screen flex flex-col justify-center">
@@ -91,16 +91,16 @@ export default function HeroSection() {
 
         {/* Search Form */}
         <div
-          className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-4 md:p-6 lg:p-8 max-w-4xl mx-auto animate-slide-in-up"
+          className="bg-card backdrop-blur-sm rounded-2xl shadow-xl p-4 md:p-6 lg:p-8 max-w-4xl mx-auto animate-slide-in-up"
           style={{ animationDelay: "2s" }}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             <div className="space-y-2 md:col-span-1">
-              <label className="text-sm text-gray-600">
+              <label className="text-sm text-foreground">
                 İl
               </label>
               <Select value={location} onValueChange={setLocation}>
-                <SelectTrigger>
+                <SelectTrigger className="border-primary h-10">
                   <SelectValue placeholder="İl seçin" />
                 </SelectTrigger>
                 <SelectContent>
@@ -114,11 +114,11 @@ export default function HeroSection() {
             </div>
 
             <div className="space-y-2 md:col-span-1">
-              <label className="text-sm text-gray-600">
+              <label className="text-sm text-foreground">
                 İlan Tipi
               </label>
               <Select onValueChange={setListingType} value={listingType}>
-                <SelectTrigger className="border-gray-200 focus:border-primary h-10">
+                <SelectTrigger className="border-primary h-10">
                   <SelectValue placeholder="Satılık/Kiralık" />
                 </SelectTrigger>
                 <SelectContent>
@@ -133,11 +133,11 @@ export default function HeroSection() {
             </div>
 
             <div className="space-y-2 md:col-span-1">
-              <label className="text-sm text-gray-600">
+              <label className="text-sm text-foreground">
                 Emlak Tipi
               </label>
               <Select onValueChange={setPropertyType} value={propertyType}>
-                <SelectTrigger className="border-gray-200 focus:border-primary h-10">
+                <SelectTrigger className="border-primary h-10">
                   <SelectValue placeholder="Konut/İşyeri" />
                 </SelectTrigger>
                 <SelectContent>
@@ -164,8 +164,8 @@ export default function HeroSection() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 md:gap-4 mt-4 md:mt-6 pt-4 md:pt-6 border-t border-gray-100">
-            <span className="text-sm text-gray-600 w-full md:w-auto mb-2 md:mb-0">
+          <div className="flex flex-wrap gap-2 md:gap-4 mt-4 md:mt-6 pt-4 md:pt-6 border-t border-accent">
+            <span className="text-sm text-foreground w-full md:w-auto mb-2 md:mb-0">
               Popüler Aramalar:
             </span>
             <button className="text-sm text-primary hover:text-primary/80 transition-colors">
