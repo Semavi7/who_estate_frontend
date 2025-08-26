@@ -38,9 +38,9 @@ export default function Header({ showHeader = true }: HeaderProps) {
   const handleLoginClick = () => {
     setShowLoginForm(true);
   }
-  useEffect(()=>{
+  useEffect(() => {
     api.post('track-view')
-  },[])
+  }, [])
 
   if (!showHeader) return null;
 
@@ -57,7 +57,6 @@ export default function Header({ showHeader = true }: HeaderProps) {
                 <Phone className="h-4 w-4" />
                 <span>+90 (212) 555 0123</span>
               </div>
-              <ModeToggle/>
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4" />
                 <span>info@emlak.com</span>
@@ -69,12 +68,13 @@ export default function Header({ showHeader = true }: HeaderProps) {
             </div>
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (
-                  <Button onClick={handleLogout} variant="ghost" size="sm" className="text-primary-foreground hover:bg-white/10 hover:text-amber-50 cursor-pointer">
+                <Button onClick={handleLogout} variant="ghost" size="sm" className="text-primary-foreground hover:bg-white/10 hover:text-amber-50 cursor-pointer">
                   Çıkış Yap
-                   </Button>
+                </Button>
               ) : <Button onClick={handleLoginClick} variant="ghost" size="sm" className="text-primary-foreground hover:bg-white/10 hover:text-amber-50 cursor-pointer">
                 Giriş Yap
               </Button>}
+              <ModeToggle />
             </div>
           </div>
         </div>
@@ -104,13 +104,13 @@ export default function Header({ showHeader = true }: HeaderProps) {
               {
                 isAuthenticated ? (
                   <Link href="/admin/dashboard">
-                <Button className="hidden md:inline-flex cursor-pointer">
-                  Yönetim Paneli
-                </Button>
-              </Link>
+                    <Button className="hidden md:inline-flex cursor-pointer">
+                      Yönetim Paneli
+                    </Button>
+                  </Link>
                 ) : (<></>)
               }
-              
+
               {/* Mobile menu button */}
               <Button
                 variant="ghost"
@@ -144,7 +144,7 @@ export default function Header({ showHeader = true }: HeaderProps) {
       <LoginForm
         open={showLoginForm}
         onOpenChange={setShowLoginForm}
-        onOpenForgotPassword={()=>setShowForgotPassword(true)}
+        onOpenForgotPassword={() => setShowForgotPassword(true)}
       />
       <ForgotPassword
         open={showForgotPassword}

@@ -43,6 +43,7 @@ import PropertySubmitData from "@/dto/createproperty.dto"
 import { MapPicker } from "@/components/ui/mappicker"
 import { useSelector } from "react-redux"
 import { selectUser } from "@/lib/redux/authSlice"
+import * as z from "zod"
 
 interface ImageObject {
   id: string
@@ -98,6 +99,56 @@ function SortableImageItem({ id, image, onRemove }: { id: any; image: ImageObjec
   )
 }
 
+const ImageObjectSchema = z.object({
+  id: z.string(),
+  file: z.any(),
+  preview: z.string(),
+})
+
+const addPropertyFormSchema = z.object({
+  propertyType: z.string().min(1, "Emlak tipi zorunludur."),
+  listingType: z.string().min(1, "İlan tipi zorunludur."),
+  subType: z.string().optional(),
+
+  title: z.string().min(5, "Başlık en az 5 karakter olmalıdır."),
+  description: z.array(z.any()).min(1, "Açıklama zorunludur."), // RichTextEditor için Descendant[]
+  price: z.string().regex(/^\d+$/, "Fiyat sadece rakamlardan oluşmalıdır.").transform(Number),
+  grossArea: z.string().regex(/^\d+$/, "Brüt M² sadece rakamlardan oluşmalıdır.").transform(Number),
+  netArea: z.string().regex(/^\d*$/, "Net M² sadece rakamlardan oluşmalıdır.").transform(Number).optional(),
+  rooms: z.string().optional(),
+  buildingAge: z.string().regex(/^\d*$/, "Bina yaşı sadece rakamlardan oluşmalıdır.").transform(Number).optional(),
+  floor: z.string().optional(),
+  totalFloors: z.string().optional(),
+  heating: z.string().optional(),
+  bathrooms: z.string().optional(),
+  kitchen: z.string().optional(),
+  balcony: z.string().optional(),
+  elevator: z.string().optional(),
+  parking: z.string().optional(),
+  availability: z.string().optional(),
+  deedStatus: z.string().optional(),
+  furnished: z.string().optional(),
+  dues: z.string().regex(/^\d*$/, "Aidat sadece rakamlardan oluşmalıdır.").transform(Number).optional(),
+  eligibleForLoan: z.string().optional(),
+
+  city: z.string().min(1, "İl zorunludur."),
+  district: z.string().min(1, "İlçe zorunludur."),
+  neighborhood: z.string().optional(),
+  address: z.string().optional(),
+  coordinates: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }).refine(coords => coords.lat !== 0 || coords.lng !== 0, {
+    message: "Harita konumu zorunludur.",
+    path: ['coordinates']
+  }),
+
+  features: z.array(z.string()),
+  images: z.array(ImageObjectSchema).min(1, "En az bir fotoğraf yüklemelisiniz."),
+})
+
+type AddPropertyFormData = z.infer<typeof addPropertyFormSchema>
+
 export default function AddPropertyPage() {
   const router = useRouter()
   const user = useSelector(selectUser)
@@ -107,7 +158,8 @@ export default function AddPropertyPage() {
   const [featureOptions, setFeatureOptions] = useState<Record<string, string[]>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
-  const [formData, setFormData] = useState({
+  const [errors, setErrors] = useState<z.ZodFormattedError<AddPropertyFormData> | null>(null)
+  const [formData, setFormData] = useState<AddPropertyFormData>({
     // Kategori
     propertyType: "",
     listingType: "",
@@ -116,11 +168,11 @@ export default function AddPropertyPage() {
     // İlan Detayları
     title: "",
     description: [{ type: 'paragraph', children: [{ text: '' }] }] as Descendant[],
-    price: "",
-    grossArea: "",
-    netArea: "",
+    price: 0,
+    grossArea: 0,
+    netArea: 0,
     rooms: "",
-    buildingAge: "",
+    buildingAge: 0,
     floor: "",
     totalFloors: "",
     heating: "",
@@ -132,7 +184,7 @@ export default function AddPropertyPage() {
     availability: "",
     deedStatus: "",
     furnished: "",
-    dues: "",
+    dues: 0,
     eligibleForLoan: "",
 
     // Adres
@@ -179,7 +231,87 @@ export default function AddPropertyPage() {
 
   }
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleNextStep = () => {
+    let stepSchema: z.ZodSchema;
+    let fieldsToValidate: (keyof AddPropertyFormData)[] = [];
+
+    if (currentStep === 1) {
+      stepSchema = addPropertyFormSchema.pick({ propertyType: true, listingType: true, subType: true });
+      fieldsToValidate = ["propertyType", "listingType"]; // subType opsiyonel olduğu için zorunlu değil
+    } else if (currentStep === 2) {
+      stepSchema = addPropertyFormSchema.pick({ title: true, description: true, price: true, grossArea: true });
+      fieldsToValidate = ["title", "description", "price", "grossArea"];
+    } else if (currentStep === 3) {
+      stepSchema = addPropertyFormSchema.pick({ city: true, district: true, neighborhood: true, coordinates: true });
+      fieldsToValidate = ["city", "district", "coordinates"];
+    } else if (currentStep === 4) {
+      stepSchema = addPropertyFormSchema.pick({ features: true });
+      fieldsToValidate = ["features"];
+    } else if (currentStep === 5) {
+      stepSchema = addPropertyFormSchema.pick({ images: true });
+      fieldsToValidate = ["images"];
+    } else {
+      return;
+    }
+
+    // Sadece ilgili alanları içeren bir obje oluştur
+    const dataToValidate: Partial<AddPropertyFormData> = {};
+
+    fieldsToValidate.forEach(field => {
+      if (field.includes('.')) {
+        const [parentKey, childKey] = field.split('.');
+        const parent = parentKey as keyof AddPropertyFormData;
+        const parentData = formData[parent];
+        if (parentData && typeof parentData === 'object' && childKey in parentData) {
+          if (!dataToValidate[parent]) {
+            (dataToValidate[parent] as any) = {};
+          }
+          (dataToValidate[parent] as any)[childKey] = (parentData as any)[childKey];
+        }
+      } else {
+        // formData[field] değeri undefined olabilir, bu yüzden sadece undefined olmayan değerleri ata
+        const value = formData[field as keyof AddPropertyFormData];
+        if (value !== undefined) {
+          (dataToValidate as any)[field] = value;
+        }
+      }
+    });
+
+
+    const result = stepSchema.safeParse(dataToValidate);
+
+    if (result.success) {
+      // Sadece bu adımdaki hataları temizle
+      setErrors(prevErrors => {
+        if (!prevErrors) return null;
+        const newErrors: z.ZodFormattedError<AddPropertyFormData> = { ...prevErrors, _errors: prevErrors._errors || [] }; // _errors'ı her zaman dizi olarak başlat
+
+        fieldsToValidate.forEach(field => {
+          if (field.includes('.')) {
+            const [parentKey, childKey] = field.split('.');
+            const parent = parentKey as keyof AddPropertyFormData;
+            if (newErrors[parent] && (newErrors[parent] as any)[childKey]) {
+              delete (newErrors[parent] as any)[childKey];
+              if (Object.keys(newErrors[parent]).filter(k => k !== '_errors').length === 0) {
+                delete newErrors[parent];
+              }
+            }
+          } else {
+            delete newErrors[field];
+          }
+        });
+        return Object.keys(newErrors).length > 0 || newErrors._errors.length > 0 ? newErrors : null;
+      });
+      setCurrentStep(Math.min(5, currentStep + 1));
+    } else {
+      // Sadece bu adımdaki hataları göster
+      const formattedErrors = result.error.format();
+      setErrors(prevErrors => ({ ...prevErrors, ...formattedErrors }));
+      toast.error("Lütfen bu adımdaki zorunlu alanları doldurun.");
+    }
+  };
+
+  const handleInputChange = (field: keyof AddPropertyFormData, value: any) => {
     setFormData(prev => {
       const newState = { ...prev, [field]: value }
 
@@ -192,6 +324,35 @@ export default function AddPropertyPage() {
       // İlçe değişirse, mahalleyi sıfırla
       if (field === 'district') {
         newState.neighborhood = ""
+      }
+
+      // Anlık validasyon yap
+      const result = addPropertyFormSchema.safeParse(newState);
+      if (!result.success) {
+        setErrors(result.error.format());
+      } else {
+        // Eğer bu alanın hatası çözüldüyse, hatayı kaldır
+        if (errors && errors[field]) {
+          setErrors(prevErrors => {
+            if (!prevErrors) return null;
+            const newErrors: z.ZodFormattedError<AddPropertyFormData> = { ...prevErrors, _errors: prevErrors._errors || [] };
+
+            // Sadece bu alanın hatasını temizle
+            if (field.includes('.')) {
+              const [parentKey, childKey] = field.split('.');
+              const parent = parentKey as keyof AddPropertyFormData;
+              if (newErrors[parent] && (newErrors[parent] as any)[childKey]) {
+                delete (newErrors[parent] as any)[childKey];
+                if (Object.keys(newErrors[parent]).filter(k => k !== '_errors').length === 0) {
+                  delete newErrors[parent];
+                }
+              }
+            } else {
+              delete newErrors[field];
+            }
+            return Object.keys(newErrors).length > 0 || newErrors._errors.length > 0 ? newErrors : null;
+          });
+        }
       }
 
       return newState
@@ -235,53 +396,60 @@ export default function AddPropertyPage() {
   }
 
   const handleSubmit = async () => {
-    // Form validation
-    if (!formData.title || !formData.propertyType || !formData.listingType) {
-      toast.error("Lütfen zorunlu alanları doldurun")
-      return
+    // Formu göndermeden önce tüm formu valide et
+    const result = addPropertyFormSchema.safeParse(formData);
+
+    if (!result.success) {
+      setErrors(result.error.format()); // Tüm hataları state'e kaydet
+      toast.error("Lütfen zorunlu alanları doldurun ve hataları düzeltin.");
+      console.error("Form validasyon hataları:", result.error.format());
+      return;
     }
+
+    // Validasyon başarılıysa, hataları temizle
+    setErrors(null);
 
     const toastId = toast.loading("İlan kaydediliyor...")
 
     try {
       const dataForApi: PropertySubmitData = {
-        title: formData.title,
-        description: JSON.stringify(formData.description),
-        price: Number(formData.price),
-        gross: Number(formData.grossArea),
-        net: Number(formData.netArea),
-        numberOfRoom: formData.rooms,
-        buildingAge: Number(formData.buildingAge),
-        floor: Number(formData.floor),
-        numberOfFloors: Number(formData.totalFloors),
-        heating: formData.heating,
-        numberOfBathrooms: Number(formData.bathrooms),
-        kitchen: formData.kitchen,
-        balcony: Number(formData.balcony),
-        lift: formData.elevator,
-        parking: formData.parking,
-        furnished: formData.furnished,
-        availability: formData.availability,
-        dues: Number(formData.dues),
-        eligibleForLoan: formData.eligibleForLoan,
-        titleDeedStatus: formData.deedStatus,
-        propertyType: formData.propertyType,
-        listingType: formData.listingType,
-        subType: formData.subType,
+        title: result.data.title,
+        description: JSON.stringify(result.data.description),
+        price: result.data.price,
+        gross: result.data.grossArea,
+        net: result.data.netArea ?? 0,
+        numberOfRoom: result.data.rooms ?? '',
+        buildingAge: result.data.buildingAge ?? 0,
+        floor: result.data.floor ? Number(result.data.floor) : 0, // String'den Number'a dönüştür
+        numberOfFloors: result.data.totalFloors ? Number(result.data.totalFloors) : 0, // String'den Number'a dönüştür
+        heating: result.data.heating ?? '',
+        numberOfBathrooms: result.data.bathrooms ? Number(result.data.bathrooms) : 0, // String'den Number'a dönüştür
+        kitchen: result.data.kitchen ?? '',
+        balcony: result.data.balcony ? Number(result.data.balcony) : 0, // String'den Number'a dönüştür
+        lift: result.data.elevator ?? '',
+        parking: result.data.parking ?? '',
+        furnished: result.data.furnished ?? '',
+        availability: result.data.availability ?? '',
+        dues: result.data.dues ?? 0,
+        eligibleForLoan: result.data.eligibleForLoan ?? '',
+        titleDeedStatus: result.data.deedStatus ?? '',
+        propertyType: result.data.propertyType,
+        listingType: result.data.listingType,
+        subType: result.data.subType,
         location: JSON.stringify({
-          city: formData.city,
-          district: formData.district,
-          neighborhood: formData.neighborhood,
+          city: result.data.city,
+          district: result.data.district,
+          neighborhood: result.data.neighborhood,
           geo: {
             type: 'Point',
             coordinates: [
-              formData.coordinates.lng,
-              formData.coordinates.lat
+              result.data.coordinates.lng,
+              result.data.coordinates.lat
             ]
           }
         }),
         userId: user?._id || '',
-        selectedFeatures: JSON.stringify(groupFeatures(formData.features, featureOptions))
+        selectedFeatures: JSON.stringify(groupFeatures(result.data.features, featureOptions))
       }
 
       // Create FormData for API submission
@@ -296,7 +464,7 @@ export default function AddPropertyPage() {
         }
       })
 
-      formData.images.forEach((imageObj) => {
+      result.data.images.forEach((imageObj) => {
         submitData.append('images', imageObj.file, imageObj.file.name)
       })
 
@@ -449,6 +617,9 @@ export default function AddPropertyPage() {
               ))}
             </SelectContent>
           </Select>
+          {errors?.propertyType?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.propertyType._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -485,7 +656,7 @@ export default function AddPropertyPage() {
       </div>
 
       {formData.propertyType && (
-        <div className="bg-blue-50 p-4 rounded-lg">
+        <div className="bg-background p-4 rounded-lg">
           <div className="text-sm text-blue-900">
             <strong>Seçilen Kategori:</strong>
             <span>{formData.propertyType}</span>
@@ -508,6 +679,9 @@ export default function AddPropertyPage() {
             onChange={(e) => handleInputChange('title', e.target.value)}
             placeholder="Örn: Deniz Manzaralı Lüks Villa"
           />
+          {errors?.title?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.title._errors[0]}</p>
+          )}
         </div>
 
         <div className="md:col-span-2 space-y-2">
@@ -1006,7 +1180,7 @@ export default function AddPropertyPage() {
                 <div key={step.id} className="flex items-center flex-shrink-0">
                   <div className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= step.id
                     ? 'bg-primary text-primary-foreground'
-                    : 'bg-gray-200 text-gray-600'
+                    : 'bg-background text-gray-600'
                     }`}>
                     {step.id}
                   </div>
@@ -1052,7 +1226,7 @@ export default function AddPropertyPage() {
 
               {currentStep < 5 ? (
                 <Button
-                  onClick={() => setCurrentStep(Math.min(5, currentStep + 1))}
+                  onClick={handleNextStep}
                 >
                   Sonraki Adım
                 </Button>
