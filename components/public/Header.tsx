@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { logout, selectIsAuthenticated } from "@/lib/redux/authSlice";
 import { persistor } from "@/lib/redux/store";
+import ForgotPassword from "./ForgotPassword";
 
 interface HeaderProps {
   showHeader?: boolean;
@@ -20,6 +21,8 @@ export default function Header({ showHeader = true }: HeaderProps) {
   const [showLoginForm, setShowLoginForm] = useState(false);
 
   const isAuthenticated = useSelector(selectIsAuthenticated)
+
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
 
   const dispatch = useDispatch()
   const router = useRouter()
@@ -139,6 +142,11 @@ export default function Header({ showHeader = true }: HeaderProps) {
       <LoginForm
         open={showLoginForm}
         onOpenChange={setShowLoginForm}
+        onOpenForgotPassword={()=>setShowForgotPassword(true)}
+      />
+      <ForgotPassword
+        open={showForgotPassword}
+        onOpenChange={setShowForgotPassword}
       />
     </>
   );

@@ -37,7 +37,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     ]
 
     const filteredMenuItems = menuItems.filter(item => {
-        if(item.id === "admin-users" || item.id === "admin-features"){
+        if (item.id === "admin-users" || item.id === "admin-features") {
             return user?.role === 'admin'
         }
         return true
@@ -82,7 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {/* Navigation Menu */}
                 <nav className="flex-1 p-4">
                     <ul className="space-y-2">
-                        {menuItems.map((item) => (
+                        {filteredMenuItems.map((item) => (
                             <li key={item.id}>
                                 <Link
                                     href={item.path}
@@ -151,6 +151,3 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
 }
 
-function dispatch(arg0: any) {
-    throw new Error("Function not implemented.");
-}

@@ -13,9 +13,10 @@ import { loginSuccess } from "@/lib/redux/authSlice";
 interface LoginFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onOpenForgotPassword: () => void
 }
 
-export default function LoginForm({ open, onOpenChange }: LoginFormProps) {
+export default function LoginForm({ open, onOpenChange, onOpenForgotPassword }: LoginFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -130,6 +131,7 @@ export default function LoginForm({ open, onOpenChange }: LoginFormProps) {
               type="button"
               className="text-primary hover:underline"
               disabled={isLoading}
+              onClick={onOpenForgotPassword}
             >
               Şifremi unuttum
             </button>

@@ -210,24 +210,8 @@ html {
 }
 
 /* Farklı gecikme süreleri için yardımcı sınıflar */
-.delay-3000ms {
-  animation-delay: 3s;
-}
-
-.delay-3500ms {
-  animation-delay: 3.5s;
-}
-
-.delay-3700ms {
-  animation-delay: 3.7s;
-}
-
-.delay-3900ms {
-  animation-delay: 3.9s;
-}
-
-.delay-4100ms {
-  animation-delay: 4.1s;
+.delay-2000ms {
+  animation-delay: 2s;
 }
 
 
@@ -284,7 +268,7 @@ html {
 
 .animate-header {
   transform: translateY(-100%);
-  animation: slide-down 0.8s 3.2s ease-out forwards;
+  animation: slide-down 0.8s 2s ease-out forwards;
 }
 
 .animate-logo,
@@ -294,15 +278,15 @@ html {
 }
 
 .animate-logo {
-  animation: fade-in-left 0.6s 3.4s forwards;
+  animation: fade-in-left 0.6s 2.4s forwards;
 }
 
 .animate-nav {
-  animation: fade-in-up 0.6s 3.6s forwards;
+  animation: fade-in-up 0.6s 2.6s forwards;
 }
 
 .animate-cta {
-  animation: fade-in-right 0.6s 3.4s forwards;
+  animation: fade-in-right 0.6s 2.4s forwards;
 }
 
 /* Mobile menu transition */

@@ -30,7 +30,7 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
   }, [store])
 
    useEffect(() => {
-    if (!isAuthenticated && window.location.pathname !== '/') { 
+    if (!isAuthenticated && window.location.pathname.startsWith('/admin')) { 
       router.push('/')
     }
   }, [isAuthenticated, router])
