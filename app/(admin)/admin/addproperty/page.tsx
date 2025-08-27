@@ -56,7 +56,7 @@ interface City {
   name: string
 }
 
-function SortableImageItem({ id, image, onRemove }: { id: any; image: ImageObject; onRemove: (id: string) => void }) {
+function SortableImageItem({ id, image, onRemove }: { id: any, image: ImageObject, onRemove: (id: string) => void }) {
   const {
     attributes,
     listeners,
@@ -106,35 +106,34 @@ const ImageObjectSchema = z.object({
 })
 
 const addPropertyFormSchema = z.object({
-  propertyType: z.string().min(1, "Emlak tipi zorunludur."),
-  listingType: z.string().min(1, "İlan tipi zorunludur."),
+  propertyType: z.string().nonempty("Emlak tipi zorunludur."),
+  listingType: z.string().nonempty("İlan tipi zorunludur."),
   subType: z.string().optional(),
 
   title: z.string().min(5, "Başlık en az 5 karakter olmalıdır."),
-  description: z.array(z.any()).min(1, "Açıklama zorunludur."), // RichTextEditor için Descendant[]
-  price: z.string().regex(/^\d+$/, "Fiyat sadece rakamlardan oluşmalıdır.").transform(Number),
-  grossArea: z.string().regex(/^\d+$/, "Brüt M² sadece rakamlardan oluşmalıdır.").transform(Number),
-  netArea: z.string().regex(/^\d*$/, "Net M² sadece rakamlardan oluşmalıdır.").transform(Number).optional(),
+  description: z.array(z.any()).nonempty("Açıklama zorunludur."),
+  price: z.string(),
+  grossArea: z.string(),
+  netArea: z.string(),
   rooms: z.string().optional(),
-  buildingAge: z.string().regex(/^\d*$/, "Bina yaşı sadece rakamlardan oluşmalıdır.").transform(Number).optional(),
-  floor: z.string().optional(),
-  totalFloors: z.string().optional(),
+  buildingAge: z.string(),
+  floor: z.string(),
+  totalFloors: z.string(),
   heating: z.string().optional(),
   bathrooms: z.string().optional(),
   kitchen: z.string().optional(),
   balcony: z.string().optional(),
-  elevator: z.string().optional(),
+  elevator: z.string().nonempty("Seçim zorunludur."),
   parking: z.string().optional(),
   availability: z.string().optional(),
   deedStatus: z.string().optional(),
   furnished: z.string().optional(),
-  dues: z.string().regex(/^\d*$/, "Aidat sadece rakamlardan oluşmalıdır.").transform(Number).optional(),
+  dues: z.string().optional(),
   eligibleForLoan: z.string().optional(),
 
   city: z.string().min(1, "İl zorunludur."),
   district: z.string().min(1, "İlçe zorunludur."),
   neighborhood: z.string().optional(),
-  address: z.string().optional(),
   coordinates: z.object({
     lat: z.number(),
     lng: z.number(),
@@ -145,9 +144,13 @@ const addPropertyFormSchema = z.object({
 
   features: z.array(z.string()),
   images: z.array(ImageObjectSchema).min(1, "En az bir fotoğraf yüklemelisiniz."),
+}).refine((data) => data.floor <= data.totalFloors, {
+  message: "Bulunduğu kat, toplam kat sayısından büyük olamaz.",
+  path: ["floor"],
 })
 
 type AddPropertyFormData = z.infer<typeof addPropertyFormSchema>
+
 
 export default function AddPropertyPage() {
   const router = useRouter()
@@ -168,11 +171,11 @@ export default function AddPropertyPage() {
     // İlan Detayları
     title: "",
     description: [{ type: 'paragraph', children: [{ text: '' }] }] as Descendant[],
-    price: 0,
-    grossArea: 0,
-    netArea: 0,
+    price: "",
+    grossArea: "",
+    netArea: "",
     rooms: "",
-    buildingAge: 0,
+    buildingAge: "",
     floor: "",
     totalFloors: "",
     heating: "",
@@ -184,14 +187,13 @@ export default function AddPropertyPage() {
     availability: "",
     deedStatus: "",
     furnished: "",
-    dues: 0,
+    dues: "",
     eligibleForLoan: "",
 
     // Adres
     city: "",
     district: "",
     neighborhood: "",
-    address: "",
     coordinates: { lat: 0, lng: 0 },
 
     // Detay Bilgi
@@ -200,6 +202,7 @@ export default function AddPropertyPage() {
     // Fotoğraflar
     images: [] as ImageObject[]
   })
+
 
 
   const groupFeatures = (selected: string[], allOptions: Record<string, string[]>): Record<string, string[]> => {
@@ -232,84 +235,86 @@ export default function AddPropertyPage() {
   }
 
   const handleNextStep = () => {
-    let stepSchema: z.ZodSchema;
-    let fieldsToValidate: (keyof AddPropertyFormData)[] = [];
+    let stepSchema: z.ZodSchema
+    let fieldsToValidate: (keyof AddPropertyFormData)[] = []
 
     if (currentStep === 1) {
-      stepSchema = addPropertyFormSchema.pick({ propertyType: true, listingType: true, subType: true });
-      fieldsToValidate = ["propertyType", "listingType"]; // subType opsiyonel olduğu için zorunlu değil
+      stepSchema = addPropertyFormSchema.pick({ propertyType: true, listingType: true, subType: true })
+      fieldsToValidate = ["propertyType", "listingType"] // subType opsiyonel olduğu için zorunlu değil
     } else if (currentStep === 2) {
-      stepSchema = addPropertyFormSchema.pick({ title: true, description: true, price: true, grossArea: true });
-      fieldsToValidate = ["title", "description", "price", "grossArea"];
+      stepSchema = addPropertyFormSchema.pick({ title: true, description: true, price: true, grossArea: true, floor: true, totalFloors: true }).refine((data) => data.floor <= data.totalFloors, {
+        message: "Bulunduğu kat, toplam kat sayısından büyük olamaz.",
+        path: ["floor"],
+      })
+      fieldsToValidate = ["title", "description", "price", "grossArea", "floor", "totalFloors"]
+
     } else if (currentStep === 3) {
-      stepSchema = addPropertyFormSchema.pick({ city: true, district: true, neighborhood: true, coordinates: true });
-      fieldsToValidate = ["city", "district", "coordinates"];
+      stepSchema = addPropertyFormSchema.pick({ city: true, district: true, neighborhood: true, coordinates: true })
+      fieldsToValidate = ["city", "district", "coordinates"]
     } else if (currentStep === 4) {
-      stepSchema = addPropertyFormSchema.pick({ features: true });
-      fieldsToValidate = ["features"];
+      stepSchema = addPropertyFormSchema.pick({ features: true })
+      fieldsToValidate = ["features"]
     } else if (currentStep === 5) {
-      stepSchema = addPropertyFormSchema.pick({ images: true });
-      fieldsToValidate = ["images"];
+      stepSchema = addPropertyFormSchema.pick({ images: true })
+      fieldsToValidate = ["images"]
     } else {
-      return;
+      return
     }
 
     // Sadece ilgili alanları içeren bir obje oluştur
-    const dataToValidate: Partial<AddPropertyFormData> = {};
+    const dataToValidate: Partial<AddPropertyFormData> = {}
 
     fieldsToValidate.forEach(field => {
       if (field.includes('.')) {
-        const [parentKey, childKey] = field.split('.');
-        const parent = parentKey as keyof AddPropertyFormData;
-        const parentData = formData[parent];
+        const [parentKey, childKey] = field.split('.')
+        const parent = parentKey as keyof AddPropertyFormData
+        const parentData = formData[parent]
         if (parentData && typeof parentData === 'object' && childKey in parentData) {
           if (!dataToValidate[parent]) {
-            (dataToValidate[parent] as any) = {};
+            (dataToValidate[parent] as any) = {}
           }
-          (dataToValidate[parent] as any)[childKey] = (parentData as any)[childKey];
+          (dataToValidate[parent] as any)[childKey] = (parentData as any)[childKey]
         }
       } else {
         // formData[field] değeri undefined olabilir, bu yüzden sadece undefined olmayan değerleri ata
-        const value = formData[field as keyof AddPropertyFormData];
+        const value = formData[field as keyof AddPropertyFormData]
         if (value !== undefined) {
-          (dataToValidate as any)[field] = value;
+          (dataToValidate as any)[field] = value
         }
       }
-    });
-
-
-    const result = stepSchema.safeParse(dataToValidate);
+    })
+    const result = stepSchema.safeParse(dataToValidate)
 
     if (result.success) {
       // Sadece bu adımdaki hataları temizle
       setErrors(prevErrors => {
-        if (!prevErrors) return null;
-        const newErrors: z.ZodFormattedError<AddPropertyFormData> = { ...prevErrors, _errors: prevErrors._errors || [] }; // _errors'ı her zaman dizi olarak başlat
+        if (!prevErrors) return null
+        const newErrors: z.ZodFormattedError<AddPropertyFormData> = { ...prevErrors, _errors: prevErrors._errors || [] } // _errors'ı her zaman dizi olarak başlat
 
         fieldsToValidate.forEach(field => {
           if (field.includes('.')) {
-            const [parentKey, childKey] = field.split('.');
-            const parent = parentKey as keyof AddPropertyFormData;
+            const [parentKey, childKey] = field.split('.')
+            const parent = parentKey as keyof AddPropertyFormData
             if (newErrors[parent] && (newErrors[parent] as any)[childKey]) {
-              delete (newErrors[parent] as any)[childKey];
+              delete (newErrors[parent] as any)[childKey]
               if (Object.keys(newErrors[parent]).filter(k => k !== '_errors').length === 0) {
-                delete newErrors[parent];
+                delete newErrors[parent]
               }
             }
           } else {
-            delete newErrors[field];
+            delete newErrors[field]
           }
-        });
-        return Object.keys(newErrors).length > 0 || newErrors._errors.length > 0 ? newErrors : null;
-      });
-      setCurrentStep(Math.min(5, currentStep + 1));
+        })
+        return Object.keys(newErrors).length > 0 || newErrors._errors.length > 0 ? newErrors : null
+      })
+      setCurrentStep(Math.min(5, currentStep + 1))
     } else {
       // Sadece bu adımdaki hataları göster
-      const formattedErrors = result.error.format();
-      setErrors(prevErrors => ({ ...prevErrors, ...formattedErrors }));
-      toast.error("Lütfen bu adımdaki zorunlu alanları doldurun.");
+      const formattedErrors = result.error.format()
+      setErrors(prevErrors => ({ ...prevErrors, ...formattedErrors }))
+      toast.error("Lütfen bu adımdaki zorunlu alanları doldurun.")
     }
-  };
+  }
 
   const handleInputChange = (field: keyof AddPropertyFormData, value: any) => {
     setFormData(prev => {
@@ -327,34 +332,34 @@ export default function AddPropertyPage() {
       }
 
       // Anlık validasyon yap
-      const result = addPropertyFormSchema.safeParse(newState);
+      const result = addPropertyFormSchema.safeParse(newState)
+
       if (!result.success) {
-        setErrors(result.error.format());
+        setErrors(result.error.format())
       } else {
         // Eğer bu alanın hatası çözüldüyse, hatayı kaldır
         if (errors && errors[field]) {
           setErrors(prevErrors => {
-            if (!prevErrors) return null;
-            const newErrors: z.ZodFormattedError<AddPropertyFormData> = { ...prevErrors, _errors: prevErrors._errors || [] };
+            if (!prevErrors) return null
+            const newErrors: z.ZodFormattedError<AddPropertyFormData> = { ...prevErrors, _errors: prevErrors._errors || [] }
 
             // Sadece bu alanın hatasını temizle
             if (field.includes('.')) {
-              const [parentKey, childKey] = field.split('.');
-              const parent = parentKey as keyof AddPropertyFormData;
+              const [parentKey, childKey] = field.split('.')
+              const parent = parentKey as keyof AddPropertyFormData
               if (newErrors[parent] && (newErrors[parent] as any)[childKey]) {
-                delete (newErrors[parent] as any)[childKey];
+                delete (newErrors[parent] as any)[childKey]
                 if (Object.keys(newErrors[parent]).filter(k => k !== '_errors').length === 0) {
-                  delete newErrors[parent];
+                  delete newErrors[parent]
                 }
               }
             } else {
-              delete newErrors[field];
+              delete newErrors[field]
             }
-            return Object.keys(newErrors).length > 0 || newErrors._errors.length > 0 ? newErrors : null;
-          });
+            return Object.keys(newErrors).length > 0 || newErrors._errors.length > 0 ? newErrors : null
+          })
         }
       }
-
       return newState
     })
   }
@@ -397,17 +402,17 @@ export default function AddPropertyPage() {
 
   const handleSubmit = async () => {
     // Formu göndermeden önce tüm formu valide et
-    const result = addPropertyFormSchema.safeParse(formData);
+    const result = addPropertyFormSchema.safeParse(formData)
 
     if (!result.success) {
-      setErrors(result.error.format()); // Tüm hataları state'e kaydet
-      toast.error("Lütfen zorunlu alanları doldurun ve hataları düzeltin.");
-      console.error("Form validasyon hataları:", result.error.format());
-      return;
+      setErrors(result.error.format()) // Tüm hataları state'e kaydet
+      toast.error("Lütfen zorunlu alanları doldurun ve hataları düzeltin.")
+      console.error("Form validasyon hataları:", result.error.format())
+      return
     }
 
     // Validasyon başarılıysa, hataları temizle
-    setErrors(null);
+    setErrors(null)
 
     const toastId = toast.loading("İlan kaydediliyor...")
 
@@ -415,22 +420,22 @@ export default function AddPropertyPage() {
       const dataForApi: PropertySubmitData = {
         title: result.data.title,
         description: JSON.stringify(result.data.description),
-        price: result.data.price,
-        gross: result.data.grossArea,
-        net: result.data.netArea ?? 0,
+        price: result.data.price ? Number(result.data.floor) : 0,
+        gross: result.data.grossArea ? Number(result.data.floor) : 0,
+        net: result.data.netArea ? Number(result.data.floor) : 0,
         numberOfRoom: result.data.rooms ?? '',
-        buildingAge: result.data.buildingAge ?? 0,
-        floor: result.data.floor ? Number(result.data.floor) : 0, // String'den Number'a dönüştür
-        numberOfFloors: result.data.totalFloors ? Number(result.data.totalFloors) : 0, // String'den Number'a dönüştür
+        buildingAge: result.data.buildingAge ? Number(result.data.floor) : 0,
+        floor: result.data.floor ? Number(result.data.floor) : 0,
+        numberOfFloors: result.data.totalFloors ? Number(result.data.totalFloors) : 0,
         heating: result.data.heating ?? '',
-        numberOfBathrooms: result.data.bathrooms ? Number(result.data.bathrooms) : 0, // String'den Number'a dönüştür
+        numberOfBathrooms: result.data.bathrooms ? Number(result.data.bathrooms) : 0,
         kitchen: result.data.kitchen ?? '',
-        balcony: result.data.balcony ? Number(result.data.balcony) : 0, // String'den Number'a dönüştür
+        balcony: result.data.balcony ? Number(result.data.balcony) : 0,
         lift: result.data.elevator ?? '',
         parking: result.data.parking ?? '',
         furnished: result.data.furnished ?? '',
         availability: result.data.availability ?? '',
-        dues: result.data.dues ?? 0,
+        dues: result.data.dues ? Number(result.data.floor) : 0,
         eligibleForLoan: result.data.eligibleForLoan ?? '',
         titleDeedStatus: result.data.deedStatus ?? '',
         propertyType: result.data.propertyType,
@@ -634,6 +639,9 @@ export default function AddPropertyPage() {
               ))}
             </SelectContent>
           </Select>
+          {errors?.listingType?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.listingType._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -652,6 +660,9 @@ export default function AddPropertyPage() {
               ))}
             </SelectContent>
           </Select>
+          {errors?.subType?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.subType._errors[0]}</p>
+          )}
         </div>
       </div>
 
@@ -695,6 +706,9 @@ export default function AddPropertyPage() {
           <p className="text-xs text-gray-500">
             Zengin metin düzenleyici ile formatlamalar, linkler ve resimler ekleyebilirsiniz.
           </p>
+          {errors?.description?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.description._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -709,6 +723,9 @@ export default function AddPropertyPage() {
             }}
             placeholder="0"
           />
+          {errors?.price?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.price._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -720,6 +737,9 @@ export default function AddPropertyPage() {
             onChange={(e) => handleInputChange('grossArea', e.target.value)}
             placeholder="0"
           />
+          {errors?.grossArea?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.grossArea._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -731,6 +751,9 @@ export default function AddPropertyPage() {
             onChange={(e) => handleInputChange('netArea', e.target.value)}
             placeholder="0"
           />
+          {errors?.netArea?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.netArea._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -742,6 +765,9 @@ export default function AddPropertyPage() {
             onChange={(e) => handleInputChange('buildingAge', e.target.value)}
             placeholder="0"
           />
+          {errors?.buildingAge?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.buildingAge._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -753,6 +779,9 @@ export default function AddPropertyPage() {
             onChange={(e) => handleInputChange('dues', e.target.value)}
             placeholder="0"
           />
+          {errors?.dues?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.dues._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -774,6 +803,9 @@ export default function AddPropertyPage() {
               <SelectItem value="6+2">6+2</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.rooms?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.rooms._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -787,6 +819,9 @@ export default function AddPropertyPage() {
               <SelectItem value="boş">boş</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.availability?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.availability._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -800,6 +835,9 @@ export default function AddPropertyPage() {
               <SelectItem value="uygun değil">uygun değil</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.eligibleForLoan?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.eligibleForLoan._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -813,6 +851,9 @@ export default function AddPropertyPage() {
               <SelectItem value="hayır">hayır</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.furnished?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.furnished._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -826,6 +867,9 @@ export default function AddPropertyPage() {
               <SelectItem value="kapalı">kapalı</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.kitchen?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.kitchen._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -846,6 +890,9 @@ export default function AddPropertyPage() {
               <SelectItem value="Tapu Kaydı Yok">Tapu Kaydı Yok</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.deedStatus?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.deedStatus._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -863,26 +910,37 @@ export default function AddPropertyPage() {
               <SelectItem value="5">5</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.balcony?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.balcony._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="floor">Bulunduğu Kat</Label>
           <Input
             id="floor"
+            type="number"
             value={formData.floor}
             onChange={(e) => handleInputChange('floor', e.target.value)}
             placeholder="Örn: 3"
           />
+          {errors?.floor?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.floor._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="totalFloors">Toplam Kat Sayısı</Label>
           <Input
             id="totalFloors"
+            type="number"
             value={formData.totalFloors}
             onChange={(e) => handleInputChange('totalFloors', e.target.value)}
             placeholder="Örn: 8"
           />
+          {errors?.totalFloors?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.totalFloors._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -899,6 +957,9 @@ export default function AddPropertyPage() {
               <SelectItem value="Yok">Yok</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.heating?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.heating._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -915,6 +976,9 @@ export default function AddPropertyPage() {
               <SelectItem value="5+">5+</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.bathrooms?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.bathrooms._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -928,6 +992,9 @@ export default function AddPropertyPage() {
               <SelectItem value="yok">Yok</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.elevator?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.elevator._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -942,6 +1009,9 @@ export default function AddPropertyPage() {
               <SelectItem value="yok">Yok</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.parking?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.parking._errors[0]}</p>
+          )}
         </div>
       </div>
     </div>
@@ -964,6 +1034,9 @@ export default function AddPropertyPage() {
               ))}
             </SelectContent>
           </Select>
+          {errors?.city?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.city._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -978,6 +1051,9 @@ export default function AddPropertyPage() {
               ))}
             </SelectContent>
           </Select>
+          {errors?.district?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.district._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -992,6 +1068,9 @@ export default function AddPropertyPage() {
               ))}
             </SelectContent>
           </Select>
+          {errors?.neighborhood?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.neighborhood._errors[0]}</p>
+          )}
         </div>
       </div>
 
@@ -1011,6 +1090,9 @@ export default function AddPropertyPage() {
               onLocationChange={(coords) => handleInputChange('coordinates', coords)}
             />
           </div>
+          {errors?.coordinates?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.coordinates._errors[0]}</p>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -1074,6 +1156,9 @@ export default function AddPropertyPage() {
           </div>
         </CardContent>
       </Card>
+      {errors?.features?._errors && (
+        <p className="text-red-500 text-sm mt-1">{errors.features._errors[0]}</p>
+      )}
     </div>
   )
 
@@ -1133,6 +1218,9 @@ export default function AddPropertyPage() {
           </CardContent>
         </Card>
       )}
+      {errors?.images?._errors && (
+        <p className="text-red-500 text-sm mt-1">{errors.images._errors[0]}</p>
+      )}
     </div>
   )
 
@@ -1144,7 +1232,7 @@ export default function AddPropertyPage() {
           <p className="mt-4 text-gray-600">İlan verileri yükleniyor...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
