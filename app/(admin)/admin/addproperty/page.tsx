@@ -112,24 +112,23 @@ const addPropertyFormSchema = z.object({
 
   title: z.string().min(5, "Başlık en az 5 karakter olmalıdır."),
   description: z.array(z.any()).nonempty("Açıklama zorunludur."),
-  price: z.string(),
-  grossArea: z.string(),
-  netArea: z.string(),
-  rooms: z.string().optional(),
-  buildingAge: z.string(),
-  floor: z.string(),
-  totalFloors: z.string(),
-  heating: z.string().optional(),
-  bathrooms: z.string().optional(),
-  kitchen: z.string().optional(),
-  balcony: z.string().optional(),
-  elevator: z.string().nonempty("Seçim zorunludur."),
-  parking: z.string().optional(),
-  availability: z.string().optional(),
-  deedStatus: z.string().optional(),
-  furnished: z.string().optional(),
-  dues: z.string().optional(),
-  eligibleForLoan: z.string().optional(),
+  price: z.string().nonempty("Fiyat zorunludur."),
+  grossArea: z.string().nonempty("Brüt alan zorunludur."),
+  netArea: z.string().nonempty("Net alan zorunludur."),
+  rooms: z.string().nonempty("Oda sayısı zorunludur."),
+  buildingAge: z.string().nonempty("Bina yaşı zorunludur."),
+  floor: z.string().nonempty("Kat zorunludur."),
+  totalFloors: z.string().nonempty("Toplam kat zorunludur."),
+  heating: z.string().nonempty("Isıtma tipi zorunludur."),
+  bathrooms: z.string().nonempty("Banyo adedi zorunludur."),
+  kitchen: z.string().nonempty("Mutfak tipi zorunludur."),
+  balcony: z.string().nonempty("Balkon adedi zorunludur."),
+  elevator: z.string().nonempty("Asansör bilgisi zorunludur."),
+  parking: z.string().nonempty("Park zorunludur."),
+  availability: z.string().nonempty("Kullanım durumu zorunludur."),
+  deedStatus: z.string().nonempty("Tapu durumu zorunludur."),
+  furnished: z.string().nonempty("Eşya durumu zorunludur."),
+  eligibleForLoan: z.string().nonempty("Kredi durumu zorunludur."),
 
   city: z.string().min(1, "İl zorunludur."),
   district: z.string().min(1, "İlçe zorunludur."),
@@ -151,7 +150,6 @@ const addPropertyFormSchema = z.object({
 
 type AddPropertyFormData = z.infer<typeof addPropertyFormSchema>
 
-
 export default function AddPropertyPage() {
   const router = useRouter()
   const user = useSelector(selectUser)
@@ -162,7 +160,7 @@ export default function AddPropertyPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
   const [errors, setErrors] = useState<z.ZodFormattedError<AddPropertyFormData> | null>(null)
-  const [formData, setFormData] = useState<AddPropertyFormData>({
+  const [formData, setFormData] = useState({
     // Kategori
     propertyType: "",
     listingType: "",
@@ -316,7 +314,7 @@ export default function AddPropertyPage() {
     }
   }
 
-  const handleInputChange = (field: keyof AddPropertyFormData, value: any) => {
+  const handleInputChange = (field: string, value: any) => {
     setFormData(prev => {
       const newState = { ...prev, [field]: value }
 
@@ -337,28 +335,7 @@ export default function AddPropertyPage() {
       if (!result.success) {
         setErrors(result.error.format())
       } else {
-        // Eğer bu alanın hatası çözüldüyse, hatayı kaldır
-        if (errors && errors[field]) {
-          setErrors(prevErrors => {
-            if (!prevErrors) return null
-            const newErrors: z.ZodFormattedError<AddPropertyFormData> = { ...prevErrors, _errors: prevErrors._errors || [] }
-
-            // Sadece bu alanın hatasını temizle
-            if (field.includes('.')) {
-              const [parentKey, childKey] = field.split('.')
-              const parent = parentKey as keyof AddPropertyFormData
-              if (newErrors[parent] && (newErrors[parent] as any)[childKey]) {
-                delete (newErrors[parent] as any)[childKey]
-                if (Object.keys(newErrors[parent]).filter(k => k !== '_errors').length === 0) {
-                  delete newErrors[parent]
-                }
-              }
-            } else {
-              delete newErrors[field]
-            }
-            return Object.keys(newErrors).length > 0 || newErrors._errors.length > 0 ? newErrors : null
-          })
-        }
+        setErrors(null)
       }
       return newState
     })
@@ -418,43 +395,43 @@ export default function AddPropertyPage() {
 
     try {
       const dataForApi: PropertySubmitData = {
-        title: result.data.title,
-        description: JSON.stringify(result.data.description),
-        price: result.data.price ? Number(result.data.floor) : 0,
-        gross: result.data.grossArea ? Number(result.data.floor) : 0,
-        net: result.data.netArea ? Number(result.data.floor) : 0,
-        numberOfRoom: result.data.rooms ?? '',
-        buildingAge: result.data.buildingAge ? Number(result.data.floor) : 0,
-        floor: result.data.floor ? Number(result.data.floor) : 0,
-        numberOfFloors: result.data.totalFloors ? Number(result.data.totalFloors) : 0,
-        heating: result.data.heating ?? '',
-        numberOfBathrooms: result.data.bathrooms ? Number(result.data.bathrooms) : 0,
-        kitchen: result.data.kitchen ?? '',
-        balcony: result.data.balcony ? Number(result.data.balcony) : 0,
-        lift: result.data.elevator ?? '',
-        parking: result.data.parking ?? '',
-        furnished: result.data.furnished ?? '',
-        availability: result.data.availability ?? '',
-        dues: result.data.dues ? Number(result.data.floor) : 0,
-        eligibleForLoan: result.data.eligibleForLoan ?? '',
-        titleDeedStatus: result.data.deedStatus ?? '',
-        propertyType: result.data.propertyType,
-        listingType: result.data.listingType,
-        subType: result.data.subType,
+        title: formData.title,
+        description: JSON.stringify(formData.description),
+        price: formData.price,
+        gross: formData.grossArea,
+        net: formData.netArea, 
+        numberOfRoom: formData.rooms,
+        buildingAge: formData.buildingAge,
+        floor: formData.floor,
+        numberOfFloors: formData.totalFloors,
+        heating: formData.heating ,
+        numberOfBathrooms: formData.bathrooms ,
+        kitchen: formData.kitchen ,
+        balcony: formData.balcony ,
+        lift: formData.elevator ,
+        parking: formData.parking ,
+        furnished: formData.furnished ,
+        availability: formData.availability ,
+        dues: formData.dues ,
+        eligibleForLoan: formData.eligibleForLoan ,
+        titleDeedStatus: formData.deedStatus ,
+        propertyType: formData.propertyType,
+        listingType: formData.listingType,
+        subType: formData.subType,
         location: JSON.stringify({
-          city: result.data.city,
-          district: result.data.district,
-          neighborhood: result.data.neighborhood,
+          city: formData.city,
+          district: formData.district,
+          neighborhood: formData.neighborhood,
           geo: {
             type: 'Point',
             coordinates: [
-              result.data.coordinates.lng,
-              result.data.coordinates.lat
+              formData.coordinates.lng,
+              formData.coordinates.lat
             ]
           }
         }),
         userId: user?._id || '',
-        selectedFeatures: JSON.stringify(groupFeatures(result.data.features, featureOptions))
+        selectedFeatures: JSON.stringify(groupFeatures(formData.features, featureOptions))
       }
 
       // Create FormData for API submission
@@ -465,7 +442,7 @@ export default function AddPropertyPage() {
         const formKey = key as keyof PropertySubmitData
         const value = dataForApi[formKey]
         if (value !== undefined && value !== null) {
-          submitData.append(formKey, String(value))
+          submitData.append(formKey, value)
         }
       })
 
@@ -611,7 +588,7 @@ export default function AddPropertyPage() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="propertyType">Emlak Tipi *</Label>
+          <Label htmlFor="propertyType">Emlak Tipi</Label>
           <Select value={formData.propertyType} onValueChange={(value) => handleInputChange('propertyType', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Emlak tipini seçin" />
@@ -628,7 +605,7 @@ export default function AddPropertyPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="listingType">İlan Tipi *</Label>
+          <Label htmlFor="listingType">İlan Tipi</Label>
           <Select value={formData.listingType} onValueChange={(value) => handleInputChange('listingType', value)} disabled={!formData.propertyType}>
             <SelectTrigger>
               <SelectValue placeholder="İlan tipini seçin" />
@@ -645,7 +622,7 @@ export default function AddPropertyPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="category">Kategori *</Label>
+          <Label htmlFor="category">Kategori </Label>
           <Select
             value={formData.subType}
             onValueChange={(value) => handleInputChange('subType', value)}
@@ -683,7 +660,7 @@ export default function AddPropertyPage() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="md:col-span-2 space-y-2">
-          <Label htmlFor="title">İlan Başlığı *</Label>
+          <Label htmlFor="title">İlan Başlığı </Label>
           <Input
             id="title"
             value={formData.title}
@@ -696,7 +673,7 @@ export default function AddPropertyPage() {
         </div>
 
         <div className="md:col-span-2 space-y-2">
-          <Label htmlFor="description">İlan Açıklaması *</Label>
+          <Label htmlFor="description">İlan Açıklaması </Label>
           <RichTextEditor
             value={formData.description}
             onChange={(value) => handleInputChange('description', value)}
@@ -712,7 +689,7 @@ export default function AddPropertyPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="price">Fiyat (TL) *</Label>
+          <Label htmlFor="price">Fiyat (TL) </Label>
           <Input
             id="price"
             type="text"
@@ -729,7 +706,7 @@ export default function AddPropertyPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="grossArea">Brüt M² *</Label>
+          <Label htmlFor="grossArea">Brüt M² </Label>
           <Input
             id="grossArea"
             type="number"
@@ -779,9 +756,6 @@ export default function AddPropertyPage() {
             onChange={(e) => handleInputChange('dues', e.target.value)}
             placeholder="0"
           />
-          {errors?.dues?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.dues._errors[0]}</p>
-          )}
         </div>
 
         <div className="space-y-2">
@@ -841,7 +815,7 @@ export default function AddPropertyPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="buildingAge">Eşyalı</Label>
+          <Label htmlFor="furnished">Eşyalı</Label>
           <Select value={formData.furnished} onValueChange={(value) => handleInputChange('furnished', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Eşya durumunu seçin" />
@@ -873,7 +847,7 @@ export default function AddPropertyPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="buildingAge">Tapu Durumu</Label>
+          <Label htmlFor="deedStatus">Tapu Durumu</Label>
           <Select value={formData.deedStatus} onValueChange={(value) => handleInputChange('deedStatus', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Tapu durumunu seçin" />
@@ -1021,7 +995,7 @@ export default function AddPropertyPage() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="city">İl *</Label>
+          <Label htmlFor="city">İl </Label>
           <Select value={formData.city} onValueChange={(value) => handleInputChange('city', value)}>
             <SelectTrigger>
               <SelectValue placeholder="İl seçin" />
@@ -1040,7 +1014,7 @@ export default function AddPropertyPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="district">İlçe *</Label>
+          <Label htmlFor="district">İlçe</Label>
           <Select value={formData.district} onValueChange={(value) => handleInputChange('district', value)} disabled={!formData.city}>
             <SelectTrigger>
               <SelectValue placeholder="İlçe seçin" />
@@ -1268,7 +1242,7 @@ export default function AddPropertyPage() {
                 <div key={step.id} className="flex items-center flex-shrink-0">
                   <div className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= step.id
                     ? 'bg-primary text-primary-foreground'
-                    : 'bg-background text-gray-600'
+                    : 'bg-muted-foreground text-card-foreground'
                     }`}>
                     {step.id}
                   </div>

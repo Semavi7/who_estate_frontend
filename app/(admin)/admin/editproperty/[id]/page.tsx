@@ -43,6 +43,42 @@ import { MapPicker } from "@/components/ui/mappicker"
 import PropertyGetData from "@/dto/getproperty.dto"
 import { useSelector } from "react-redux"
 import { selectUser } from "@/lib/redux/authSlice"
+import z, { number } from "zod"
+
+const editPropertyFormSchema = z.object({
+  propertyType: z.string().nonempty("Emlak tipi zorunludur."),
+  listingType: z.string().nonempty("İlan tipi zorunludur."),
+  subType: z.string().optional(),
+
+  title: z.string().min(5, "Başlık en az 5 karakter olmalıdır."),
+  price: z.number().min(1, "Fiyat zorunludur."),
+  gross: z.number().min(1, "Brüt alan zorunludur."),
+  net: z.number().min(1, "Net alan zorunludur."),
+  numberOfRoom: z.string().nonempty("Oda sayısı zorunludur."),
+  buildingAge: z.number().min(1, "Bina yaşı zorunludur."),
+  floor: z.number().min(1, "Kat zorunludur."),
+  numberOfFloors: z.number().min(1, "Toplam kat zorunludur."),
+  heating: z.string().nonempty("Isıtma tipi zorunludur."),
+  numberOfBathrooms: z.number().min(1, "Banyo adedi zorunludur."),
+  kitchen: z.string().nonempty("Mutfak tipi zorunludur."),
+  balcony: z.number().min(1, "Balkon adedi zorunludur."),
+  lift: z.string().nonempty("Asansör bilgisi zorunludur."),
+  parking: z.string().nonempty("Park zorunludur."),
+  availability: z.string().nonempty("Kullanım durumu zorunludur."),
+  titleDeedStatus: z.string().nonempty("Tapu durumu zorunludur."),
+  furnished: z.string().nonempty("Eşya durumu zorunludur."),
+  eligibleForLoan: z.string().nonempty("Kredi durumu zorunludur."),
+
+  location: z.object({
+    city: z.string().min(1, "İl zorunludur."),
+    district: z.string().min(1, "İlçe zorunludur."),
+  })
+}).refine((data) => data.floor <= data.numberOfFloors, {
+  message: "Bulunduğu kat, toplam kat sayısından büyük olamaz.",
+  path: ["floor"],
+})
+
+type EditPropertyFormData = z.infer<typeof editPropertyFormSchema>
 
 interface ImageObject {
   id: string
@@ -156,6 +192,7 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [images, setImages] = useState({ images: [] as ImageObject[] })
   const [coord, setCoord] = useState({ coordinates: { lat: 0, lng: 0 } })
+  const [errors, setErrors] = useState<z.ZodFormattedError<EditPropertyFormData> | null>(null)
   const [properties, setProperties] = useState<PropertyGetData>({
     _id: "",
     title: "",
@@ -236,7 +273,15 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
 
   const handleInputChange = (field: string, value: any) => {
     setProperties(prev => {
-      const fields = field.split('.');
+      const fields = field.split('.')
+      let processedValue = value
+
+      if (['price', 'gross', 'net', 'buildingAge', 'floor', 'numberOfFloors', 'numberOfBathrooms', 'balcony', 'dues'].includes(field)) {
+        processedValue = Number(value);
+        if (isNaN(processedValue)) {
+          processedValue = 0; // Geçersiz sayı girişi durumunda varsayılan değer
+        }
+      }
 
       // Derin kopyalama ve güncelleme için yardımcı fonksiyon
       const updateNestedState = (obj: any, path: string[], val: any): any => {
@@ -252,7 +297,7 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
         }
       }
 
-      const newState = updateNestedState(prev, fields, value)
+      const newState = updateNestedState(prev, fields, processedValue)
 
       // Şehir veya ilçe değiştiğinde ilgili alanları sıfırlama mantığı
       if (field === 'location.city') {
@@ -266,6 +311,15 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
       if (field === 'description') {
         newState.description = JSON.stringify(value);
       }
+
+      const result = editPropertyFormSchema.safeParse(newState)
+
+      if (!result.success) {
+        setErrors(result.error.format())
+      } else {
+        setErrors(null)
+      }
+      console.log(newState);
       return newState
     })
   }
@@ -314,11 +368,18 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
   }
 
   const handleSubmit = async () => {
-    // Form validation
-    if (!properties.title || !properties.propertyType || !properties.listingType) {
-      toast.error("Lütfen zorunlu alanları doldurun")
+    // Formu göndermeden önce tüm formu valide et
+    const result = editPropertyFormSchema.safeParse(properties)
+
+    if (!result.success) {
+      setErrors(result.error.format()) // Tüm hataları state'e kaydet
+      toast.error("Lütfen zorunlu alanları doldurun ve hataları düzeltin.")
+      console.error("Form validasyon hataları:", result.error.format())
       return
     }
+
+    // Validasyon başarılıysa, hataları temizle
+    setErrors(null)
 
     const toastId = toast.loading("İlan kaydediliyor...")
 
@@ -326,22 +387,22 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
       const dataForApi: PropertySubmitData = {
         title: properties.title,
         description: properties.description,
-        price: Number(properties.price),
-        gross: Number(properties.gross),
-        net: Number(properties.net),
+        price: String(properties.price),
+        gross: String(properties.gross),
+        net: String(properties.net),
         numberOfRoom: properties.numberOfRoom,
-        buildingAge: Number(properties.buildingAge),
-        floor: Number(properties.floor),
-        numberOfFloors: Number(properties.numberOfFloors),
+        buildingAge: String(properties.buildingAge),
+        floor: String(properties.floor),
+        numberOfFloors: String(properties.numberOfFloors),
         heating: properties.heating,
-        numberOfBathrooms: Number(properties.numberOfBathrooms),
+        numberOfBathrooms: String(properties.numberOfBathrooms),
         kitchen: properties.kitchen,
-        balcony: Number(properties.balcony),
+        balcony: String(properties.balcony),
         lift: properties.lift,
         parking: properties.parking,
         furnished: properties.furnished,
         availability: properties.availability,
-        dues: Number(properties.dues),
+        dues: String(properties.dues),
         eligibleForLoan: properties.eligibleForLoan,
         titleDeedStatus: properties.titleDeedStatus,
         propertyType: properties.propertyType,
@@ -559,6 +620,9 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               ))}
             </SelectContent>
           </Select>
+          {errors?.propertyType?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.propertyType._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -573,6 +637,9 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               ))}
             </SelectContent>
           </Select>
+          {errors?.listingType?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.listingType._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -591,11 +658,14 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               ))}
             </SelectContent>
           </Select>
+          {errors?.subType?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.subType._errors[0]}</p>
+          )}
         </div>
       </div>
 
       {properties.propertyType && (
-        <div className="bg-blue-50 p-4 rounded-lg">
+        <div className="bg-background p-4 rounded-lg">
           <div className="text-sm text-blue-900">
             <strong>Seçilen Kategori:</strong>
             <span>{properties.propertyType}</span>
@@ -618,6 +688,9 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
             onChange={(e) => handleInputChange('title', e.target.value)}
             placeholder="Örn: Deniz Manzaralı Lüks Villa"
           />
+          {errors?.title?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.title._errors[0]}</p>
+          )}
         </div>
 
         <div className="md:col-span-2 space-y-2">
@@ -628,6 +701,7 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
             placeholder="İlan detaylarını yazın..."
             className="min-h-96"
           />
+
           <p className="text-xs text-gray-500">
             Zengin metin düzenleyici ile formatlamalar, linkler ve resimler ekleyebilirsiniz.
           </p>
@@ -637,54 +711,59 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
           <Label htmlFor="price">Fiyat (TL) *</Label>
           <Input
             id="price"
-            type="number"
-            value={properties.price}
-            onChange={(e) => handleInputChange('price', e.target.value)}
-            placeholder="0"
+            value={Number(properties.price).toLocaleString('tr-TR')}
+            onChange={(e) => {
+              const unformattedValue = e.target.value.replace(/\./g, '')
+              handleInputChange('price', unformattedValue)
+            }}
           />
+          {errors?.price?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.price._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="grossArea">Brüt M² *</Label>
           <Input
             id="grossArea"
-            type="number"
             value={properties.gross}
             onChange={(e) => handleInputChange('gross', e.target.value)}
-            placeholder="0"
           />
+          {errors?.gross?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.gross._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="netArea">Net M²</Label>
           <Input
             id="netArea"
-            type="number"
             value={properties.net}
             onChange={(e) => handleInputChange('net', e.target.value)}
-            placeholder="0"
           />
+          {errors?.net?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.net._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="buildingAge">Bina Yaşı</Label>
           <Input
             id="buildingAge"
-            type="number"
             value={properties.buildingAge}
             onChange={(e) => handleInputChange('buildingAge', e.target.value)}
-            placeholder="0"
           />
+          {errors?.buildingAge?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.buildingAge._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="dues">Aidat</Label>
           <Input
             id="dues"
-            type="number"
             value={properties.dues}
             onChange={(e) => handleInputChange('dues', e.target.value)}
-            placeholder="0"
           />
         </div>
 
@@ -707,10 +786,13 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="6+2">6+2</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.numberOfRoom?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.numberOfRoom._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="buildingAge">Kullanım Durumu</Label>
+          <Label htmlFor="availability">Kullanım Durumu</Label>
           <Select value={properties.availability} onValueChange={(value) => handleInputChange('availability', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Kullanım durumunu seçin" />
@@ -720,10 +802,13 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="boş">boş</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.availability?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.availability._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="buildingAge">Kredi Durumu</Label>
+          <Label htmlFor="eligibleForLoan">Kredi Durumu</Label>
           <Select value={properties.eligibleForLoan} onValueChange={(value) => handleInputChange('eligibleForLoan', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Kredi durumunu seçin" />
@@ -733,10 +818,13 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="uygun değil">uygun değil</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.eligibleForLoan?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.eligibleForLoan._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="buildingAge">Eşyalı</Label>
+          <Label htmlFor="furnished">Eşyalı</Label>
           <Select value={properties.furnished} onValueChange={(value) => handleInputChange('furnished', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Eşya durumunu seçin" />
@@ -746,10 +834,13 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="hayır">hayır</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.furnished?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.furnished._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="buildingAge">Mutfak</Label>
+          <Label htmlFor="kitchen">Mutfak</Label>
           <Select value={properties.kitchen} onValueChange={(value) => handleInputChange('kitchen', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Mutfak durumunu seçin" />
@@ -759,10 +850,13 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="kapalı">kapalı</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.kitchen?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.kitchen._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="buildingAge">Tapu Durumu</Label>
+          <Label htmlFor="titleDeedStatus">Tapu Durumu</Label>
           <Select value={properties.titleDeedStatus} onValueChange={(value) => handleInputChange('titleDeedStatus', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Tapu durumunu seçin" />
@@ -779,10 +873,13 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="Tapu Kaydı Yok">Tapu Kaydı Yok</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.titleDeedStatus?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.titleDeedStatus._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="buildingAge">Balkon</Label>
+          <Label htmlFor="balcony">Balkon</Label>
           <Select value={String(properties.balcony)} onValueChange={(value) => handleInputChange('balcony', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Balkon adedini seçin" />
@@ -796,6 +893,9 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="5">5</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.balcony?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.balcony._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -806,6 +906,9 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
             onChange={(e) => handleInputChange('floor', e.target.value)}
             placeholder="Örn: 3"
           />
+          {errors?.floor?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.floor._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -816,6 +919,9 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
             onChange={(e) => handleInputChange('numberOfFloors', e.target.value)}
             placeholder="Örn: 8"
           />
+          {errors?.numberOfFloors?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.numberOfFloors._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -832,6 +938,9 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="Yok">Yok</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.heating?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.heating._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -848,6 +957,9 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="5">5</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.numberOfBathrooms?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.numberOfBathrooms._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -861,6 +973,9 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="yok">Yok</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.lift?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.lift._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -875,6 +990,9 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="yok">Yok</SelectItem>
             </SelectContent>
           </Select>
+          {errors?.parking?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.parking._errors[0]}</p>
+          )}
         </div>
       </div>
     </div>
@@ -897,6 +1015,9 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               ))}
             </SelectContent>
           </Select>
+          {errors?.location?.city?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors?.location?.city?._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -911,6 +1032,9 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               ))}
             </SelectContent>
           </Select>
+          {errors?.location?.district?._errors && (
+            <p className="text-red-500 text-sm mt-1">{errors?.location?.district?._errors[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -1139,7 +1263,7 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
                 <div key={step.id} className="flex items-center flex-shrink-0">
                   <div className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= step.id
                     ? 'bg-primary text-primary-foreground'
-                    : 'bg-gray-200 text-gray-600'
+                    : 'bg-muted-foreground text-card-foreground'
                     }`}>
                     {step.id}
                   </div>

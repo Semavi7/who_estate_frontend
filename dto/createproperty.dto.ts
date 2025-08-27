@@ -1,22 +1,22 @@
 export default interface PropertySubmitData {
     title: string
     description: string
-    price: number
-    gross: number
-    net: number
+    price: string
+    gross: string
+    net: string
     numberOfRoom: string
-    buildingAge: number
-    floor: number
-    numberOfFloors: number
+    buildingAge: string
+    floor: string
+    numberOfFloors: string
     heating: string
-    numberOfBathrooms: number
+    numberOfBathrooms: string
     kitchen: string
-    balcony: number
+    balcony: string
     lift: string
     parking: string
     furnished: string
     availability: string
-    dues: number
+    dues: string
     eligibleForLoan: string
     titleDeedStatus: string
     location: string

@@ -100,7 +100,7 @@ export default function HeroSection() {
                 İl
               </label>
               <Select value={location} onValueChange={setLocation}>
-                <SelectTrigger className="border-primary h-10">
+                <SelectTrigger >
                   <SelectValue placeholder="İl seçin" />
                 </SelectTrigger>
                 <SelectContent>
@@ -118,7 +118,7 @@ export default function HeroSection() {
                 İlan Tipi
               </label>
               <Select onValueChange={setListingType} value={listingType}>
-                <SelectTrigger className="border-primary h-10">
+                <SelectTrigger>
                   <SelectValue placeholder="Satılık/Kiralık" />
                 </SelectTrigger>
                 <SelectContent>
@@ -137,7 +137,7 @@ export default function HeroSection() {
                 Emlak Tipi
               </label>
               <Select onValueChange={setPropertyType} value={propertyType}>
-                <SelectTrigger className="border-primary h-10">
+                <SelectTrigger className="shadow-md">
                   <SelectValue placeholder="Konut/İşyeri" />
                 </SelectTrigger>
                 <SelectContent>
