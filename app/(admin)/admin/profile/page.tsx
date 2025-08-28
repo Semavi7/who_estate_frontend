@@ -11,12 +11,41 @@ import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess, selectUser } from "@/lib/redux/authSlice";
 import api from "@/lib/axios";
+import z from "zod";
+
+const profileFormSchema = z.object({
+  name: z.string().min(2, "İsim alanı zorunludur."),
+  surname: z.string().min(2, "Soyisim alanı zorunludur."),
+  email: z.email("Email formatı zorunludur").nonempty("Email boş bırakılamaz"),
+  phonenumber: z.string().min(1, "Telefon numarası zorunludur.")
+})
+
+type ProfileFormSchema = z.infer<typeof profileFormSchema>
+
+const passwordChangeSchema = z.object({
+  currentPassword: z.string().min(6, "Şifre en az 6 karakter olmalıdır."),
+  newPassword: z.string().min(6, "Şifre en az 6 karakter olmalıdır."),
+  confirmPassword: z.string().min(6, "Şifre en az 6 karakter olmalıdır.")
+}).refine((data) => data.confirmPassword === data.newPassword, {
+  message: "Şifreler eşleşmiyor.",
+  path: ["confirmPassword"]
+})
+
+type PasswordChangeSchema = z.infer<typeof passwordChangeSchema>
+
+type FieldErrors<T> = {
+  [K in keyof T]?: {
+    errors: string[];
+  }
+}
 
 export default function AdminProfile() {
   const user = useSelector(selectUser)
   const dispatch = useDispatch()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [errors, setErrors] = useState<FieldErrors<ProfileFormSchema> | null>()
+  const [passwordErrors, setPasswordErrors] = useState<FieldErrors<PasswordChangeSchema> | null>()
   const [profileData, setProfileData] = useState({
     name: user?.name,
     surname: user?.surname,
@@ -30,8 +59,62 @@ export default function AdminProfile() {
     confirmPassword: ""
   })
 
+  const handleChangeInput = (field: string, value: any) => {
+    setProfileData(prev => {
+      const newState = { ...prev, [field]: value }
+
+      const result = profileFormSchema.safeParse(newState)
+
+      if (!result.success) {
+        const errorTree = z.treeifyError(result.error)
+        const fieldErrors = errorTree.properties
+
+        setErrors(fieldErrors)
+      } else {
+        setErrors(null)
+      }
+
+      return newState
+    })
+
+    if (field === 'currentPassword' || field === 'newPassword' || field === 'confirmPassword') {
+      setPasswordData(prev => {
+        const newState = { ...prev, [field]: value }
+
+        const result = passwordChangeSchema.safeParse(newState)
+
+        if (!result.success) {
+          const errorTree = z.treeifyError(result.error)
+          const fieldErrors = errorTree.properties
+
+          setPasswordErrors(fieldErrors)
+        } else {
+          setPasswordErrors(null)
+        }
+
+        return newState
+      })
+    }
+  }
+
   const handleProfileUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
+
+    const result = profileFormSchema.safeParse(profileData)
+
+    if (!result.success) {
+      const errorTree = z.treeifyError(result.error)
+      const fieldErrors = errorTree.properties
+
+      setErrors(fieldErrors) // Tüm hataları state'e kaydet
+      toast.error("Lütfen zorunlu alanları doldurun ve hataları düzeltin.")
+      console.error("Form validasyon hataları:", fieldErrors)
+      return
+    }
+
+    // Validasyon başarılıysa, hataları temizle
+    setErrors(null)
+
     try {
       const newUser = await api.put(`/user/${user?._id}`, profileData)
       toast.success("Profil bilgileri güncellendi")
@@ -47,15 +130,20 @@ export default function AdminProfile() {
   const handlePasswordChange = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error("Yeni şifreler eşleşmiyor");
-      return;
+    const result = passwordChangeSchema.safeParse(profileData)
+
+    if (!result.success) {
+      const errorTree = z.treeifyError(result.error)
+      const fieldErrors = errorTree.properties
+
+      setPasswordErrors(fieldErrors) // Tüm hataları state'e kaydet
+      toast.error("Lütfen zorunlu alanları doldurun ve hataları düzeltin.")
+      console.error("Form validasyon hataları:", fieldErrors)
+      return
     }
 
-    if (passwordData.newPassword.length < 6) {
-      toast.error("Şifre en az 6 karakter olmalıdır");
-      return;
-    }
+    // Validasyon başarılıysa, hataları temizle
+    setErrors(null)
 
     const req = {
       oldPassword: passwordData.currentPassword,
@@ -145,8 +233,8 @@ export default function AdminProfile() {
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
-              className="hidden" 
-              accept="image/*" 
+              className="hidden"
+              accept="image/*"
             />
             {selectedFile && (
               <p className="text-sm text-gray-500 mb-2">{selectedFile.name}</p>
@@ -177,19 +265,25 @@ export default function AdminProfile() {
                     <Input
                       id="firstName"
                       value={profileData.name}
-                      onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                      onChange={(e) => handleChangeInput('name', e.target.value)}
                       className="pl-10"
                     />
                   </div>
+                  {errors?.name?.errors && (
+                    <p className="text-red-500 text-sm mt-1">{errors.name.errors[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Soyad</Label>
                   <Input
                     id="lastName"
                     value={profileData.surname}
-                    onChange={(e) => setProfileData({ ...profileData, surname: e.target.value })}
+                    onChange={(e) => handleChangeInput('surname', e.target.value)}
                   />
                 </div>
+                {errors?.surname?.errors && (
+                  <p className="text-red-500 text-sm mt-1">{errors.surname.errors[0]}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -200,10 +294,13 @@ export default function AdminProfile() {
                     id="email"
                     type="email"
                     value={profileData.email}
-                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                    onChange={(e) => handleChangeInput('email', e.target.value)}
                     className="pl-10"
                   />
                 </div>
+                {errors?.email?.errors && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email.errors[0]}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -213,10 +310,13 @@ export default function AdminProfile() {
                   <Input
                     id="phone"
                     value={profileData.phonenumber}
-                    onChange={(e) => setProfileData({ ...profileData, phonenumber: e.target.value })}
+                    onChange={(e) => handleChangeInput('phonenumber', e.target.value)}
                     className="pl-10"
                   />
                 </div>
+                {errors?.phonenumber?.errors && (
+                  <p className="text-red-500 text-sm mt-1">{errors.phonenumber.errors[0]}</p>
+                )}
               </div>
 
 
@@ -244,11 +344,14 @@ export default function AdminProfile() {
                     id="currentPassword"
                     type="password"
                     value={passwordData.currentPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                    onChange={(e) => handleChangeInput('currentPassword', e.target.value)}
                     className="pl-10"
                     required
                   />
                 </div>
+                {passwordErrors?.currentPassword?.errors && (
+                  <p className="text-red-500 text-sm mt-1">{passwordErrors.currentPassword.errors[0]}</p>
+                )}
               </div>
 
               <Separator />
@@ -261,11 +364,14 @@ export default function AdminProfile() {
                     id="newPassword"
                     type="password"
                     value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                    onChange={(e) => handleChangeInput('newPassword', e.target.value)}
                     className="pl-10"
                     required
                   />
                 </div>
+                {passwordErrors?.newPassword?.errors && (
+                  <p className="text-red-500 text-sm mt-1">{passwordErrors.newPassword.errors[0]}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -276,11 +382,14 @@ export default function AdminProfile() {
                     id="confirmPassword"
                     type="password"
                     value={passwordData.confirmPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                    onChange={(e) => handleChangeInput('confirmPassword', e.target.value)}
                     className="pl-10"
                     required
                   />
                 </div>
+                {passwordErrors?.confirmPassword?.errors && (
+                  <p className="text-red-500 text-sm mt-1">{passwordErrors.confirmPassword.errors[0]}</p>
+                )}
               </div>
 
               <Button type="submit">Şifreyi Değiştir</Button>

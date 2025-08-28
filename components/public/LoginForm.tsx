@@ -9,6 +9,7 @@ import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import { loginSuccess } from "@/lib/redux/authSlice";
+import z from "zod";
 
 interface LoginFormProps {
   open: boolean;
@@ -16,31 +17,52 @@ interface LoginFormProps {
   onOpenForgotPassword: () => void
 }
 
+const loginFormSchema = z.object({
+  email: z.email('Doğru formatta mail adresi giriniz.').nonempty('Email zorunludur.'),
+  password: z.string().nonempty('Şifre zorunludur.')
+})
+
+type LoginFormData = z.infer<typeof loginFormSchema>
+
+type FieldErrors<T> = {
+  [K in keyof T]?: {
+    errors: string[];
+  }
+}
+
 export default function LoginForm({ open, onOpenChange, onOpenForgotPassword }: LoginFormProps) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  })
   const [showPassword, setShowPassword] = useState(false)
   const dispatch = useDispatch()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [errors, setErrors] = useState<FieldErrors<LoginFormData> | null>()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const result = loginFormSchema.safeParse(formData)
 
-    if (!email || !password) {
-      toast.error("Lütfen tüm alanları doldurun");
-      return;
+    if (!result.success) {
+      const errorTree = z.treeifyError(result.error)
+      const fieldErrors = errorTree.properties
+
+      setErrors(fieldErrors) // Tüm hataları state'e kaydet
+      toast.error("Lütfen zorunlu alanları doldurun ve hataları düzeltin.")
+      console.error("Form validasyon hataları:", fieldErrors)
+      return
     }
 
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      toast.error("Geçerli bir e-posta adresi girin");
-      return;
-    }
+    // Validasyon başarılıysa, hataları temizle
+    setErrors(null)
+
 
     setIsLoading(true)
 
     try {
-      const response = await api.post('/auth/login', { email, password })
+      const response = await api.post('/auth/login', formData)
 
       const userData = response.data
 
@@ -59,9 +81,28 @@ export default function LoginForm({ open, onOpenChange, onOpenForgotPassword }: 
       router.push('/admin/dashboard')
     } catch (error) {
       toast.error('Giriş Yapılamadı. Lütfen Bilgileriniizi Kontrol Ediniz.')
-    } finally{
+    } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleChangeInput = (field: string, value: any) => {
+    setFormData(prev => {
+      const newState = { ...prev, [field]: value }
+
+      const result = loginFormSchema.safeParse(newState)
+
+      if (!result.success) {
+        const errorTree = z.treeifyError(result.error)
+        const fieldErrors = errorTree.properties
+
+        setErrors(fieldErrors)
+      } else {
+        setErrors(null)
+      }
+
+      return newState
+    })
   }
 
   return (
@@ -87,12 +128,15 @@ export default function LoginForm({ open, onOpenChange, onOpenForgotPassword }: 
                 type="email"
                 placeholder="example@email.com"
                 className="pl-10"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={(e) => handleChangeInput('email', e.target.value)}
                 disabled={isLoading}
                 required
               />
             </div>
+            {errors?.email?.errors && (
+              <p className="text-red-500 text-sm mt-1">{errors.email.errors[0]}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -104,8 +148,8 @@ export default function LoginForm({ open, onOpenChange, onOpenForgotPassword }: 
                 type={showPassword ? "text" : "password"}
                 placeholder="Şifrenizi girin"
                 className="pl-10 pr-10"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={(e) => handleChangeInput('password', e.target.value)}
                 disabled={isLoading}
                 required
               />
@@ -122,6 +166,9 @@ export default function LoginForm({ open, onOpenChange, onOpenForgotPassword }: 
                 )}
               </button>
             </div>
+            {errors?.password?.errors && (
+              <p className="text-red-500 text-sm mt-1">{errors.password.errors[0]}</p>
+            )}
           </div>
 
           <div className="flex items-center justify-between text-sm">

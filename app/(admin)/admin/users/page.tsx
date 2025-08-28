@@ -43,7 +43,6 @@ export default function AdminUsers() {
       try {
         const res = await api.get('/user')
         setUsers(res.data)
-        console.log('res.data', res.data)
       } catch (error) {
         
       }

@@ -150,6 +150,12 @@ const addPropertyFormSchema = z.object({
 
 type AddPropertyFormData = z.infer<typeof addPropertyFormSchema>
 
+type FieldErrors<T> = {
+  [K in keyof T]?: {
+    errors: string[];
+  }
+}
+
 export default function AddPropertyPage() {
   const router = useRouter()
   const user = useSelector(selectUser)
@@ -159,7 +165,7 @@ export default function AddPropertyPage() {
   const [featureOptions, setFeatureOptions] = useState<Record<string, string[]>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
-  const [errors, setErrors] = useState<z.ZodFormattedError<AddPropertyFormData> | null>(null)
+  const [errors, setErrors] = useState<FieldErrors<AddPropertyFormData> | null>()
   const [formData, setFormData] = useState({
     // Kategori
     propertyType: "",
@@ -287,29 +293,46 @@ export default function AddPropertyPage() {
       // Sadece bu adımdaki hataları temizle
       setErrors(prevErrors => {
         if (!prevErrors) return null
-        const newErrors: z.ZodFormattedError<AddPropertyFormData> = { ...prevErrors, _errors: prevErrors._errors || [] } // _errors'ı her zaman dizi olarak başlat
+        const newErrors: FieldErrors<AddPropertyFormData> = { ...prevErrors }
 
         fieldsToValidate.forEach(field => {
           if (field.includes('.')) {
-            const [parentKey, childKey] = field.split('.')
-            const parent = parentKey as keyof AddPropertyFormData
-            if (newErrors[parent] && (newErrors[parent] as any)[childKey]) {
-              delete (newErrors[parent] as any)[childKey]
-              if (Object.keys(newErrors[parent]).filter(k => k !== '_errors').length === 0) {
-                delete newErrors[parent]
-              }
+            const [parentKey] = field.split('.');
+            if (newErrors[parentKey as keyof AddPropertyFormData]) {
+              delete newErrors[parentKey as keyof AddPropertyFormData];
             }
           } else {
-            delete newErrors[field]
+            if (newErrors[field as keyof AddPropertyFormData]) {
+              delete newErrors[field as keyof AddPropertyFormData];
+            }
           }
         })
-        return Object.keys(newErrors).length > 0 || newErrors._errors.length > 0 ? newErrors : null
+        const hasRemainingErrors = Object.keys(newErrors).some(key => newErrors[key as keyof AddPropertyFormData] !== undefined);
+        return hasRemainingErrors ? newErrors : null
       })
       setCurrentStep(Math.min(5, currentStep + 1))
     } else {
       // Sadece bu adımdaki hataları göster
-      const formattedErrors = result.error.format()
-      setErrors(prevErrors => ({ ...prevErrors, ...formattedErrors }))
+      const errorTree = z.treeifyError(result.error)
+      const fieldErrors = errorTree.errors
+      setErrors(prevErrors => {
+        const newErrors: FieldErrors<AddPropertyFormData> = { ...prevErrors }
+
+        fieldsToValidate.forEach(field => {
+          if (field.includes('.')) {
+            const [parentKey] = field.split('.');
+            delete newErrors[parentKey as keyof AddPropertyFormData];
+          } else {
+            delete newErrors[field as keyof AddPropertyFormData];
+          }
+        })
+        for (const key in fieldErrors) {
+            if (Object.prototype.hasOwnProperty.call(fieldErrors, key)) {
+              (newErrors as any)[key] = { errors: fieldErrors[key] };
+            }
+          }
+          return newErrors
+      })
       toast.error("Lütfen bu adımdaki zorunlu alanları doldurun.")
     }
   }
@@ -333,7 +356,10 @@ export default function AddPropertyPage() {
       const result = addPropertyFormSchema.safeParse(newState)
 
       if (!result.success) {
-        setErrors(result.error.format())
+        const errorTree = z.treeifyError(result.error)
+        const fieldErrors = errorTree.properties
+
+        setErrors(fieldErrors)
       } else {
         setErrors(null)
       }
@@ -382,9 +408,12 @@ export default function AddPropertyPage() {
     const result = addPropertyFormSchema.safeParse(formData)
 
     if (!result.success) {
-      setErrors(result.error.format()) // Tüm hataları state'e kaydet
+      const errorTree = z.treeifyError(result.error)
+      const fieldErrors = errorTree.properties
+
+      setErrors(fieldErrors)
       toast.error("Lütfen zorunlu alanları doldurun ve hataları düzeltin.")
-      console.error("Form validasyon hataları:", result.error.format())
+      console.error("Form validasyon hataları:", fieldErrors)
       return
     }
 
@@ -399,22 +428,22 @@ export default function AddPropertyPage() {
         description: JSON.stringify(formData.description),
         price: formData.price,
         gross: formData.grossArea,
-        net: formData.netArea, 
+        net: formData.netArea,
         numberOfRoom: formData.rooms,
         buildingAge: formData.buildingAge,
         floor: formData.floor,
         numberOfFloors: formData.totalFloors,
-        heating: formData.heating ,
-        numberOfBathrooms: formData.bathrooms ,
-        kitchen: formData.kitchen ,
-        balcony: formData.balcony ,
-        lift: formData.elevator ,
-        parking: formData.parking ,
-        furnished: formData.furnished ,
-        availability: formData.availability ,
-        dues: formData.dues ,
-        eligibleForLoan: formData.eligibleForLoan ,
-        titleDeedStatus: formData.deedStatus ,
+        heating: formData.heating,
+        numberOfBathrooms: formData.bathrooms,
+        kitchen: formData.kitchen,
+        balcony: formData.balcony,
+        lift: formData.elevator,
+        parking: formData.parking,
+        furnished: formData.furnished,
+        availability: formData.availability,
+        dues: formData.dues,
+        eligibleForLoan: formData.eligibleForLoan,
+        titleDeedStatus: formData.deedStatus,
         propertyType: formData.propertyType,
         listingType: formData.listingType,
         subType: formData.subType,
@@ -599,8 +628,8 @@ export default function AddPropertyPage() {
               ))}
             </SelectContent>
           </Select>
-          {errors?.propertyType?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.propertyType._errors[0]}</p>
+          {errors?.propertyType?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.propertyType.errors[0]}</p>
           )}
         </div>
 
@@ -616,8 +645,8 @@ export default function AddPropertyPage() {
               ))}
             </SelectContent>
           </Select>
-          {errors?.listingType?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.listingType._errors[0]}</p>
+          {errors?.listingType?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.listingType.errors[0]}</p>
           )}
         </div>
 
@@ -637,8 +666,8 @@ export default function AddPropertyPage() {
               ))}
             </SelectContent>
           </Select>
-          {errors?.subType?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.subType._errors[0]}</p>
+          {errors?.subType?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.subType.errors[0]}</p>
           )}
         </div>
       </div>
@@ -667,8 +696,8 @@ export default function AddPropertyPage() {
             onChange={(e) => handleInputChange('title', e.target.value)}
             placeholder="Örn: Deniz Manzaralı Lüks Villa"
           />
-          {errors?.title?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.title._errors[0]}</p>
+          {errors?.title?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.title.errors[0]}</p>
           )}
         </div>
 
@@ -683,8 +712,8 @@ export default function AddPropertyPage() {
           <p className="text-xs text-gray-500">
             Zengin metin düzenleyici ile formatlamalar, linkler ve resimler ekleyebilirsiniz.
           </p>
-          {errors?.description?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.description._errors[0]}</p>
+          {errors?.description?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.description.errors[0]}</p>
           )}
         </div>
 
@@ -700,8 +729,8 @@ export default function AddPropertyPage() {
             }}
             placeholder="0"
           />
-          {errors?.price?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.price._errors[0]}</p>
+          {errors?.price?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.price.errors[0]}</p>
           )}
         </div>
 
@@ -714,8 +743,8 @@ export default function AddPropertyPage() {
             onChange={(e) => handleInputChange('grossArea', e.target.value)}
             placeholder="0"
           />
-          {errors?.grossArea?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.grossArea._errors[0]}</p>
+          {errors?.grossArea?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.grossArea.errors[0]}</p>
           )}
         </div>
 
@@ -728,8 +757,8 @@ export default function AddPropertyPage() {
             onChange={(e) => handleInputChange('netArea', e.target.value)}
             placeholder="0"
           />
-          {errors?.netArea?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.netArea._errors[0]}</p>
+          {errors?.netArea?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.netArea.errors[0]}</p>
           )}
         </div>
 
@@ -742,8 +771,8 @@ export default function AddPropertyPage() {
             onChange={(e) => handleInputChange('buildingAge', e.target.value)}
             placeholder="0"
           />
-          {errors?.buildingAge?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.buildingAge._errors[0]}</p>
+          {errors?.buildingAge?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.buildingAge.errors[0]}</p>
           )}
         </div>
 
@@ -777,8 +806,8 @@ export default function AddPropertyPage() {
               <SelectItem value="6+2">6+2</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.rooms?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.rooms._errors[0]}</p>
+          {errors?.rooms?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.rooms.errors[0]}</p>
           )}
         </div>
 
@@ -793,8 +822,8 @@ export default function AddPropertyPage() {
               <SelectItem value="boş">boş</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.availability?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.availability._errors[0]}</p>
+          {errors?.availability?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.availability.errors[0]}</p>
           )}
         </div>
 
@@ -809,8 +838,8 @@ export default function AddPropertyPage() {
               <SelectItem value="uygun değil">uygun değil</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.eligibleForLoan?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.eligibleForLoan._errors[0]}</p>
+          {errors?.eligibleForLoan?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.eligibleForLoan.errors[0]}</p>
           )}
         </div>
 
@@ -825,8 +854,8 @@ export default function AddPropertyPage() {
               <SelectItem value="hayır">hayır</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.furnished?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.furnished._errors[0]}</p>
+          {errors?.furnished?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.furnished.errors[0]}</p>
           )}
         </div>
 
@@ -841,8 +870,8 @@ export default function AddPropertyPage() {
               <SelectItem value="kapalı">kapalı</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.kitchen?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.kitchen._errors[0]}</p>
+          {errors?.kitchen?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.kitchen.errors[0]}</p>
           )}
         </div>
 
@@ -864,8 +893,8 @@ export default function AddPropertyPage() {
               <SelectItem value="Tapu Kaydı Yok">Tapu Kaydı Yok</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.deedStatus?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.deedStatus._errors[0]}</p>
+          {errors?.deedStatus?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.deedStatus.errors[0]}</p>
           )}
         </div>
 
@@ -884,8 +913,8 @@ export default function AddPropertyPage() {
               <SelectItem value="5">5</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.balcony?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.balcony._errors[0]}</p>
+          {errors?.balcony?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.balcony.errors[0]}</p>
           )}
         </div>
 
@@ -898,8 +927,8 @@ export default function AddPropertyPage() {
             onChange={(e) => handleInputChange('floor', e.target.value)}
             placeholder="Örn: 3"
           />
-          {errors?.floor?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.floor._errors[0]}</p>
+          {errors?.floor?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.floor.errors[0]}</p>
           )}
         </div>
 
@@ -912,8 +941,8 @@ export default function AddPropertyPage() {
             onChange={(e) => handleInputChange('totalFloors', e.target.value)}
             placeholder="Örn: 8"
           />
-          {errors?.totalFloors?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.totalFloors._errors[0]}</p>
+          {errors?.totalFloors?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.totalFloors.errors[0]}</p>
           )}
         </div>
 
@@ -931,8 +960,8 @@ export default function AddPropertyPage() {
               <SelectItem value="Yok">Yok</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.heating?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.heating._errors[0]}</p>
+          {errors?.heating?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.heating.errors[0]}</p>
           )}
         </div>
 
@@ -950,8 +979,8 @@ export default function AddPropertyPage() {
               <SelectItem value="5+">5+</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.bathrooms?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.bathrooms._errors[0]}</p>
+          {errors?.bathrooms?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.bathrooms.errors[0]}</p>
           )}
         </div>
 
@@ -966,8 +995,8 @@ export default function AddPropertyPage() {
               <SelectItem value="yok">Yok</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.elevator?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.elevator._errors[0]}</p>
+          {errors?.elevator?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.elevator.errors[0]}</p>
           )}
         </div>
 
@@ -983,8 +1012,8 @@ export default function AddPropertyPage() {
               <SelectItem value="yok">Yok</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.parking?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.parking._errors[0]}</p>
+          {errors?.parking?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.parking.errors[0]}</p>
           )}
         </div>
       </div>
@@ -1008,8 +1037,8 @@ export default function AddPropertyPage() {
               ))}
             </SelectContent>
           </Select>
-          {errors?.city?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.city._errors[0]}</p>
+          {errors?.city?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.city.errors[0]}</p>
           )}
         </div>
 
@@ -1025,8 +1054,8 @@ export default function AddPropertyPage() {
               ))}
             </SelectContent>
           </Select>
-          {errors?.district?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.district._errors[0]}</p>
+          {errors?.district?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.district.errors[0]}</p>
           )}
         </div>
 
@@ -1042,8 +1071,8 @@ export default function AddPropertyPage() {
               ))}
             </SelectContent>
           </Select>
-          {errors?.neighborhood?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.neighborhood._errors[0]}</p>
+          {errors?.neighborhood?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.neighborhood.errors[0]}</p>
           )}
         </div>
       </div>
@@ -1064,8 +1093,8 @@ export default function AddPropertyPage() {
               onLocationChange={(coords) => handleInputChange('coordinates', coords)}
             />
           </div>
-          {errors?.coordinates?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.coordinates._errors[0]}</p>
+          {errors?.coordinates?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.coordinates.errors[0]}</p>
           )}
         </CardContent>
       </Card>
@@ -1130,8 +1159,8 @@ export default function AddPropertyPage() {
           </div>
         </CardContent>
       </Card>
-      {errors?.features?._errors && (
-        <p className="text-red-500 text-sm mt-1">{errors.features._errors[0]}</p>
+      {errors?.features?.errors && (
+        <p className="text-red-500 text-sm mt-1">{errors.features.errors[0]}</p>
       )}
     </div>
   )
@@ -1192,8 +1221,8 @@ export default function AddPropertyPage() {
           </CardContent>
         </Card>
       )}
-      {errors?.images?._errors && (
-        <p className="text-red-500 text-sm mt-1">{errors.images._errors[0]}</p>
+      {errors?.images?.errors && (
+        <p className="text-red-500 text-sm mt-1">{errors.images.errors[0]}</p>
       )}
     </div>
   )

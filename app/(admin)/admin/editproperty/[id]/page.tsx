@@ -80,6 +80,12 @@ const editPropertyFormSchema = z.object({
 
 type EditPropertyFormData = z.infer<typeof editPropertyFormSchema>
 
+type FieldErrors<T> = {
+  [K in keyof T]?: {
+    errors: string[];
+  }
+}
+
 interface ImageObject {
   id: string
   file: File
@@ -192,7 +198,7 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [images, setImages] = useState({ images: [] as ImageObject[] })
   const [coord, setCoord] = useState({ coordinates: { lat: 0, lng: 0 } })
-  const [errors, setErrors] = useState<z.ZodFormattedError<EditPropertyFormData> | null>(null)
+  const [errors, setErrors] = useState<FieldErrors<EditPropertyFormData> | null>()
   const [properties, setProperties] = useState<PropertyGetData>({
     _id: "",
     title: "",
@@ -315,7 +321,10 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
       const result = editPropertyFormSchema.safeParse(newState)
 
       if (!result.success) {
-        setErrors(result.error.format())
+        const errorTree = z.treeifyError(result.error)
+        const fieldErrors = errorTree.properties
+
+        setErrors(fieldErrors)
       } else {
         setErrors(null)
       }
@@ -372,7 +381,10 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
     const result = editPropertyFormSchema.safeParse(properties)
 
     if (!result.success) {
-      setErrors(result.error.format()) // Tüm hataları state'e kaydet
+      const errorTree = z.treeifyError(result.error)
+      const fieldErrors = errorTree.properties
+
+      setErrors(fieldErrors)
       toast.error("Lütfen zorunlu alanları doldurun ve hataları düzeltin.")
       console.error("Form validasyon hataları:", result.error.format())
       return
@@ -620,8 +632,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               ))}
             </SelectContent>
           </Select>
-          {errors?.propertyType?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.propertyType._errors[0]}</p>
+          {errors?.propertyType?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.propertyType.errors[0]}</p>
           )}
         </div>
 
@@ -637,8 +649,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               ))}
             </SelectContent>
           </Select>
-          {errors?.listingType?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.listingType._errors[0]}</p>
+          {errors?.listingType?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.listingType.errors[0]}</p>
           )}
         </div>
 
@@ -658,8 +670,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               ))}
             </SelectContent>
           </Select>
-          {errors?.subType?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.subType._errors[0]}</p>
+          {errors?.subType?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.subType.errors[0]}</p>
           )}
         </div>
       </div>
@@ -688,8 +700,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
             onChange={(e) => handleInputChange('title', e.target.value)}
             placeholder="Örn: Deniz Manzaralı Lüks Villa"
           />
-          {errors?.title?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.title._errors[0]}</p>
+          {errors?.title?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.title.errors[0]}</p>
           )}
         </div>
 
@@ -717,8 +729,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               handleInputChange('price', unformattedValue)
             }}
           />
-          {errors?.price?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.price._errors[0]}</p>
+          {errors?.price?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.price.errors[0]}</p>
           )}
         </div>
 
@@ -729,8 +741,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
             value={properties.gross}
             onChange={(e) => handleInputChange('gross', e.target.value)}
           />
-          {errors?.gross?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.gross._errors[0]}</p>
+          {errors?.gross?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.gross.errors[0]}</p>
           )}
         </div>
 
@@ -741,8 +753,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
             value={properties.net}
             onChange={(e) => handleInputChange('net', e.target.value)}
           />
-          {errors?.net?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.net._errors[0]}</p>
+          {errors?.net?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.net.errors[0]}</p>
           )}
         </div>
 
@@ -753,8 +765,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
             value={properties.buildingAge}
             onChange={(e) => handleInputChange('buildingAge', e.target.value)}
           />
-          {errors?.buildingAge?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.buildingAge._errors[0]}</p>
+          {errors?.buildingAge?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.buildingAge.errors[0]}</p>
           )}
         </div>
 
@@ -786,8 +798,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="6+2">6+2</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.numberOfRoom?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.numberOfRoom._errors[0]}</p>
+          {errors?.numberOfRoom?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.numberOfRoom.errors[0]}</p>
           )}
         </div>
 
@@ -802,8 +814,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="boş">boş</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.availability?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.availability._errors[0]}</p>
+          {errors?.availability?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.availability.errors[0]}</p>
           )}
         </div>
 
@@ -818,8 +830,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="uygun değil">uygun değil</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.eligibleForLoan?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.eligibleForLoan._errors[0]}</p>
+          {errors?.eligibleForLoan?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.eligibleForLoan.errors[0]}</p>
           )}
         </div>
 
@@ -834,8 +846,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="hayır">hayır</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.furnished?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.furnished._errors[0]}</p>
+          {errors?.furnished?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.furnished.errors[0]}</p>
           )}
         </div>
 
@@ -850,8 +862,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="kapalı">kapalı</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.kitchen?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.kitchen._errors[0]}</p>
+          {errors?.kitchen?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.kitchen.errors[0]}</p>
           )}
         </div>
 
@@ -873,8 +885,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="Tapu Kaydı Yok">Tapu Kaydı Yok</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.titleDeedStatus?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.titleDeedStatus._errors[0]}</p>
+          {errors?.titleDeedStatus?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.titleDeedStatus.errors[0]}</p>
           )}
         </div>
 
@@ -893,8 +905,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="5">5</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.balcony?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.balcony._errors[0]}</p>
+          {errors?.balcony?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.balcony.errors[0]}</p>
           )}
         </div>
 
@@ -906,8 +918,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
             onChange={(e) => handleInputChange('floor', e.target.value)}
             placeholder="Örn: 3"
           />
-          {errors?.floor?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.floor._errors[0]}</p>
+          {errors?.floor?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.floor.errors[0]}</p>
           )}
         </div>
 
@@ -919,8 +931,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
             onChange={(e) => handleInputChange('numberOfFloors', e.target.value)}
             placeholder="Örn: 8"
           />
-          {errors?.numberOfFloors?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.numberOfFloors._errors[0]}</p>
+          {errors?.numberOfFloors?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.numberOfFloors.errors[0]}</p>
           )}
         </div>
 
@@ -938,8 +950,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="Yok">Yok</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.heating?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.heating._errors[0]}</p>
+          {errors?.heating?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.heating.errors[0]}</p>
           )}
         </div>
 
@@ -957,8 +969,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="5">5</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.numberOfBathrooms?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.numberOfBathrooms._errors[0]}</p>
+          {errors?.numberOfBathrooms?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.numberOfBathrooms.errors[0]}</p>
           )}
         </div>
 
@@ -973,8 +985,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="yok">Yok</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.lift?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.lift._errors[0]}</p>
+          {errors?.lift?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.lift.errors[0]}</p>
           )}
         </div>
 
@@ -990,8 +1002,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               <SelectItem value="yok">Yok</SelectItem>
             </SelectContent>
           </Select>
-          {errors?.parking?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors.parking._errors[0]}</p>
+          {errors?.parking?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors.parking.errors[0]}</p>
           )}
         </div>
       </div>
@@ -1015,8 +1027,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               ))}
             </SelectContent>
           </Select>
-          {errors?.location?.city?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors?.location?.city?._errors[0]}</p>
+          {errors?.location && (
+            <p className="text-red-500 text-sm mt-1">{errors?.location.errors[0]}</p>
           )}
         </div>
 
@@ -1032,8 +1044,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
               ))}
             </SelectContent>
           </Select>
-          {errors?.location?.district?._errors && (
-            <p className="text-red-500 text-sm mt-1">{errors?.location?.district?._errors[0]}</p>
+          {errors?.location?.errors && (
+            <p className="text-red-500 text-sm mt-1">{errors?.location?.errors[0]}</p>
           )}
         </div>
 

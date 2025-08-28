@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import api from "@/lib/axios";
+import z from "zod";
 
 interface Category {
   _id: string
@@ -27,9 +28,22 @@ interface createCategory {
   value: string
 }
 
+const categoryFormSchema = z.object({
+  category: z.string().nonempty('Kategori adı zorunludur.'),
+  value: z.string().nonempty('Özellik adı zorunludur.')
+})
+
+type CatgoryFormData = z.infer<typeof categoryFormSchema>
+
+type FieldErrors<T> = {
+  [K in keyof T]?: {
+    errors: string[];
+  }
+}
+
 export default function AdminFeaturesPage() {
   const [categories, setCategories] = useState<Category[]>([])
-
+  const [errors, setErrors] = useState<FieldErrors<CatgoryFormData> | null>()
   const [searchTerm, setSearchTerm] = useState("")
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [showCategoryDialog, setShowCategoryDialog] = useState(false)
@@ -60,6 +74,25 @@ export default function AdminFeaturesPage() {
     fetchCategories()
   }, [])
 
+  const handleChangeInput = (field: string, value: any) => {
+    setCategoryForm(prev => {
+      const newState = { ...prev, [field]: value }
+
+      const result = categoryFormSchema.safeParse(newState)
+
+      if (!result.success) {
+        const errorTree = z.treeifyError(result.error)
+        const fieldErrors = errorTree.properties
+
+        setErrors(fieldErrors)
+      } else {
+        setErrors(null)
+      }
+
+      return newState
+    })
+  }
+
   // Category CRUD operations
   const handleAddCategory = () => {
     setEditingCategory(null);
@@ -77,10 +110,20 @@ export default function AdminFeaturesPage() {
   }
 
   const handleSaveCategory = async () => {
-    if (!categoryForm.category.trim() || !categoryForm.value.trim()) {
-      toast.error("Lütfen tüm alanları doldurun");
-      return;
+    const result = categoryFormSchema.safeParse(categoryForm)
+
+    if (!result.success) {
+      const errorTree = z.treeifyError(result.error)
+      const fieldErrors = errorTree.properties
+
+      setErrors(fieldErrors) // Tüm hataları state'e kaydet
+      toast.error("Lütfen zorunlu alanları doldurun ve hataları düzeltin.")
+      console.error("Form validasyon hataları:", fieldErrors)
+      return
     }
+
+    // Validasyon başarılıysa, hataları temizle
+    setErrors(null)
 
     try {
       if (editingCategory) {
@@ -107,13 +150,24 @@ export default function AdminFeaturesPage() {
   }
 
   const handleDeleteCategory = async (categoryId: string) => {
-    try {
-      await api.delete(`/feature-options/${categoryId}`)
-      toast.success("Kategori silindi");
-      fetchCategories();
-    } catch (error) {
-      toast.error("Silme işlemi sırasında bir hata oluştu.");
-    }
+    toast('İlanı Silmek İstediğinizden Eminmisiniz?', {
+      action: {
+        label: 'Sil',
+        onClick: async () => {
+          try {
+            await api.delete(`/feature-options/${categoryId}`)
+            toast.success("Kategori silindi");
+            fetchCategories();
+          } catch (error) {
+            toast.error("Silme işlemi sırasında bir hata oluştu.");
+          }
+        }
+      },
+      cancel: {
+        label: 'iptal',
+        onClick: () => toast.info("İlan silme işlemi iptal edildi.")
+      }
+    })
   }
 
   return (
@@ -223,24 +277,24 @@ export default function AdminFeaturesPage() {
                 <Input
                   id="categoryDisplayName"
                   value={categoryForm.category}
-                  onChange={(e) => setCategoryForm(prev => ({ ...prev, category: e.target.value }))}
+                  onChange={(e) => handleChangeInput('category', e.target.value)}
                   placeholder="Örn: Cephe Özellikleri"
                 />
-                <p className="text-xs text-gray-500">
-                  Kullanıcılara gösterilecek ad.
-                </p>
+                {errors?.category?.errors && (
+                  <p className="text-red-500 text-sm mt-1">{errors.category.errors[0]}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="categoryDisplayName">Kategori Adı</Label>
+                <Label htmlFor="categoryDisplayName">Özellik Adı</Label>
                 <Input
                   id="categoryDisplayName"
                   value={categoryForm.value}
-                  onChange={(e) => setCategoryForm(prev => ({ ...prev, value: e.target.value }))}
+                  onChange={(e) => handleChangeInput('value', e.target.value)}
                   placeholder="Örn: Mantolama"
                 />
-                <p className="text-xs text-gray-500">
-                  Kullanıcılara gösterilecek ad.
-                </p>
+                {errors?.value?.errors && (
+                  <p className="text-red-500 text-sm mt-1">{errors.value.errors[0]}</p>
+                )}
               </div>
               <div className="flex justify-end space-x-3">
                 <Button variant="outline" onClick={() => setShowCategoryDialog(false)}>
