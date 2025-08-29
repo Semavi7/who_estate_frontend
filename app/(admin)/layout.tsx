@@ -12,7 +12,8 @@ import {
     Globe,
     LogOut,
     Menu,
-    X
+    X,
+    UserPen
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -29,6 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const menuItems = [
         { id: "admin-dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
         { id: "admin-properties", icon: Building2, label: "İlanlar", path: "/admin/properties" },
+        { id: "admin-clientintake", icon: UserPen, label: "Müşteri Takip", path: "/admin/clientintake" },
         { id: "admin-features", icon: Settings, label: "Özellik Yönetimi", path: "/admin/features" },
         { id: "admin-profile", icon: User, label: "Kullanıcı Bilgileri", path: "/admin/profile" },
         { id: "admin-users", icon: Users, label: "Kullanıcılar", path: "/admin/users" },

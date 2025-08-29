@@ -29,8 +29,8 @@ function AlertDialogComp({ open, onOpenChange, onCancel, onOk }: AlertDialogProp
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onOk}>Continue</AlertDialogAction>
+          <AlertDialogCancel onClick={onCancel}>İptal</AlertDialogCancel>
+          <AlertDialogAction onClick={onOk}>Sil</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
