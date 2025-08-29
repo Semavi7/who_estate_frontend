@@ -34,7 +34,7 @@ export default interface PropertyGetData {
     subType?: string
     selectedFeatures: string[]
     images: string[]
-    user: {
+    user?: {
         _id: string,
         name: string,
         surname: string,

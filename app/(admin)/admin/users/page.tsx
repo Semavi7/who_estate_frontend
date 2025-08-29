@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../../../components
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
 import { Badge } from "../../../../components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../../../../components/ui/dialog";
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../components/ui/table";
 import { Avatar, AvatarImage, AvatarFallback } from "../../../../components/ui/avatar";
 import {
@@ -21,6 +21,7 @@ import {
 import UserForm from "../../../../components/admin/UserForm";
 import api from "@/lib/axios";
 import { toast } from "sonner";
+import AlertDialogComp from "@/components/admin/AlertDialog";
 
 export interface IUser {
   _id: string
@@ -37,20 +38,22 @@ export default function AdminUsers() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [showUserForm, setShowUserForm] = useState(false);
+  const [showAlertDialog, setShowAlertDialog] = useState(false)
+  const [selectedUserId, setSelectedUserId] = useState("")
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
 
   const getUser = async () => {
-      try {
-        const res = await api.get('/user')
-        setUsers(res.data)
-      } catch (error) {
-        
-      }
+    try {
+      const res = await api.get('/user')
+      setUsers(res.data)
+    } catch (error) {
+
     }
+  }
 
   useEffect(() => {
     getUser()
-  },[])
+  }, [])
 
   const filteredUsers = users.filter(user =>
     `${user.name} ${user.surname}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -68,24 +71,13 @@ export default function AdminUsers() {
   };
 
   const handleDeleteUser = async (id: string) => {
-    toast('Kullanıcıyı Silmek İstediğinizden Eminmisiniz?', {
-      action: {
-        label: 'Sil',
-        onClick: async () => {
-          try {
-            await api.delete(`/user/${id}`)
-            setUsers(users.filter(u => u._id !== id))
-            toast.success("Kullanıcı başarıyla silindi")
-          } catch {
-            toast.error("Kullanıcı silinirken bir hata oluştu.")
-          }
-        }
-      },
-      cancel: {
-        label: 'iptal',
-        onClick: () => toast.info("Kullanıcı silme işlemi iptal edildi.")
-      }
-    })
+    try {
+      await api.delete(`/user/${id}`)
+      await getUser()
+      toast.success("Kullanıcı başarıyla silindi")
+    } catch {
+      toast.error("Kullanıcı silinirken bir hata oluştu.")
+    }
   };
 
 
@@ -100,7 +92,7 @@ export default function AdminUsers() {
     }
   };
 
- 
+
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
@@ -246,7 +238,10 @@ export default function AdminUsers() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleDeleteUser(user._id)}
+                              onClick={() => {
+                                setShowAlertDialog(true)
+                                setSelectedUserId(user._id)
+                              }}
                               className="text-red-600 hover:text-red-700"
                             >
                               <Trash2 className="h-3 w-3" />
@@ -269,28 +264,24 @@ export default function AdminUsers() {
           </CardContent>
         </Card>
 
-        {/* User Form Dialog */}
-        <Dialog open={showUserForm} onOpenChange={setShowUserForm}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingUser ? 'Kullanıcı Düzenle' : 'Yeni Kullanıcı Oluştur'}
-              </DialogTitle>
-              <DialogDescription>
-                {editingUser
-                  ? 'Mevcut kullanıcının bilgilerini düzenleyebilirsiniz.'
-                  : 'Yeni bir kullanıcı oluşturmak için aşağıdaki formu doldurun.'
-                }
-              </DialogDescription>
-            </DialogHeader>
-            <UserForm
-              user={editingUser}
-              onCancel={() => setShowUserForm(false)}
-              onClose={() => setShowUserForm(false)}
-              onSuccess={getUser}
-            />
-          </DialogContent>
-        </Dialog>
+        
+
+        <AlertDialogComp
+          open={showAlertDialog}
+          onOpenChange={setShowAlertDialog}
+          onCancel={() => setShowAlertDialog(false)}
+          onOk={() => handleDeleteUser(selectedUserId)}
+        />
+
+        <UserForm
+          open={showUserForm}
+          onOpenChange={setShowUserForm}
+          user={editingUser}
+          onCancel={() => setShowUserForm(false)}
+          onClose={() => setShowUserForm(false)}
+          onSuccess={getUser}
+        />
+
       </div>
     </div>
   );

@@ -6,9 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 export default function AboutPage() {
   const stats = [
     { icon: Users, label: "Mutlu Müşteri", value: "25,000+" },
-    { icon: MapPin, label: "Aktif İlan", value: "15,000+" },
+    { icon: MapPin, label: "Başarılı Satış", value: "15,000+" },
     { icon: Award, label: "Deneyim Yılı", value: "15+" },
-    { icon: Star, label: "Emlak Danışmanı", value: "500+" }
+    { icon: Star, label: "Müşteri Desteği", value: "7/24" }
   ];
 
   const values = [
@@ -206,7 +206,7 @@ export default function AboutPage() {
             Uzman ekibimiz size yardımcı olmaktan mutluluk duyacaktır.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center ">
-            <Button variant="outline" size="lg" className="!bg-background cursor-pointer">
+            <Button variant="outline" size="lg" className="cursor-pointer">
               İletişim
             </Button>
           </div>

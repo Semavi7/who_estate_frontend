@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import api from "@/lib/axios";
 import z from "zod";
+import AlertDialogComp from "@/components/admin/AlertDialog";
 
 interface Category {
   _id: string
@@ -43,10 +44,12 @@ type FieldErrors<T> = {
 
 export default function AdminFeaturesPage() {
   const [categories, setCategories] = useState<Category[]>([])
+  const [categoryId, setCategoryId] = useState("")
   const [errors, setErrors] = useState<FieldErrors<CatgoryFormData> | null>()
   const [searchTerm, setSearchTerm] = useState("")
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [showCategoryDialog, setShowCategoryDialog] = useState(false)
+  const [showAlertDialog, setShowAlertDialog] = useState(false)
 
   // Form states
   const [categoryForm, setCategoryForm] = useState({
@@ -150,24 +153,13 @@ export default function AdminFeaturesPage() {
   }
 
   const handleDeleteCategory = async (categoryId: string) => {
-    toast('İlanı Silmek İstediğinizden Eminmisiniz?', {
-      action: {
-        label: 'Sil',
-        onClick: async () => {
-          try {
-            await api.delete(`/feature-options/${categoryId}`)
-            toast.success("Kategori silindi");
-            fetchCategories();
-          } catch (error) {
-            toast.error("Silme işlemi sırasında bir hata oluştu.");
-          }
-        }
-      },
-      cancel: {
-        label: 'iptal',
-        onClick: () => toast.info("İlan silme işlemi iptal edildi.")
-      }
-    })
+    try {
+      await api.delete(`/feature-options/${categoryId}`)
+      await fetchCategories()
+      toast.success("Kategori silindi")
+    } catch (error) {
+      toast.error("Silme işlemi sırasında bir hata oluştu.")
+    }
   }
 
   return (
@@ -241,12 +233,16 @@ export default function AdminFeaturesPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDeleteCategory(category._id)}
+                            onClick={() => {
+                              setShowAlertDialog(true)
+                              setCategoryId(category._id)
+                            }}
                             className="text-red-600 hover:text-red-700"
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
+
                       </TableCell>
                     </TableRow>
                   ))}
@@ -262,6 +258,13 @@ export default function AdminFeaturesPage() {
             )}
           </CardContent>
         </Card>
+
+        <AlertDialogComp
+          open={showAlertDialog}
+          onOpenChange={setShowAlertDialog}
+          onCancel={() => setShowAlertDialog(false)}
+          onOk={() => handleDeleteCategory(categoryId)}
+        />
 
         {/* Category Dialog */}
         <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>

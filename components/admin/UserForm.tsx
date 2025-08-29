@@ -1,20 +1,23 @@
 'use client'
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { User, Mail, Phone, Shield, Camera } from "lucide-react";
+import { User, Mail, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { IUser } from "@/app/(admin)/admin/users/page";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import api from "@/lib/axios";
 import z from "zod";
 
 interface UserFormProps {
-  user: IUser | null;
+  user: IUser | null
   onCancel: () => void
   onSuccess: () => void
   onClose: () => void
+  open: boolean
+  onOpenChange: Dispatch<SetStateAction<boolean>>
 }
 
 const userFormSchema = z.object({
@@ -32,7 +35,7 @@ type FieldErrors<T> = {
   }
 }
 
-export default function UserForm({ user, onCancel, onSuccess, onClose }: UserFormProps) {
+export default function UserForm({ user, onCancel, onSuccess, onClose, open, onOpenChange }: UserFormProps) {
   const [errors, setErrors] = useState<FieldErrors<UserFormData> | null>()
   const [formData, setFormData] = useState({
     name: user?.name || "",
@@ -100,98 +103,107 @@ export default function UserForm({ user, onCancel, onSuccess, onClose }: UserFor
 
   };
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {user ? 'Kullanıcı Düzenle' : 'Yeni Kullanıcı Oluştur'}
+          </DialogTitle>
+          <DialogDescription>
+            {user
+              ? 'Mevcut kullanıcının bilgilerini düzenleyebilirsiniz.'
+              : 'Yeni bir kullanıcı oluşturmak için aşağıdaki formu doldurun.'
+            }
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <h4 className="text-base leading-none font-semibold">Temel Bilgiler</h4>
 
-      {/* Basic Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Temel Bilgiler</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">Ad </Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">Ad </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="firstName"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+                {errors?.name?.errors && (
+                  <p className="text-red-500 text-sm mt-1">{errors.name.errors[0]}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Soyad </Label>
                 <Input
-                  id="firstName"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  id="lastName"
+                  value={formData.surname}
+                  onChange={(e) => handleInputChange('surname', e.target.value)}
+                  required
+                />
+                {errors?.surname?.errors && (
+                  <p className="text-red-500 text-sm mt-1">{errors.surname.errors[0]}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">E-posta </Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
                   className="pl-10"
                   required
                 />
               </div>
-              {errors?.name?.errors && (
-                <p className="text-red-500 text-sm mt-1">{errors.name.errors[0]}</p>
+              {errors?.email?.errors && (
+                <p className="text-red-500 text-sm mt-1">{errors.email.errors[0]}</p>
               )}
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="lastName">Soyad </Label>
-              <Input
-                id="lastName"
-                value={formData.surname}
-                onChange={(e) => handleInputChange('surname', e.target.value)}
-                required
-              />
-              {errors?.surname?.errors && (
-              <p className="text-red-500 text-sm mt-1">{errors.surname.errors[0]}</p>
-            )}
+              <Label htmlFor="phone">Telefon</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="phone"
+                  value={formData.phonenumber}
+                  onChange={(e) => handleInputChange('phonenumber', e.target.value)}
+                  className="pl-10"
+                  placeholder="(5XX) XXX XX XX"
+                />
+              </div>
+              {errors?.phonenumber?.errors && (
+                <p className="text-red-500 text-sm mt-1">{errors.phonenumber.errors[0]}</p>
+              )}
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">E-posta </Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                className="pl-10"
-                required
-              />
-            </div>
-            {errors?.email?.errors && (
-              <p className="text-red-500 text-sm mt-1">{errors.email.errors[0]}</p>
-            )}
+
+
+
+          {/* Form Actions */}
+          <div className="flex justify-end space-x-4">
+            <Button type="button" variant="outline" onClick={onCancel}>
+              İptal
+            </Button>
+            <Button type="submit">
+              {user ? 'Güncelle' : 'Oluştur'}
+            </Button>
           </div>
+        </form>
+      </DialogContent>
+    </Dialog>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">Telefon</Label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                id="phone"
-                value={formData.phonenumber}
-                onChange={(e) => handleInputChange('phonenumber', e.target.value)}
-                className="pl-10"
-                placeholder="(5XX) XXX XX XX"
-              />
-            </div>
-            {errors?.phonenumber?.errors && (
-              <p className="text-red-500 text-sm mt-1">{errors.phonenumber.errors[0]}</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-
-
-      {/* Form Actions */}
-      <div className="flex justify-end space-x-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          İptal
-        </Button>
-        <Button type="submit">
-          {user ? 'Güncelle' : 'Oluştur'}
-        </Button>
-      </div>
-    </form>
   );
 }

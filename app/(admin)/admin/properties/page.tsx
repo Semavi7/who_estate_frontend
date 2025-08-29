@@ -13,7 +13,8 @@ import {
   Building2,
   MapPin,
   Calendar,
-  Eye
+  Eye,
+  Replace
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -21,31 +22,36 @@ import api from "@/lib/axios";
 import PropertyGetData from "@/dto/getproperty.dto";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/lib/redux/authSlice";
+import AlertDialogComp from "@/components/admin/AlertDialog";
 
 
 export default function AdminProperties() {
-  const [properties, setProperties] = useState<PropertyGetData[]>([]);
-
-  const [searchTerm, setSearchTerm] = useState("");
+  const [properties, setProperties] = useState<PropertyGetData[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [showAlertDialog, setShowAlertDialog] = useState(false)
+  const [selectedPropretyId, setSelectedPropretyId] = useState("")
 
   const user = useSelector(selectUser)
 
   const filteredProperties = properties.filter(property =>
     property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    property.location.city.toLowerCase().includes(searchTerm.toLowerCase())
+    property.location.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    property.user?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    property.user?.surname.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const fetchProperties = async () => {
     try {
-      if(user?.role === 'admin'){
+      if (user?.role === 'admin') {
         const res = await api.get('/properties')
+        console.log(res.data);
         setProperties(res.data)
       }
-      else{
+      else {
         const res = await api.get(`/properties/query?userId=${user?._id}`)
         setProperties(res.data)
       }
-      
+
     } catch (error) {
       toast.error("Veri alınırken bir hata oluştu.")
     }
@@ -55,25 +61,24 @@ export default function AdminProperties() {
     fetchProperties()
   }, [])
 
-  const handleDeleteProperty = (id: string) => {
-    toast('İlanı Silmek İstediğinizden Eminmisiniz?', {
-      action: {
-        label: 'Sil',
-        onClick: async () => {
-          try {
-            await api.delete(`/properties/${id}`)
-            setProperties(properties.filter(p => p._id !== id))
-            toast.success("İlan başarıyla silindi")
-          } catch {
-            toast.error("İlan silinirken bir hata oluştu.")
-          }
-        }
-      },
-      cancel: {
-        label: 'iptal',
-        onClick: () => toast.info("İlan silme işlemi iptal edildi.")
-      }
-    })
+  const handleDeleteProperty = async (id: string) => {
+    try {
+      await api.delete(`/properties/${id}`)
+      await fetchProperties()
+      toast.success("İlan başarıyla silindi")
+    } catch {
+      toast.error("İlan silinirken bir hata oluştu.")
+    }
+  }
+
+  const handleTransportProperty = async (propertyid: string, userId: string) => {
+    try {
+      await api.patch(`/properties/${propertyid}`, {userId: userId})
+      await fetchProperties()
+      toast.success("İlan başarıyla taşındı")
+    } catch {
+      toast.error("İlan taşınırken bir hata oluştu.")
+    }
   }
 
   const formatPrice = (price: number, listingType: string) => {
@@ -182,6 +187,11 @@ export default function AdminProperties() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    {
+                      user?.role === 'admin' ? 
+                      <TableHead>İlan Sahibi</TableHead> : <></>
+                    }
+                    
                     <TableHead>İlan Başlığı</TableHead>
                     <TableHead>Tür</TableHead>
                     <TableHead>Kategori</TableHead>
@@ -197,6 +207,10 @@ export default function AdminProperties() {
                 <TableBody>
                   {filteredProperties.map((property) => (
                     <TableRow key={property._id}>
+                      {
+                      user?.role === 'admin' ? 
+                      <TableCell>{property.user?.name} {property.user?.surname}</TableCell> : <></>
+                    }
                       <TableCell>
                         <div className="max-w-48">
                           <div className="text-sm truncate">{property.title}</div>
@@ -247,11 +261,27 @@ export default function AdminProperties() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDeleteProperty(property._id)}
+                            onClick={() => {
+                              setSelectedPropretyId(property._id)
+                              setShowAlertDialog(true)
+                            }}
                             className="text-red-600 hover:text-red-700"
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
+                          {
+                            user?.role === 'admin' ?
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {handleTransportProperty(property._id, user._id)}}
+                                className="text-blue-600 hover:text-blue-700"
+                              >
+                                <Replace className="h-3 w-3" />
+                              </Button>
+                              :
+                              <></>
+                          }
                         </div>
                       </TableCell>
                     </TableRow>
@@ -268,6 +298,14 @@ export default function AdminProperties() {
             )}
           </CardContent>
         </Card>
+
+
+        <AlertDialogComp
+          open={showAlertDialog}
+          onOpenChange={setShowAlertDialog}
+          onCancel={() => setShowAlertDialog(false)}
+          onOk={() => handleDeleteProperty(selectedPropretyId)}
+        />
       </div>
     </div>
   );

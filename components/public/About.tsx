@@ -7,7 +7,7 @@ export default function About() {
     {
       icon: <Building className="h-5 w-5 md:h-6 md:w-6" />,
       number: "15,000+",
-      label: "Aktif İlan"
+      label: "Başarılı Satış"
     },
     {
       icon: <Users className="h-5 w-5 md:h-6 md:w-6" />,
