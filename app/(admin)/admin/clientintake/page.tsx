@@ -17,6 +17,7 @@ import api from "@/lib/axios";
 import z from "zod";
 import AlertDialogComp from "@/components/admin/AlertDialog";
 import { Textarea } from "@/components/ui/textarea";
+import axios from "axios";
 
 interface Clientintake {
     _id: string
@@ -103,7 +104,7 @@ export default function AdminFeaturesPage() {
     // Category CRUD operations
     const handleAddCategory = () => {
         setEditingClientintake(null);
-        setClientintakeForm({ namesurname: "", phone: "", description:"" });
+        setClientintakeForm({ namesurname: "", phone: "", description: "" });
         setShowClientintakeDialog(true);
     }
 
@@ -146,7 +147,8 @@ export default function AdminFeaturesPage() {
                     description: clientintakeForm.description
                 }
                 await api.post('/client-intake', newClientintake)
-                toast.success("Kayıt eklendi");
+                toast.success("Kayıt eklendi")
+                sendNotification()
             }
 
             setShowClientintakeDialog(false);
@@ -168,8 +170,23 @@ export default function AdminFeaturesPage() {
         }
     }
 
+    const sendNotification = async () => {
+
+        try {
+            const response = await axios.post("/api/send-notification",{title: "Yeni Müşteri Eklendi", message: `${clientintakeForm.namesurname} isimli müşteri eklendi.`});
+            console.log('Bildirim başarıyla gönderildi:', response.data);
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.error('Bildirim gönderme hatası:', error.response?.data || error.message);
+            } else {
+                console.error('Beklenmedik bir hata oluştu:', error);
+            }
+        }
+    }
+
     return (
         <div className="space-y-6">
+            <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
             <div className="grid grid-cols-1 gap-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">

@@ -3,6 +3,8 @@ import "./globals.css";
 import { ReduxProvider } from "@/lib/redux/provider";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "../components/public/theme-provider"
+import Script from "next/script";
+import OneSignalInitializer from "@/components/public/OneSignalInitializer";
 
 export const metadata: Metadata = {
   title: "Derya Emlak",
@@ -23,7 +25,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ReduxProvider>{children}</ReduxProvider>
+          <ReduxProvider>
+            <OneSignalInitializer/>
+            {children}
+            </ReduxProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>

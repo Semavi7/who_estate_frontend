@@ -16,12 +16,14 @@ interface User {
 interface AuthState {
   isAuthenticated: boolean
   user: User | null
+  subscribed: boolean
 }
 
 
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
+  subscribed: false
 }
 
 const authSlice = createSlice({
@@ -36,15 +38,22 @@ const authSlice = createSlice({
       state.isAuthenticated = false
       state.user = null
     },
+    subscribedTrue: (state) => {
+      state.subscribed = true
+    },
+    subscribedFalse: (state) => {
+      state.subscribed = false
+    }
   },
 })
 
 
-export const { loginSuccess, logout } = authSlice.actions
+export const { loginSuccess, logout, subscribedTrue, subscribedFalse } = authSlice.actions
 
 
 export const selectIsAuthenticated = (state: RootState) => state.auth.isAuthenticated
 export const selectUser = (state: RootState) => state.auth.user
+export const selectSubscribed = (state: RootState) => state.auth.subscribed
 
 
 

@@ -44,6 +44,7 @@ import { MapPicker } from "@/components/ui/mappicker"
 import { useSelector } from "react-redux"
 import { selectUser } from "@/lib/redux/authSlice"
 import * as z from "zod"
+import axios from "axios"
 
 interface ImageObject {
   id: string
@@ -117,8 +118,8 @@ const addPropertyFormSchema = z.object({
   netArea: z.string().nonempty("Net alan zorunludur."),
   rooms: z.string().nonempty("Oda sayısı zorunludur."),
   buildingAge: z.string().nonempty("Bina yaşı zorunludur."),
-  floor: z.string().nonempty("Kat zorunludur."),
-  totalFloors: z.string().nonempty("Toplam kat zorunludur."),
+  floor: z.coerce.number().min(1,"Kat sayısı zorunludur"),
+  totalFloors: z.coerce.number().min(1,"Toplam kat zorunludur."),
   heating: z.string().nonempty("Isıtma tipi zorunludur."),
   bathrooms: z.string().nonempty("Banyo adedi zorunludur."),
   kitchen: z.string().nonempty("Mutfak tipi zorunludur."),
@@ -327,11 +328,11 @@ export default function AddPropertyPage() {
           }
         })
         for (const key in fieldErrors) {
-            if (Object.prototype.hasOwnProperty.call(fieldErrors, key)) {
-              (newErrors as any)[key] = { errors: fieldErrors[key] };
-            }
+          if (Object.prototype.hasOwnProperty.call(fieldErrors, key)) {
+            (newErrors as any)[key] = { errors: fieldErrors[key] };
           }
-          return newErrors
+        }
+        return newErrors
       })
       toast.error("Lütfen bu adımdaki zorunlu alanları doldurun.")
     }
@@ -365,6 +366,7 @@ export default function AddPropertyPage() {
       }
       return newState
     })
+    console.log(formData.totalFloors);
   }
 
   const handleFeatureToggle = (feature: string) => {
@@ -401,6 +403,14 @@ export default function AddPropertyPage() {
         images: prev.images.filter((img) => img.id !== id)
       }
     })
+  }
+
+  const sendNotification = async () => {
+    try {
+      await axios.post("/api/send-notification", { title: "Yeni İlan Eklendi", message: `${formData.title} isimli ilan eklendi.` })
+    } catch (error) {
+      toast.error("Beklenmedi bir hata oluştu.")
+    }
   }
 
   const handleSubmit = async () => {
@@ -481,6 +491,7 @@ export default function AddPropertyPage() {
 
       await api.post('/properties', submitData)
       toast.success("İlan başarıyla oluşturuldu", { id: toastId })
+      sendNotification()
 
       router.push('/admin/properties')
     } catch (error) {
@@ -922,7 +933,7 @@ export default function AddPropertyPage() {
           <Label htmlFor="floor">Bulunduğu Kat</Label>
           <Input
             id="floor"
-            type="number"
+            type="text"
             value={formData.floor}
             onChange={(e) => handleInputChange('floor', e.target.value)}
             placeholder="Örn: 3"
@@ -936,7 +947,7 @@ export default function AddPropertyPage() {
           <Label htmlFor="totalFloors">Toplam Kat Sayısı</Label>
           <Input
             id="totalFloors"
-            type="number"
+            type="text"
             value={formData.totalFloors}
             onChange={(e) => handleInputChange('totalFloors', e.target.value)}
             placeholder="Örn: 8"

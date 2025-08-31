@@ -21,6 +21,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout, selectUser } from "@/lib/redux/authSlice";
 import { persistor } from "@/lib/redux/store";
 import { ModeToggle } from "@/components/ui/darkmode";
+import NotificationButton from "@/components/admin/NotificationButton";
 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -54,6 +55,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         await persistor.purge()
         router.push('/')
     }
+
+    
 
     return (
         <div className="min-h-screen bg-background text-foreground flex">
@@ -105,6 +108,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 {/* Logout Button */}
                 <div className="p-4 border-t border-accent">
+                    <NotificationButton prop={sidebarCollapsed}/>
                     <button
                         className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-500  hover:bg-gray-700 hover:text-red-600 transition-colors"
                         onClick={handleLogout}
