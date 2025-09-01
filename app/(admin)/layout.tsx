@@ -22,12 +22,14 @@ import { logout, selectUser } from "@/lib/redux/authSlice";
 import { persistor } from "@/lib/redux/store";
 import { ModeToggle } from "@/components/ui/darkmode";
 import NotificationButton from "@/components/admin/NotificationButton";
+import { useTheme } from "next-themes"
 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const pathname = usePathname()
     const user = useSelector(selectUser)
+    const { theme } = useTheme()
     const menuItems = [
         { id: "admin-dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
         { id: "admin-properties", icon: Building2, label: "İlanlar", path: "/admin/properties" },
@@ -56,7 +58,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         router.push('/')
     }
 
-    
+
 
     return (
         <div className="min-h-screen bg-background text-foreground flex">
@@ -67,9 +69,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <div className="flex items-center justify-between">
                         {!sidebarCollapsed && (
                             <div className="flex items-center space-x-2">
-                                <div className="bg-primary text-primary-foreground p-2 rounded-lg">
-                                    <div className="h-5 w-5 flex items-center justify-center text-sm">🏠</div>
-                                </div>
+                                <img
+                                    src={theme === "dark" ? "/arkasıbosbeyazyazı.png" : "/e76e564c-c0ae-4241-97a0-4df87dec2b07.png"}
+                                    className="h-8 w-8 flex items-center justify-center"
+                                />
                                 <span className="text-lg text-sidebar-foreground">Admin Panel</span>
                             </div>
                         )}
@@ -108,7 +111,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 {/* Logout Button */}
                 <div className="p-4 border-t border-accent">
-                    <NotificationButton prop={sidebarCollapsed}/>
+                    <NotificationButton prop={sidebarCollapsed} />
                     <button
                         className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-500  hover:bg-gray-700 hover:text-red-600 transition-colors"
                         onClick={handleLogout}
@@ -142,7 +145,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         {user?.surname ? user.surname.charAt(0).toUpperCase() : ''}
                                     </AvatarFallback>
                                 </Avatar>
-                                <ModeToggle/>
+                                <ModeToggle />
                             </div>
                         </div>
                     </div>

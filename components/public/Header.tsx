@@ -11,6 +11,7 @@ import { logout, selectIsAuthenticated } from "@/lib/redux/authSlice";
 import { persistor } from "@/lib/redux/store";
 import ForgotPassword from "./ForgotPassword";
 import { ModeToggle } from "../ui/darkmode";
+import { useTheme } from "next-themes"
 
 interface HeaderProps {
   showHeader?: boolean;
@@ -27,6 +28,8 @@ export default function Header({ showHeader = true }: HeaderProps) {
 
   const dispatch = useDispatch()
   const router = useRouter()
+
+  const { theme } = useTheme()
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -84,9 +87,11 @@ export default function Header({ showHeader = true }: HeaderProps) {
             <div
               className="flex items-center space-x-2 animate-logo"
             >
-              <div className="bg-primary text-primary-foreground p-2 rounded-lg">
-                <div className="h-6 w-6 flex items-center justify-center">🏠</div>
-              </div>
+              <img
+                src={theme === "dark" ? "/arkasıbosbeyazyazı.png" : "/e76e564c-c0ae-4241-97a0-4df87dec2b07.png"}
+                className="h-8 w-8 flex items-center justify-center"
+              />
+
               <span className="text-xl lg:hidden">Derya Emlak</span>
               <span className="hidden text-xl lg:inline">Derya Emlak Who Estate</span>
             </div>

@@ -5,52 +5,124 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import z from "zod";
+import api from "@/lib/axios";
+import axios from "axios";
+import { GoogleMap, MarkerF, useLoadScript } from "@react-google-maps/api";
+
+const messageSchema = z.object({
+  email: z.email('Doğru formatta mail adresi giriniz.').nonempty('Email zorunludur.'),
+  name: z.string().nonempty('Ad zorunludur.'),
+  surname: z.string().nonempty('Soyad zorunludur.'),
+  phone: z.string().min(1, "Telefon numarası zorunludur."),
+  message: z.string().nonempty('Mesaj zorunludur.')
+})
+
+type Message = z.infer<typeof messageSchema>
+
+type FieldErrors<T> = {
+  [K in keyof T]?: {
+    errors: string[];
+  }
+}
+const libraries: ('places' | 'drawing' | 'geometry' | 'visualization')[] = ['places']
 
 export default function ContactPage() {
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: "AIzaSyA3iPYujGJLwvxjaJmPzqR0kx_z2nk2FTM",
+    libraries,
+  })
+  const [errors, setErrors] = useState<FieldErrors<Message> | null>()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
-    subject: "",
+    surname: "",
     message: ""
-  });
+  })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const sendNotification = async () => {
+
+    try {
+      const response = await axios.post("/api/send-notification", { title: "Yeni Müşteri Mesajı", message: `${formData.name} ${formData.surname} isimli müşteriden mesaj geldi.` });
+      console.log('Bildirim başarıyla gönderildi:', response.data);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('Bildirim gönderme hatası:', error.response?.data || error.message);
+      } else {
+        console.error('Beklenmedik bir hata oluştu:', error);
+      }
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const result = messageSchema.safeParse(formData)
 
-    // Form validation
-    if (!formData.name || !formData.email || !formData.message) {
-      toast.error("Lütfen gerekli alanları doldurun");
-      return;
+    if (!result.success) {
+      const errorTree = z.treeifyError(result.error)
+      const fieldErrors = errorTree.properties
+
+      setErrors(fieldErrors) // Tüm hataları state'e kaydet
+      toast.error("Lütfen zorunlu alanları doldurun ve hataları düzeltin.")
+      console.error("Form validasyon hataları:", fieldErrors)
+      return
     }
 
-    // Simulate form submission
-    toast.success("Mesajınız başarıyla gönderildi! En kısa sürede size dönüş yapacağız.");
+    // Validasyon başarılıysa, hataları temizle
+    setErrors(null)
 
-    // Reset form
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      subject: "",
-      message: ""
-    });
-  };
+    try {
+      await api.post('/messages', formData)
+      sendNotification()
+      toast.success("Mesaj başarı ile gönderildi.")
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        surname: "",
+        message: ""
+      })
+    } catch (error) {
+      toast.error('Giriş Yapılamadı. Lütfen Bilgileriniizi Kontrol Ediniz.')
+    }
+  }
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+    setFormData(prev => {
+      const newState = { ...prev, [field]: value }
+
+      const result = messageSchema.safeParse(newState)
+
+      if (!result.success) {
+        const errorTree = z.treeifyError(result.error)
+        const fieldErrors = errorTree.properties
+
+        setErrors(fieldErrors)
+      } else {
+        setErrors(null)
+      }
+
+      return newState
+    })
+  }
+
+  const handleGetDirections = () => {
+    const latitude = 40.924026505546635; // Ofis konumunun enlemi
+    const longitude = 29.134704567395538; // Ofis konumunun boylamı
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+    window.open(googleMapsUrl, '_blank');
+  }
 
   const contactInfo = [
     {
       icon: Phone,
       title: "Telefon",
       details: [
-        "+90 (212) 555 0123",
-        "+90 (212) 555 0124"
+        "+90 (216) 399 3443",
+        "+90 (356) 810 0880"
       ],
       description: "7/24 Destek Hattı"
     },
@@ -58,8 +130,7 @@ export default function ContactPage() {
       icon: Mail,
       title: "E-posta",
       details: [
-        "info@emlakpro.com",
-        "destek@emlakpro.com"
+        "deryaemlakwhoestate@gmail.com"
       ],
       description: "24 saat içinde yanıt"
     },
@@ -67,8 +138,8 @@ export default function ContactPage() {
       icon: MapPin,
       title: "Adres",
       details: [
-        "Levent Mah. Büyükdere Cad.",
-        "No: 123 Beşiktaş/İstanbul"
+        "Bağlarbaşı Mah. Selahattin Bey Sok.",
+        "No: 1/A Maltepe/İstanbul"
       ],
       description: "Ana ofisimiz"
     },
@@ -81,15 +152,6 @@ export default function ContactPage() {
       ],
       description: "Pazar kapalı"
     }
-  ];
-
-  const departments = [
-    { value: "satis", label: "Satış Departmanı" },
-    { value: "kiralama", label: "Kiralama Departmanı" },
-    { value: "degerleme", label: "Değerleme Departmanı" },
-    { value: "musteri-hizmetleri", label: "Müşteri Hizmetleri" },
-    { value: "teknik-destek", label: "Teknik Destek" },
-    { value: "genel", label: "Genel Sorular" }
   ];
 
   return (
@@ -135,7 +197,7 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Form */}
             <div>
-              <Card>
+              <Card className="h-131">
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <MessageSquare className="h-6 w-6 mr-2 text-primary" />
@@ -149,25 +211,31 @@ export default function ContactPage() {
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="name">Ad Soyad *</Label>
+                        <Label htmlFor="name">Ad</Label>
                         <Input
                           id="name"
-                          placeholder="Adınız ve soyadınız"
+                          placeholder="Adınız"
                           value={formData.name}
                           onChange={(e) => handleInputChange("name", e.target.value)}
                           required
                         />
+                        {errors?.name?.errors && (
+                          <p className="text-red-500 text-sm mt-1">{errors.name.errors[0]}</p>
+                        )}
                       </div>
+
                       <div className="space-y-2">
-                        <Label htmlFor="email">E-posta *</Label>
+                        <Label htmlFor="surname">Soyad</Label>
                         <Input
-                          id="email"
-                          type="email"
-                          placeholder="example@email.com"
-                          value={formData.email}
-                          onChange={(e) => handleInputChange("email", e.target.value)}
+                          id="surname"
+                          placeholder="Soyadınız"
+                          value={formData.surname}
+                          onChange={(e) => handleInputChange("surname", e.target.value)}
                           required
                         />
+                        {errors?.surname?.errors && (
+                          <p className="text-red-500 text-sm mt-1">{errors.surname.errors[0]}</p>
+                        )}
                       </div>
                     </div>
 
@@ -176,30 +244,33 @@ export default function ContactPage() {
                         <Label htmlFor="phone">Telefon</Label>
                         <Input
                           id="phone"
-                          placeholder="+90 (555) 123 4567"
+                          placeholder="05551234567"
                           value={formData.phone}
                           onChange={(e) => handleInputChange("phone", e.target.value)}
                         />
+                        {errors?.phone?.errors && (
+                          <p className="text-red-500 text-sm mt-1">{errors.phone.errors[0]}</p>
+                        )}
                       </div>
+
                       <div className="space-y-2">
-                        <Label htmlFor="subject">Departman</Label>
-                        <Select value={formData.subject} onValueChange={(value) => handleInputChange("subject", value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Departman seçin" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {departments.map((dept) => (
-                              <SelectItem key={dept.value} value={dept.value}>
-                                {dept.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Label htmlFor="email">Eposta</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="example@email.com"
+                          value={formData.email}
+                          onChange={(e) => handleInputChange("email", e.target.value)}
+                          required
+                        />
+                        {errors?.email?.errors && (
+                          <p className="text-red-500 text-sm mt-1">{errors.email.errors[0]}</p>
+                        )}
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="message">Mesaj *</Label>
+                      <Label htmlFor="message">Mesaj</Label>
                       <Textarea
                         id="message"
                         placeholder="Mesajınızı buraya yazın..."
@@ -208,6 +279,9 @@ export default function ContactPage() {
                         onChange={(e) => handleInputChange("message", e.target.value)}
                         required
                       />
+                      {errors?.message?.errors && (
+                        <p className="text-red-500 text-sm mt-1">{errors.message.errors[0]}</p>
+                      )}
                     </div>
 
                     <Button type="submit" className="w-full">
@@ -225,35 +299,34 @@ export default function ContactPage() {
                 <CardHeader>
                   <CardTitle>Ofis Konumumuz</CardTitle>
                   <p className="text-gray-600">
-                    Ana ofisimiz Levent'te merkezi bir konumda bulunmaktadır.
+                    Ana ofisimiz Maltepe'de merkezi bir konumda bulunmaktadır.
                   </p>
                 </CardHeader>
                 <CardContent>
                   <div className="bg-gray-200 h-64 rounded-lg flex items-center justify-center mb-6">
-                    <div className="text-center text-gray-500">
-                      <MapPin className="h-12 w-12 mx-auto mb-2" />
-                      <p>Harita burada görünecek</p>
-                      <p className="text-sm">Google Maps entegrasyonu</p>
-                    </div>
+                    {!isLoaded ? <div>Harita yüklenemedi.</div> : <GoogleMap
+                      mapContainerStyle={{ width: '100%', height: '100%' }}
+                      zoom={15}
+                      center={{ lat: 40.924026505546635, lng: 29.134704567395538 }}
+                    >
+                      <MarkerF position={{ lat: 40.924026505546635, lng: 29.134704567395538 }} />
+                    </GoogleMap>}
                   </div>
                   <div className="space-y-4">
                     <div>
                       <h4 className="text-lg">Ana Ofis</h4>
-                      <p className="text-gray-600">Levent Mah. Büyükdere Cad. No: 123<br />Beşiktaş/İstanbul</p>
+                      <p className="text-gray-600">Bağlarbaşı Mah. Selahattin Bey Sok. No: 1/A<br />Maltepe/İstanbul</p>
                     </div>
                     <div className="flex items-center space-x-4">
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={handleGetDirections}>
                         Yol Tarifi Al
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        Randevu Al
                       </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              {/* <Card>
                 <CardHeader>
                   <CardTitle>Şube Ofislerimiz</CardTitle>
                 </CardHeader>
@@ -276,7 +349,7 @@ export default function ContactPage() {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+              </Card> */}
             </div>
           </div>
         </div>

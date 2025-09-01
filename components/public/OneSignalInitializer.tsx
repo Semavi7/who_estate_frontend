@@ -3,7 +3,6 @@ import React, { useEffect } from 'react'
 import OneSignal from 'react-onesignal';
 import { useDispatch } from 'react-redux';
 import { subscribedFalse, subscribedTrue } from "@/lib/redux/authSlice"
-import { toast } from 'sonner';
 
 const OneSignalInitializer = () => {
     const dispatch = useDispatch()
@@ -12,12 +11,7 @@ const OneSignalInitializer = () => {
             // Ensure this code runs only on the client side
 
             if (typeof window !== "undefined") {
-                const oneSignalKey: string | undefined = process.env.ONE_SIGNAL_KEY
-                if(!oneSignalKey){
-                    toast.error("ONE_SIGNAL_KEY ortam değişkeni tanımlı değil. OneSignal başlatılamıyor.")
-                    dispatch(subscribedFalse());
-                    return
-                }
+                const oneSignalKey: string | undefined = "9444ff94-05a3-4178-880e-870a4ed703bf"
                 await OneSignal.init({
                     appId: oneSignalKey
                 });

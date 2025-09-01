@@ -73,20 +73,8 @@ export default function Footer() {
               </div>
               <div className="flex items-start space-x-3">
                 <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                <span className="text-sm md:text-base text-gray-400">Levent Mahallesi, Büyükdere Cad. No:123, Beşiktaş/İstanbul</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="text-sm md:text-base">Bülten Aboneliği</h4>
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                <Input
-                  placeholder="E-posta adresiniz"
-                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 text-sm"
-                />
-                <Button className="bg-primary hover:bg-primary/90 text-sm px-4 py-2 sm:px-6">
-                  Abone Ol
-                </Button>
+                <span className="text-sm md:text-base text-gray-400">Bağlarbaşı Mah. Selahattin Bey Sok. No: 1/A
+                  Maltepe/İstanbul</span>
               </div>
             </div>
           </div>

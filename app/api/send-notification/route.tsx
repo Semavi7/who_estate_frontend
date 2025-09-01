@@ -9,7 +9,7 @@ export async function POST(request: Request) {
         };
 
         const data = {
-            "app_id": process.env.ONE_SIGNAL_KEY,
+            "app_id": "9444ff94-05a3-4178-880e-870a4ed703bf",
             "target_channel": "push",
             "name": "Testing basic setup",
             "headings": {

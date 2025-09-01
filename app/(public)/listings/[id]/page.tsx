@@ -16,7 +16,6 @@ import {
   Car,
   ArrowUpDown,
   Phone,
-  Mail,
   ChevronLeft,
   ChevronRight,
   Check
@@ -46,7 +45,7 @@ export default function PropertyDetailPage({ params }: EditPropertyPageProps) {
     message: ""
   })
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+    googleMapsApiKey: "AIzaSyA3iPYujGJLwvxjaJmPzqR0kx_z2nk2FTM",
     libraries,
   })
 
@@ -445,21 +444,21 @@ export default function PropertyDetailPage({ params }: EditPropertyPageProps) {
                 <CardTitle>Emlak Danışmanı</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 flex flex-col items-center text-center">
-                <img src={property.user.image} className="h-36 w-36"/>
+                <img src={property.user?.image} className="h-36 w-36"/>
                 <div>
-                  <div className="text-lg">{property.user.name} {property.user.surname}</div>
+                  <div className="text-lg">{property.user?.name} {property.user?.surname}</div>
                   <div className="text-sm text-gray-600">Emlak Uzmanı</div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Phone className="h-4 w-4 text-gray-600" />
-                    <span>{formatPhoneNumber(String(property.user.phonenumber))}</span>
+                    <span>{formatPhoneNumber(String(property.user?.phonenumber))}</span>
                   </div>
                 </div>
 
                 <div className="w-full">
-                  <Button className="w-full" onClick={() => {window.location.href = `tel:${property.user.phonenumber}`}}>
+                  <Button className="w-full" onClick={() => {window.location.href = `tel:${property.user?.phonenumber}`}}>
                     <Phone className="h-4 w-4 mr-2" />
                     Ara
                   </Button>

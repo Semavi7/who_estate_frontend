@@ -132,7 +132,7 @@ export default function AdminUsers() {
                 <Shield className="h-8 w-8 text-green-600" />
                 <div className="ml-4">
                   <p className="text-sm text-muted-foreground">Aktif Kullanıcı</p>
-                  <p className="text-2xl">{users.filter(u => u.status === 'active').length}</p>
+                  <p className="text-2xl"></p>
                 </div>
               </div>
             </CardContent>
@@ -154,7 +154,7 @@ export default function AdminUsers() {
                 <Calendar className="h-8 w-8 text-orange-600" />
                 <div className="ml-4">
                   <p className="text-sm text-muted-foreground">Beklemede</p>
-                  <p className="text-2xl">{users.filter(u => u.status === 'pending').length}</p>
+                  <p className="text-2xl"></p>
                 </div>
               </div>
             </CardContent>
