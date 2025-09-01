@@ -5,11 +5,11 @@ export async function POST(request: Request) {
     const url = 'https://onesignal.com/api/v1/notifications';
         const headers = {
             'Content-Type': 'application/json; charset=utf-8',
-            'Authorization': 'Basic os_v2_app_srcp7fafunaxrcaoq4fe5vydx6enbrwan7oux3frs43uxxkvgg4lpns7zz6dc7a2a5isag3jsb4hwuxnl7m45oalh2gcpskc43kczlq'
+            'Authorization': `Basic ${process.env.ONE_SIGNAL_API_KEY}`
         };
 
         const data = {
-            "app_id": "9444ff94-05a3-4178-880e-870a4ed703bf",
+            "app_id": process.env.ONE_SIGNAL_KEY,
             "target_channel": "push",
             "name": "Testing basic setup",
             "headings": {
