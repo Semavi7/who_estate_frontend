@@ -3,7 +3,6 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { User, Mail, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { IUser } from "@/app/(admin)/admin/users/page";

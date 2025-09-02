@@ -128,20 +128,22 @@ export default function Header({ showHeader = true }: HeaderProps) {
           </div>
           {/* Mobile Navigation */}
           <div
-            className={`lg:hidden mt-4 pb-4 border-t border-gray-200 mobile-menu ${isMobileMenuOpen ? 'is-open' : ''}`}
+            className={`lg:hidden transition-[max-height,opacity] duration-400 ease-in-out  ${isMobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0 overflow-hidden '}`}
           >
-            <nav className="flex flex-col space-y-4 pt-4">
-              <Link className="text-foreground hover:text-primary transition-colors" href={'/'}>Ana Sayfa</Link>
-              <Link className="text-foreground hover:text-primary transition-colors" href={'/listings'}>İlanlar</Link>
-              <Link className="text-foreground hover:text-primary transition-colors" href={'/about'}>Hakkımızda</Link>
-              <Link className="text-foreground hover:text-primary transition-colors" href={'/contact'}>İletişim</Link>
-              <div className="pt-4 border-t border-gray-200 space-y-2">
-                <Button onClick={handleLoginClick} variant="outline" className="w-full">Giriş Yap</Button>
-                <Link href="/admin/dashboard" className="w-full">
-                  <Button className="w-full">Yönetim Paneli</Button>
-                </Link>
-              </div>
-            </nav>
+            <div className="mt-4 pb-4 border-t border-gray-200">
+              <nav className="flex flex-col space-y-4 pt-4">
+                <Link className="text-foreground hover:text-primary transition-colors" href={'/'}>Ana Sayfa</Link>
+                <Link className="text-foreground hover:text-primary transition-colors" href={'/listings'}>İlanlar</Link>
+                <Link className="text-foreground hover:text-primary transition-colors" href={'/about'}>Hakkımızda</Link>
+                <Link className="text-foreground hover:text-primary transition-colors" href={'/contact'}>İletişim</Link>
+                <div className="pt-4 border-t border-gray-200 space-y-2">
+                  <Button onClick={handleLoginClick} variant="outline" className="w-full">Giriş Yap</Button>
+                  <Link href="/admin/dashboard" className="w-full">
+                    <Button className="w-full">Yönetim Paneli</Button>
+                  </Link>
+                </div>
+              </nav>
+            </div>
           </div>
         </div>
       </header>

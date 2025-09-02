@@ -2,6 +2,7 @@ import { Users, Award, MapPin, Clock, Heart, Shield, Star, TrendingUp } from "lu
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Team from "@/components/public/Team";
 
 export default function AboutPage() {
   const stats = [
@@ -170,29 +171,8 @@ export default function AboutPage() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {team.map((member, index) => (
-              <Card key={index} className="text-center overflow-hidden">
-                <div className="relative">
-                  <img 
-                    src={member.image}
-                    alt={member.name}
-                    className="w-full h-64 object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                  <Badge 
-                    variant="secondary" 
-                    className="absolute bottom-3 left-1/2 transform -translate-x-1/2"
-                  >
-                    {member.experience}
-                  </Badge>
-                </div>
-                <CardContent className="p-6">
-                  <h3 className="text-lg mb-2">{member.name}</h3>
-                  <p className="text-gray-600">{member.role}</p>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="flex flex-wrap justify-center gap-8">
+            <Team/>
           </div>
         </div>
       </section>
@@ -206,7 +186,7 @@ export default function AboutPage() {
             Uzman ekibimiz size yardımcı olmaktan mutluluk duyacaktır.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center ">
-            <Button variant="outline" size="lg" className="cursor-pointer">
+            <Button variant="secondary" size="lg" className="cursor-pointer">
               İletişim
             </Button>
           </div>

@@ -22,7 +22,8 @@ import { logout, selectUser } from "@/lib/redux/authSlice";
 import { persistor } from "@/lib/redux/store";
 import { ModeToggle } from "@/components/ui/darkmode";
 import NotificationButton from "@/components/admin/NotificationButton";
-import { useTheme } from "next-themes"
+import { useTheme } from "next-themes";
+import { Tooltip } from 'react-tooltip';
 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -61,7 +62,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
 
     return (
-        <div className="min-h-screen bg-background text-foreground flex">
+        <div className="min-h-screen bg-background text-foreground flex overflow-x-hidden">
             {/* Sidebar */}
             <div className={`bg-sidebar text-sidebar-foreground border-r border-accent transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-64'} flex flex-col`}>
                 {/* Sidebar Header */}
@@ -93,32 +94,39 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         {filteredMenuItems.map((item) => (
                             <li key={item.id}>
                                 <Link
+                                    id={item.id}
                                     href={item.path}
-                                    className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                                        // Artık burası hata vermeyecek çünkü 'pathname' yukarıda tanımlı.
-                                        pathname === item.path
-                                            ? 'bg-sidebar text-sidebar-foreground'
-                                            : 'text-gray-500 hover:bg-gray-700'
+                                    className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${pathname === item.path
+                                        ? 'bg-sidebar text-sidebar-foreground'
+                                        : 'text-gray-500 hover:bg-gray-700'
                                         } ${sidebarCollapsed ? "justify-center" : ""}`}
                                 >
                                     <item.icon className="h-5 w-5 flex-shrink-0" />
                                     {!sidebarCollapsed && <span>{item.label}</span>}
                                 </Link>
+                                {sidebarCollapsed && (
+                                <Tooltip anchorSelect={`#${item.id}`} place="right" content={item.label} />
+                                )}
                             </li>
                         ))}
                     </ul>
                 </nav>
 
                 {/* Logout Button */}
-                <div className="p-4 border-t border-accent">
+                <div className="border-t border-accent">
                     <NotificationButton prop={sidebarCollapsed} />
                     <button
-                        className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-500  hover:bg-gray-700 hover:text-red-600 transition-colors"
+                        className={`w-full flex items-center  px-3 py-2 rounded-lg text-gray-500  hover:bg-gray-700 hover:text-red-600 transition-colors ${!sidebarCollapsed ? "space-x-3" : "justify-center"}`}
                         onClick={handleLogout}
+                        id="logout-button"
                     >
                         <LogOut className="h-5 w-5" />
-                        {!sidebarCollapsed && <span>Çıkış Yap</span>}
+                        {!sidebarCollapsed && <span className="text-sm">Çıkış Yap</span>}
                     </button>
+                    {sidebarCollapsed && (
+                        <Tooltip anchorSelect="#logout-button" place="right" content="Çıkış Yap" />
+                    )}
+
                 </div>
             </div>
 

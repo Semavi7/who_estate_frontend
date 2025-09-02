@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import api from "@/lib/axios";
 import { Label } from "@/components/ui/label";
 import { useSearchParams } from "next/navigation";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 interface City {
   code: string
@@ -28,10 +29,10 @@ export default function PropertyListings() {
     listingType: searchParams.get('listingType') || "",
     subType: searchParams.get('subType') || "",
     numberOfRoom: "",
-    minPrice:"",
-    maxPrice:"",
+    minPrice: "",
+    maxPrice: "",
     minNet: "",
-    maxNet:"",
+    maxNet: "",
     buildingAge: "",
     floor: ""
   });
@@ -42,6 +43,8 @@ export default function PropertyListings() {
   const [districtsAndNeighborhoods, setDistrictsAndNeighborhoods] = useState<Record<string, string[]>>({})
   const [sortedAndFilteredProperties, setSortedAndFilteredProperties] = useState<PropertyGetData[]>([])
   const [sortBy, setSortBy] = useState("newest")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(9)
 
 
   const applyFilters = async () => {
@@ -72,13 +75,28 @@ export default function PropertyListings() {
   const fetchProperties = async () => {
     try {
       const res = await api.get('/properties')
-      console.log('res.data', res.data)
       setProperties(res.data)
       setFilteredProperties(res.data)
     } catch (error) {
       toast.error("Veri alınırken bir hata oluştu.")
     }
   }
+
+  useEffect(() => {
+  const handleResize = () => {
+    if (window.innerWidth < 768) {
+      setItemsPerPage(3)
+    } else {
+      setItemsPerPage(9)
+    }
+  }
+  handleResize()
+  window.addEventListener('resize', handleResize);
+
+  // Bileşen kaldırıldığında (unmount) event listener'ı temizle
+  // Bu, hafıza sızıntılarını önler.
+  return () => window.removeEventListener('resize', handleResize);
+}, [])
 
   useEffect(() => {
     const fetchAdressInCities = async () => {
@@ -112,40 +130,56 @@ export default function PropertyListings() {
 
   useEffect(() => {
     const hasSearchParams = Array.from(searchParams.keys()).length > 0
-    if(hasSearchParams){
+    if (hasSearchParams) {
       applyFilters()
     }
-    else{
+    else {
       fetchProperties()
     }
   }, [])
 
   useEffect(() => {
-  let sortedProperties = [...filteredProperties]
-  switch (sortBy) {
-    case 'newest':
-      sortedProperties.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      break
-    case 'oldest':
-      sortedProperties.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-      break
-    case 'price-low':
-      sortedProperties.sort((a, b) => a.price - b.price)
-      break
-    case 'price-high':
-      sortedProperties.sort((a, b) => b.price - a.price)
-      break
-    case 'area-small':
-      sortedProperties.sort((a, b) => a.net - b.net)
-      break
-    case 'area-large':
-      sortedProperties.sort((a, b) => b.net - a.net)
-      break
-    default:
-      break
+    let sortedProperties = [...filteredProperties]
+    switch (sortBy) {
+      case 'newest':
+        sortedProperties.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        break
+      case 'oldest':
+        sortedProperties.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        break
+      case 'price-low':
+        sortedProperties.sort((a, b) => a.price - b.price)
+        break
+      case 'price-high':
+        sortedProperties.sort((a, b) => b.price - a.price)
+        break
+      case 'area-small':
+        sortedProperties.sort((a, b) => a.net - b.net)
+        break
+      case 'area-large':
+        sortedProperties.sort((a, b) => b.net - a.net)
+        break
+      default:
+        break
+    }
+    setSortedAndFilteredProperties(sortedProperties)
+  }, [sortBy, filteredProperties])
+
+  // Toplam sayfa sayısını hesapla
+  const totalPages = Math.ceil(sortedAndFilteredProperties.length / itemsPerPage);
+
+  // Mevcut sayfada gösterilecek ilanların başlangıç ve bitiş indeksini bul
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
+  // Sadece mevcut sayfadaki ilanları içeren yeni bir dizi oluştur
+  const currentProperties = sortedAndFilteredProperties.slice(indexOfFirstItem, indexOfLastItem)
+
+  // Sayfa değiştirildiğinde çağrılacak fonksiyon
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo(0, 0); // Kullanıcı deneyimi için sayfanın başına git
   }
-  setSortedAndFilteredProperties(sortedProperties)
-}, [sortBy, filteredProperties])
 
   const PropertyCard = ({ property }: { property: PropertyGetData }) => (
     <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
@@ -439,7 +473,7 @@ export default function PropertyListings() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {sortedAndFilteredProperties.map(property => (
+              {currentProperties.map(property => (
                 <PropertyCard key={property._id} property={property} />
               ))}
             </div>
@@ -454,7 +488,54 @@ export default function PropertyListings() {
               </div>
             )}
 
-            {/* Pagination would go here */}
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-8">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage > 1) handlePageChange(currentPage - 1);
+                        }}
+                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+
+                    {[...Array(totalPages)].map((_, index) => {
+                      const page = index + 1;
+                      return (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            href="#"
+                            isActive={currentPage === page}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handlePageChange(page);
+                            }}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    })}
+
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage < totalPages) handlePageChange(currentPage + 1);
+                        }}
+                        className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
           </div>
         </div>
       </div>
