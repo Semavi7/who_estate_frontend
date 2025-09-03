@@ -16,7 +16,9 @@ import {
   User,
   Mail,
   Shield,
-  Calendar
+  Calendar,
+  Users,
+  Calendar1
 } from "lucide-react";
 import UserForm from "../../../../components/admin/UserForm";
 import api from "@/lib/axios";
@@ -31,6 +33,7 @@ export interface IUser {
   roles: "admin" | "member"
   image?: string
   phonenumber?: string
+  createdAt: Date
 }
 
 export default function AdminUsers() {
@@ -118,21 +121,10 @@ export default function AdminUsers() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center">
-                <User className="h-8 w-8 text-blue-600" />
+                <Users className="h-8 w-8 text-blue-600" />
                 <div className="ml-4">
                   <p className="text-sm text-muted-foreground">Toplam Kullanıcı</p>
                   <p className="text-2xl">{users.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center">
-                <Shield className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm text-muted-foreground">Aktif Kullanıcı</p>
-                  <p className="text-2xl"></p>
                 </div>
               </div>
             </CardContent>
@@ -151,10 +143,33 @@ export default function AdminUsers() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center">
+                <Calendar1 className="h-8 w-8 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm text-muted-foreground">Bu Ay Eklenen Kullanıcı</p>
+                  <p className="text-2xl">
+                    {users.filter(u => {
+                      const propertyDate = new Date(u.createdAt);
+                      const currentDate = new Date();
+                      return propertyDate.getMonth() === currentDate.getMonth();
+                    }).length}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center">
                 <Calendar className="h-8 w-8 text-orange-600" />
                 <div className="ml-4">
-                  <p className="text-sm text-muted-foreground">Beklemede</p>
-                  <p className="text-2xl"></p>
+                  <p className="text-sm text-muted-foreground">Bu Yıl Eklenen Kullanıcı</p>
+                  <p className="text-2xl">
+                    {users.filter(u => {
+                      const propertyDate = new Date(u.createdAt);
+                      const currentDate = new Date();
+                      return propertyDate.getFullYear() === currentDate.getFullYear();
+                    }).length}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -174,10 +189,6 @@ export default function AdminUsers() {
                   className="pl-10"
                 />
               </div>
-              <Button variant="outline" className="flex items-center space-x-2">
-                <Filter className="h-4 w-4" />
-                <span>Filtreler</span>
-              </Button>
             </div>
           </CardContent>
         </Card>
@@ -264,7 +275,7 @@ export default function AdminUsers() {
           </CardContent>
         </Card>
 
-        
+
 
         <AlertDialogComp
           open={showAlertDialog}

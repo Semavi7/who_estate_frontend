@@ -44,6 +44,7 @@ import PropertyGetData from "@/dto/getproperty.dto"
 import { useSelector } from "react-redux"
 import { selectUser } from "@/lib/redux/authSlice"
 import z, { number } from "zod"
+import Image from "next/image"
 
 const editPropertyFormSchema = z.object({
   propertyType: z.string().nonempty("Emlak tipi zorunludur."),
@@ -120,8 +121,8 @@ function SortableImageItem({ id, image, onRemove }: { id: any; image: ImageObjec
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} className="relative group">
-      <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-        <img src={image.preview} alt={image.file.name} className="w-full h-full object-cover" />
+      <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden w-full h-full">
+        <Image fill src={image.preview} alt={image.file.name} className="object-cover" />
       </div>
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button
@@ -163,8 +164,8 @@ function SortableUrlImageItem({ id, image, onRemove }: { id: string; image: stri
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} className="relative group">
-      <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-        <img src={image} alt="Property Image" className="w-full h-full object-cover" />
+      <div className="aspect-square bg-gray-100   w-full h-full">
+        <Image fill src={image} alt="Property Image" className="object-cover rounded-lg overflow-hidden" />
       </div>
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button
@@ -244,7 +245,8 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
       phonenumber: 0,
       roles: ""
     },
-    createdAt: ""
+    createdAt: "",
+    updatedAt: ""
   })
 
 

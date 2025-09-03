@@ -1,5 +1,5 @@
 import { Card, CardContent } from "../ui/card";
-import { Home, Users, Calculator, Shield, Search, TrendingUp } from "lucide-react";
+import { Home, Users, Shield, Search, TrendingUp, FileText } from "lucide-react";
 
 export default function Services() {
   const services = [
@@ -14,9 +14,9 @@ export default function Services() {
       description: "Uzman emlak danışmanlarımızdan profesyonel destek alın. Size en uygun seçenekleri sunarız."
     },
     {
-      icon: <Calculator className="h-6 w-6 md:h-8 md:w-8" />,
-      title: "Kredi Hesaplama",
-      description: "Konut kredisi hesaplamaları yapın. En uygun kredi seçeneklerini karşılaştırın ve analiz edin."
+      icon: <FileText className="h-6 w-6 md:h-8 md:w-8" />,
+      title: "Tapu & Hukuki Destek",
+      description: "Tüm tapu işlemlerinde ve hukuki süreçlerde yanınızdayız. Güvenli ve sorunsuz işlem yapın."
     },
     {
       icon: <Shield className="h-6 w-6 md:h-8 md:w-8" />,

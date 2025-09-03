@@ -1,17 +1,21 @@
 'use client'
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "../../../../components/ui/avatar";
 import { Separator } from "../../../../components/ui/separator";
-import { User, Mail, Phone, Lock, Camera, PictureInPicture } from "lucide-react";
+import { User, Mail, Phone, Lock, Camera, PictureInPicture, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess, selectUser } from "@/lib/redux/authSlice";
 import api from "@/lib/axios";
 import z from "zod";
+import PropertyGetData from "@/dto/getproperty.dto";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import "dayjs/locale/tr";
 
 const profileFormSchema = z.object({
   name: z.string().min(2, "İsim alanı zorunludur."),
@@ -46,6 +50,7 @@ export default function AdminProfile() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [errors, setErrors] = useState<FieldErrors<ProfileFormSchema> | null>()
   const [passwordErrors, setPasswordErrors] = useState<FieldErrors<PasswordChangeSchema> | null>()
+  const [properties, setPropertis] = useState<PropertyGetData[]>([])
   const [profileData, setProfileData] = useState({
     name: user?.name,
     surname: user?.surname,
@@ -58,6 +63,18 @@ export default function AdminProfile() {
     newPassword: "",
     confirmPassword: ""
   })
+
+  useEffect(() => {
+    const fecthProperties = async () => {
+      try {
+        const res = await api.get(`/properties/query?userId=${user?._id}`)
+        setPropertis(res.data)
+      } catch (error) {
+        toast.error('İlanları çekerken bir hata oluştu')
+      }
+    }
+    fecthProperties()
+  }, [])
 
   const handleChangeInput = (field: string, value: any) => {
     setProfileData(prev => {
@@ -208,6 +225,11 @@ export default function AdminProfile() {
     }
   }
 
+  dayjs.extend(relativeTime);
+  dayjs.locale("tr")
+
+  const propertyfour =  properties.slice(0, 4)
+
   return (
     <div className="space-y-6">
       <div>
@@ -249,7 +271,6 @@ export default function AdminProfile() {
             </Button>
           </CardContent>
         </Card>
-
         {/* Profile Information */}
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -327,8 +348,6 @@ export default function AdminProfile() {
             </form>
           </CardContent>
         </Card>
-
-
         {/* Password Change */}
         <Card>
           <CardHeader>
@@ -396,6 +415,31 @@ export default function AdminProfile() {
             </form>
           </CardContent>
         </Card>
+
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Son Eklenen İlanlar</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {propertyfour.map((property) => (
+                <div key={property._id} className="flex items-start space-x-3 border-b border-gray-100 pb-3 last:border-0">
+                  <div className="bg-primary/10 p-2 rounded-full">
+                    <MessageSquare className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm">
+                      <span className="text-primary">{user?.name} {user?.surname}</span> yeni ilan ekledi
+                      <span className="text-muted-foreground"> - {property.title}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">{dayjs(property.createdAt).fromNow()}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
       </div>
     </div>
   );

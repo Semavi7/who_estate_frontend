@@ -172,13 +172,9 @@ export default function LoginForm({ open, onOpenChange, onOpenForgotPassword }: 
           </div>
 
           <div className="flex items-center justify-between text-sm">
-            <label className="flex items-center space-x-2">
-              <input type="checkbox" className="rounded" />
-              <span className="text-gray-600">Beni hatırla</span>
-            </label>
             <button
               type="button"
-              className="text-primary hover:underline"
+              className="text-primary hover:underline cursor-pointer"
               disabled={isLoading}
               onClick={onOpenForgotPassword}
             >

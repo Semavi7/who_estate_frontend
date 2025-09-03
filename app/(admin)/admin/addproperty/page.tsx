@@ -45,6 +45,7 @@ import { useSelector } from "react-redux"
 import { selectUser } from "@/lib/redux/authSlice"
 import * as z from "zod"
 import axios from "axios"
+import Image from "next/image"
 
 interface ImageObject {
   id: string
@@ -76,8 +77,8 @@ function SortableImageItem({ id, image, onRemove }: { id: any, image: ImageObjec
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} className="relative group">
-      <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-        <img src={image.preview} alt={image.file.name} className="w-full h-full object-cover" />
+      <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden w-full h-full">
+        <Image fill src={image.preview} alt={image.file.name} className="object-cover" />
       </div>
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button
@@ -987,7 +988,7 @@ export default function AddPropertyPage() {
               <SelectItem value="2">2</SelectItem>
               <SelectItem value="3">3</SelectItem>
               <SelectItem value="4">4</SelectItem>
-              <SelectItem value="5+">5+</SelectItem>
+              <SelectItem value="5">5</SelectItem>
             </SelectContent>
           </Select>
           {errors?.bathrooms?.errors && (

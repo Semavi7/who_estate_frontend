@@ -13,6 +13,7 @@ import api from "@/lib/axios";
 import { Label } from "@/components/ui/label";
 import { useSearchParams } from "next/navigation";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import Image from "next/image";
 
 interface City {
   code: string
@@ -183,11 +184,12 @@ export default function PropertyListings() {
 
   const PropertyCard = ({ property }: { property: PropertyGetData }) => (
     <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
-      <div className="relative">
-        <img
+      <div className="relative w-full h-48 ">
+        <Image
           src={property.images[0]}
           alt={property.title}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          fill
         />
         <div className="absolute top-3 left-3">
           <Badge variant={property.listingType === 'Satılık' ? 'default' : 'secondary'}>

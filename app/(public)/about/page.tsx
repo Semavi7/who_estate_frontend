@@ -3,11 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Team from "@/components/public/Team";
+import Link from "next/link";
+import Image from "next/image";
 
 export default function AboutPage() {
   const stats = [
-    { icon: Users, label: "Mutlu Müşteri", value: "25,000+" },
-    { icon: MapPin, label: "Başarılı Satış", value: "15,000+" },
+    { icon: Users, label: "Mutlu Müşteri", value: "2,500+" },
+    { icon: MapPin, label: "Başarılı Satış", value: "500+" },
     { icon: Award, label: "Deneyim Yılı", value: "15+" },
     { icon: Star, label: "Müşteri Desteği", value: "7/24" }
   ];
@@ -120,13 +122,14 @@ export default function AboutPage() {
                     olmaktan gurur duyuyoruz.
                   </p>
                 </div>
-                <Button className="mt-6">İletişime Geç</Button>
+                <Link href={'/contact'}><Button className="mt-6">İletişime Geç</Button></Link>
               </div>
-              <div className="relative">
-                <img
+              <div className="relative w-full h-96">
+                <Image
                   src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                   alt="EmlakPro Ofis"
-                  className="w-full h-96 object-cover rounded-lg shadow-lg"
+                  className="object-cover rounded-lg shadow-lg"
+                  fill
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg"></div>
               </div>
@@ -186,9 +189,11 @@ export default function AboutPage() {
             Uzman ekibimiz size yardımcı olmaktan mutluluk duyacaktır.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center ">
-            <Button variant="secondary" size="lg" className="cursor-pointer">
-              İletişim
-            </Button>
+            <Link href={'/contact'}>
+              <Button variant="secondary" size="lg" className="cursor-pointer">
+                İletişim
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

@@ -44,4 +44,5 @@ export default interface PropertyGetData {
         roles: string
     }
     createdAt: string
+    updatedAt: string
 }

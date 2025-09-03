@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import PropertyGetData from "@/dto/getproperty.dto";
 import api from "@/lib/axios";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export default function FeaturedProperties() {
   const [properties, setProperties] = useState<PropertyGetData[]>([])
@@ -37,11 +38,12 @@ export default function FeaturedProperties() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {properties.map((property) => (
             <Card key={property._id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden">
-              <div className="relative">
-                <img
+              <div className="relative w-full h-44 md:h-48">
+                <Image
+                  fill
                   src={property.images[0]}
                   alt={property.title}
-                  className="w-full h-44 md:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute top-3 md:top-4 left-3 md:left-4">
                   <Badge

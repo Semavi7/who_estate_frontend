@@ -1,6 +1,5 @@
 'use client'
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
-import { Badge } from "../../../../components/ui/badge";
 import {
   BarChart,
   Bar,
@@ -9,8 +8,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell
@@ -19,9 +16,11 @@ import {
   Building2,
   Users,
   Eye,
-  TrendingUp,
   MessageSquare,
-  DollarSign
+  FileMinus2,
+  Handshake,
+  FileKey2,
+  ContactRound
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "@/lib/axios";
@@ -128,7 +127,7 @@ export default function AdminDashboard() {
   dayjs.extend(relativeTime);
   dayjs.locale("tr")
 
-  const propertyfour = properties.slice(0, 4)
+  const propertyfour = properties.slice(0, 5)
 
   const now = new Date()
   const currentMonth = now.getMonth()
@@ -144,45 +143,45 @@ export default function AdminDashboard() {
       {/* Stats Cards */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div className="bg-card text-card-foreground flex flex-col rounded-xl border shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-sm">Toplam İlanlar</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
+            <Building2 className="h-10 w-10 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl">{propertyCount.total}</div>
           </CardContent>
-        </Card>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div className="bg-card text-card-foreground flex flex-col rounded-xl border shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-sm">Aylık Görüntülenme</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+            <Eye className="h-10 w-10 text-cyan-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl">{monthlyView}</div>
           </CardContent>
-        </Card>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div className="bg-card text-card-foreground flex flex-col rounded-xl border shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-sm">Aktif Kullanıcılar</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-10 w-10 text-emerald-700" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl">{userCount}</div>
           </CardContent>
-        </Card>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm">Aylık Müşteri Sayısır</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+        <div className="bg-card text-card-foreground flex flex-col rounded-xl border shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-sm">Aylık Müşteri Sayısı</CardTitle>
+            <ContactRound className="h-10 w-10 text-indigo-300" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl">{clientIntakeCount}</div>
           </CardContent>
-        </Card>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -238,7 +237,7 @@ export default function AdminDashboard() {
         {/* Recent Activities */}
         <Card>
           <CardHeader>
-            <CardTitle>Son Aktiviteler</CardTitle>
+            <CardTitle>Son Eklenen İlanlar</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -286,11 +285,27 @@ export default function AdminDashboard() {
                   <div className="text-xs text-muted-foreground">{messageCount} yeni mesaj</div>
                 </div>
               </Link>
-              <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                <Eye className="h-8 w-8 text-purple-600 mb-2" />
-                <div className="text-sm">Raporları Görüntüle</div>
-                <div className="text-xs text-muted-foreground">Analiz raporları</div>
-              </div>
+              <Link href={'/SatısSozlesmesi.pdf'} target="_blank" rel="noopener noreferrer">
+                <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                  <Handshake className="h-8 w-8 text-rose-700 mb-2" />
+                  <div className="text-sm">Satış Sözleşmesi</div>
+                  <div className="text-xs text-muted-foreground">Satış sözleşmesi örneğini indirebilirsiniz</div>
+                </div>
+              </Link>
+              <Link href={'/KiraSozlesmesi.pdf'} target="_blank" rel="noopener noreferrer">
+                <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                  <FileKey2 className="h-8 w-8 text-fuchsia-900 mb-2" />
+                  <div className="text-sm">Kira Sözleşmesi</div>
+                  <div className="text-xs text-muted-foreground">Kira sözleşmesi örneğini indirebilirsiniz</div>
+                </div>
+              </Link>
+              <Link href={'/TahliyeTaahudnamesi.pdf'} target="_blank" rel="noopener noreferrer">
+                <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                  <FileMinus2 className="h-8 w-8 text-red-800 mb-2" />
+                  <div className="text-sm">Tahliye Taahüdnamesi</div>
+                  <div className="text-xs text-muted-foreground">Tahliye taahüdnamesi örneğini indirebilirsiniz</div>
+                </div>
+              </Link>
             </div>
           </CardContent>
         </Card>

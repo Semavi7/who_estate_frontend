@@ -368,7 +368,7 @@ export default function ContactPage() {
           <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardContent className="p-6">
-                <h4 className="mb-3">Emlak danışmanı nasıl ararım?</h4>
+                <h4 className="mb-3">Emlak danışmanını nasıl ararım?</h4>
                 <p className="text-gray-600 text-sm">
                   Telefon, e-posta veya web sitemizden bizimle iletişime geçerek
                   size en uygun danışmanımızla görüşme ayarlayabilirsiniz.
@@ -388,10 +388,9 @@ export default function ContactPage() {
 
             <Card>
               <CardContent className="p-6">
-                <h4 className="mb-3">Online ilan verebilir miyim?</h4>
+                <h4 className="mb-3">Satış süreci nasıl ilerliyor?</h4>
                 <p className="text-gray-600 text-sm">
-                  Tabii ki! Web sitemizden kolayca ilan verebilir,
-                  fotoğraf yükleyebilir ve ilanınızı yönetebilirsiniz.
+                  Satış sürecinde uzman ekibimiz size yol gösterir. İlan hazırlığı, alıcı bulma, pazarlık ve tapu işlemlerinde yanınızdayız.
                 </p>
               </CardContent>
             </Card>

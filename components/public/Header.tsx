@@ -12,6 +12,7 @@ import { persistor } from "@/lib/redux/store";
 import ForgotPassword from "./ForgotPassword";
 import { ModeToggle } from "../ui/darkmode";
 import { useTheme } from "next-themes"
+import Image from "next/image";
 
 interface HeaderProps {
   showHeader?: boolean;
@@ -58,7 +59,7 @@ export default function Header({ showHeader = true }: HeaderProps) {
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4" />
-                <span>+90 (212) 555 0123</span>
+                <span>+90 (216) 399 3443</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4" />
@@ -87,9 +88,12 @@ export default function Header({ showHeader = true }: HeaderProps) {
             <div
               className="flex items-center space-x-2 animate-logo"
             >
-              <img
+              <Image
+                alt="Logo"
+                height={30}
+                width={30}
                 src={theme === "dark" ? "/arkasıbosbeyazyazı.png" : "/e76e564c-c0ae-4241-97a0-4df87dec2b07.png"}
-                className="h-8 w-8 flex items-center justify-center"
+                className="flex items-center justify-center"
               />
 
               <span className="text-xl lg:hidden">Derya Emlak</span>

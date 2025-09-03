@@ -24,6 +24,7 @@ import { ModeToggle } from "@/components/ui/darkmode";
 import NotificationButton from "@/components/admin/NotificationButton";
 import { useTheme } from "next-themes";
 import { Tooltip } from 'react-tooltip';
+import Image from "next/image";
 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -70,7 +71,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <div className="flex items-center justify-between">
                         {!sidebarCollapsed && (
                             <div className="flex items-center space-x-2">
-                                <img
+                                <Image
+                                    alt=""
+                                    width={32}
+                                    height={32}
                                     src={theme === "dark" ? "/arkasıbosbeyazyazı.png" : "/e76e564c-c0ae-4241-97a0-4df87dec2b07.png"}
                                     className="h-8 w-8 flex items-center justify-center"
                                 />

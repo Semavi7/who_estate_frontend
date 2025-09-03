@@ -190,7 +190,7 @@ export default function HeroSection() {
         >
           <div className="text-center">
             <div className="text-2xl md:text-3xl lg:text-4xl text-white drop-shadow-lg mb-2">
-              15,000+
+              100+
             </div>
             <div className="text-white/90 text-sm md:text-base drop-shadow">
               Aktif İlan
@@ -198,7 +198,7 @@ export default function HeroSection() {
           </div>
           <div className="text-center">
             <div className="text-2xl md:text-3xl lg:text-4xl text-white drop-shadow-lg mb-2">
-              25,000+
+              2,500+
             </div>
             <div className="text-white/90 text-sm md:text-base drop-shadow">
               Mutlu Müşteri
@@ -209,7 +209,7 @@ export default function HeroSection() {
               500+
             </div>
             <div className="text-white/90 text-sm md:text-base drop-shadow">
-              Emlak Danışmanı
+              Başarılı Satış
             </div>
           </div>
         </div>

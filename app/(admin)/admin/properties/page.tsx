@@ -14,7 +14,9 @@ import {
   MapPin,
   Calendar,
   Eye,
-  Replace
+  Replace,
+  Tag,
+  FileKey
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -117,10 +119,10 @@ export default function AdminProperties() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center">
-              <Eye className="h-8 w-8 text-green-600" />
+              <FileKey className="h-8 w-8 text-green-600" />
               <div className="ml-4">
-                <p className="text-sm text-muted-foreground">Aktif İlan</p>
-                {/* <p className="text-2xl">{properties.filter(p => p.status === 'aktif').length}</p> */}
+                <p className="text-sm text-muted-foreground">Kiralık</p>
+                <p className="text-2xl">{properties.filter(p => p.listingType === 'Kiralık').length}</p>
               </div>
             </div>
           </CardContent>
@@ -128,10 +130,10 @@ export default function AdminProperties() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center">
-              <MapPin className="h-8 w-8 text-purple-600" />
+              <Tag className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
-                <p className="text-sm text-muted-foreground">Konut İlanı</p>
-                <p className="text-2xl">{properties.filter(p => p.propertyType === 'Konut').length}</p>
+                <p className="text-sm text-muted-foreground">Satılık</p>
+                <p className="text-2xl">{properties.filter(p => p.listingType === 'Satılık').length}</p>
               </div>
             </div>
           </CardContent>
@@ -169,10 +171,6 @@ export default function AdminProperties() {
                   className="pl-10"
                 />
               </div>
-              <Button variant="outline" className="flex items-center space-x-2">
-                <Filter className="h-4 w-4" />
-                <span>Filtreler</span>
-              </Button>
             </div>
           </CardContent>
         </Card>

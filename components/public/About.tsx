@@ -1,17 +1,19 @@
+import Image from "next/image";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Award, Users, Building, Clock } from "lucide-react";
+import Link from "next/link";
 
 export default function About() {
   const stats = [
     {
       icon: <Building className="h-5 w-5 md:h-6 md:w-6" />,
-      number: "15,000+",
+      number: "500+",
       label: "Başarılı Satış"
     },
     {
       icon: <Users className="h-5 w-5 md:h-6 md:w-6" />,
-      number: "25,000+",
+      number: "2,500+",
       label: "Mutlu Müşteri"
     },
     {
@@ -63,17 +65,22 @@ export default function About() {
               </div>
             </div>
 
-            <Button size="lg" className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
-              Hakkımızda Daha Fazla
-            </Button>
+            <Link href={'/about'}>
+              <Button size="lg" className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
+                Hakkımızda Daha Fazla
+              </Button>
+            </Link>
           </div>
 
-          <div className="relative order-1 lg:order-2">
-            <img
-              src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&h=400&fit=crop"
-              alt="Emlak Ofisi"
-              className="rounded-2xl shadow-xl w-full"
-            />
+          <div className="relative  order-1 lg:order-2">
+            <div className="relative w-full h-110">
+              <Image
+                fill
+                src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&h=400&fit=crop"
+                alt="Emlak Ofisi"
+                className="rounded-2xl shadow-xl "
+              />
+            </div>
 
             {/* Stats overlay */}
             <div className="absolute -bottom-4 md:-bottom-6 -left-4 md:-left-6 right-4 md:right-6">

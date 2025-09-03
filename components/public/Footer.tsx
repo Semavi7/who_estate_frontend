@@ -7,6 +7,9 @@ import TermsOfUse from "./TermsOfUse";
 import CookiePolicy from "./CookiePolicy";
 import { FaInstagram, FaFacebook, FaLinkedin } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6"
+import { IoLogoYoutube } from "react-icons/io5"
+import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   const [privacyPolicy, setPrivacyPolicy] = useState(false)
@@ -18,10 +21,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {/* Company Info */}
           <div className="space-y-4 sm:col-span-2 lg:col-span-1">
-            <div className="flex items-center space-x-2">
-              <img
+            <div className="flex items-center space-x-2 ">
+              <Image
+                height={32}
+                width={32}
+                alt="Logo"
                 src="/arkasıbosbeyazyazı.png"
-                className="h-8 w-8 flex items-center justify-center"
+                className=" flex items-center justify-center"
               />
               <span className="text-xl">Derya Emlak Who Estate</span>
             </div>
@@ -41,7 +47,9 @@ export default function Footer() {
                 </a>
               </Button>
               <Button size="icon" variant="ghost" className="text-gray-400 hover:text-white hover:bg-gray-800 h-8 w-8 md:h-10 md:w-10">
-                <FaLinkedin className="h-4 w-4 md:h-5 md:w-5" />
+                <a href="https://www.youtube.com/@deryaemlak" target="_blank">
+                  <IoLogoYoutube className="h-4 w-4 md:h-5 md:w-5" />
+                </a>
               </Button>
             </div>
           </div>
@@ -50,10 +58,10 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="text-base md:text-lg">Hızlı Linkler</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-sm md:text-base text-gray-400 hover:text-white transition-colors">Ana Sayfa</a></li>
-              <li><a href="#" className="text-sm md:text-base text-gray-400 hover:text-white transition-colors">İlanlar</a></li>
-              <li><a href="#" className="text-sm md:text-base text-gray-400 hover:text-white transition-colors">Hakkımızda</a></li>
-              <li><a href="#" className="text-sm md:text-base text-gray-400 hover:text-white transition-colors">İletişim</a></li>
+              <li><Link href="/" className="text-sm md:text-base text-gray-400 hover:text-white transition-colors">Ana Sayfa</Link></li>
+              <li><Link href="/listings" className="text-sm md:text-base text-gray-400 hover:text-white transition-colors">İlanlar</Link></li>
+              <li><Link href="/about" className="text-sm md:text-base text-gray-400 hover:text-white transition-colors">Hakkımızda</Link></li>
+              <li><Link href="/contact" className="text-sm md:text-base text-gray-400 hover:text-white transition-colors">İletişim</Link></li>
             </ul>
           </div>
 
@@ -72,16 +80,16 @@ export default function Footer() {
           {/* Contact & Newsletter */}
           <div className="space-y-4 sm:col-span-2 lg:col-span-1">
             <h3 className="text-base md:text-lg">İletişim</h3>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
+            <div className="space-y-1">
+              <div className="space-x-3">
                 <Phone className="h-4 w-4 text-primary flex-shrink-0" />
-                <span className="text-sm md:text-base text-gray-400">+90 (212) 555 0123</span>
+                <span className="text-sm md:text-base text-gray-400">+90 (216) 399 3443</span>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="space-x-3">
                 <Mail className="h-4 w-4 text-primary flex-shrink-0" />
                 <span className="text-sm md:text-base text-gray-400">info@emlak.com</span>
               </div>
-              <div className="flex items-start space-x-3">
+              <div className="space-x-3">
                 <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <span className="text-sm md:text-base text-gray-400">Bağlarbaşı Mah. Selahattin Bey Sok. No: 1/A
                   Maltepe/İstanbul</span>
