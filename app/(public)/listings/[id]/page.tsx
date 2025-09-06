@@ -2,6 +2,7 @@ import PropertyGetData from "@/dto/getproperty.dto";
 import api from "@/lib/axios";
 import { Metadata } from 'next'
 import Property from "@/components/public/Property";
+import { URI } from "@/components/structured-data/url";
 
 interface EditPropertyPageProps {
   params: Promise<{ id: string }>
@@ -36,8 +37,8 @@ export async function generateMetadata({ params }: EditPropertyPageProps): Promi
     ],
     openGraph: {
       title: property.title,
-      description: property.description,
-      url: `https://deryaemlak.com/ilanlar/${id}`,
+      description: `${property.location.district}, ${property.location.city} bölgesinde ${property.listingType} ${property.propertyType}. ${property.numberOfRoom} oda, ${property.net}m², ${property.price} TL.`,
+      url: `${URI}/listings/${id}`,
       images: property.images?.map(img => ({
         url: img,
         width: 800,
@@ -49,7 +50,7 @@ export async function generateMetadata({ params }: EditPropertyPageProps): Promi
       modifiedTime: property.updatedAt,
     },
     alternates: {
-      canonical: `https://deryaemlak.com/listings/${id}`,
+      canonical: `${URI}/listings/${id}`,
     },
   }
 }

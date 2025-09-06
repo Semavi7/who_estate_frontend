@@ -27,6 +27,8 @@ export default function Header({ showHeader = true }: HeaderProps) {
 
   const [showForgotPassword, setShowForgotPassword] = useState(false)
 
+  const [screenWidth, setScreenWidth] = useState(0)
+
   const dispatch = useDispatch()
   const router = useRouter()
 
@@ -46,12 +48,27 @@ export default function Header({ showHeader = true }: HeaderProps) {
     api.post('track-view')
   }, [])
 
-  if (!showHeader) return null;
+  if (!showHeader) return null
+
+  useEffect(() => {
+    setScreenWidth(window.screen.width)
+    console.log(window.innerWidth)
+    console.log(window.screen.width)
+    const handleResize = () => {
+      setScreenWidth(window.screen.width)
+      
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  
 
   return (
     <>
       <header
-        className="fixed top-0 left-0 right-0 bg-background shadow-sm z-50 animate-header"
+        className={`fixed top-0 left-0 right-0 bg-background shadow-sm dark:shadow-gray-700 z-50 animate-header`}
+        style={{ width: `${screenWidth}px` }}
       >
         {/* Top bar - hidden on mobile */}
         <div className="bg-primary text-primary-foreground py-2 hidden md:block">
@@ -96,8 +113,7 @@ export default function Header({ showHeader = true }: HeaderProps) {
                 className="flex items-center justify-center"
               />
 
-              <span className="text-xl lg:hidden">Derya Emlak</span>
-              <span className="hidden text-xl lg:inline">Derya Emlak Who Estate</span>
+              <span className="text-xl">Derya Emlak Who Estate</span>
             </div>
             {/* Desktop Navigation */}
             <nav
@@ -111,16 +127,18 @@ export default function Header({ showHeader = true }: HeaderProps) {
 
             <div className="flex items-center space-x-4 animate-cta">
               {
-                isAuthenticated ? (
+                isAuthenticated && (
                   <Link href="/admin/dashboard">
                     <Button className="hidden md:inline-flex cursor-pointer">
                       Yönetim Paneli
                     </Button>
                   </Link>
-                ) : (<></>)
+                )
               }
 
               {/* Mobile menu button */}
+
+
               <Button
                 variant="ghost"
                 className="lg:hidden"
@@ -140,11 +158,28 @@ export default function Header({ showHeader = true }: HeaderProps) {
                 <Link className="text-foreground hover:text-primary transition-colors" href={'/listings'}>İlanlar</Link>
                 <Link className="text-foreground hover:text-primary transition-colors" href={'/about'}>Hakkımızda</Link>
                 <Link className="text-foreground hover:text-primary transition-colors" href={'/contact'}>İletişim</Link>
-                <div className="pt-4 border-t border-gray-200 space-y-2">
-                  <Button onClick={handleLoginClick} variant="outline" className="w-full">Giriş Yap</Button>
-                  <Link href="/admin/dashboard" className="w-full">
-                    <Button className="w-full">Yönetim Paneli</Button>
-                  </Link>
+                <div className="pt-4 border-t border-gray-200 space-y-2 flex gap-2">
+                  {isAuthenticated ? (
+                    <Button onClick={handleLogout} variant="default" className="flex-2">
+                      Çıkış Yap
+                    </Button>
+                  ) : <Button onClick={handleLoginClick} variant="default" className="flex-2">
+                    Giriş Yap
+                  </Button>}
+                  {
+                    isAuthenticated && (
+                      <Link href="/admin/dashboard">
+                        <Button variant="default" className="flex-2">
+                          Yönetim Paneli
+                        </Button>
+                      </Link>
+                    )
+                  }
+                  {
+                    isMobileMenuOpen && (
+                      <ModeToggle />
+                    )
+                  }
                 </div>
               </nav>
             </div>

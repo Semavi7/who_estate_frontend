@@ -2,7 +2,7 @@
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { MapPin, Bed, Bath, Square, Heart, Eye, CalendarClock, HousePlus } from "lucide-react";
+import { MapPin,Square,CalendarClock, HousePlus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import PropertyGetData from "@/dto/getproperty.dto";

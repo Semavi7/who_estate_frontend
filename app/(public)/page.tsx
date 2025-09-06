@@ -24,8 +24,8 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
-      <main>
-        <div className="relative">
+      <main >
+        <div className="relative ">
           <HeroSection />
           <div className="absolute bottom-0 left-0 right-0 w-auto h-20 bg-gradient-to-b from-transparent to-background"></div>
         </div>
@@ -42,9 +42,6 @@ export default function Home() {
         <div className="animate-on-load delay-2000ms">
           <About />
         </div>
-
-        
-
       </main>
       <WebsiteSchema />
       <OrganizationSchema />

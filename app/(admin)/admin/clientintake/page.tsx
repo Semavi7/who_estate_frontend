@@ -41,7 +41,7 @@ export default function AdminFeaturesPage() {
     const [showAlertDialog, setShowAlertDialog] = useState(false)
 
     // Form states
-    
+
 
     // Filter clientintake and features based on search
     const filteredclientintake = clientintake.filter(category =>
@@ -63,7 +63,7 @@ export default function AdminFeaturesPage() {
         fetchclientintake()
     }, [])
 
-    
+
 
     // Category CRUD operations
     const handleAddCategory = () => {
@@ -76,7 +76,7 @@ export default function AdminFeaturesPage() {
         setShowClientintakeDialog(true);
     }
 
-    
+
 
     const handleDeleteCategory = async (clientintakeId: string) => {
         try {
@@ -88,7 +88,7 @@ export default function AdminFeaturesPage() {
         }
     }
 
-    
+
 
     return (
         <div className="space-y-6">
@@ -96,12 +96,7 @@ export default function AdminFeaturesPage() {
             <div className="grid grid-cols-1 gap-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-2xl flex items-center space-x-2">
-                            <span>Müşteri Takip</span>
-                        </h2>
-                        <p className="text-gray-600">Müşterileri takip etmek için bu paneli kullanabilirsiniz.</p>
-                    </div>
+                    <p className="text-gray-600">Müşterileri takip etmek için bu paneli kullanabilirsiniz.</p>
                     <Button onClick={handleAddCategory} className="flex items-center space-x-2">
                         <Plus className="h-4 w-4" />
                         <span>Müşteri Ekle</span>
@@ -199,13 +194,13 @@ export default function AdminFeaturesPage() {
                 />
 
                 {/* customer Dialog */}
-                <AddCustomer 
-                open={showClientintakeDialog} 
-                onOpenChange={setShowClientintakeDialog}
-                editingClientintake={editingClientintake}
-                setShowClientintakeDialog={() => setShowClientintakeDialog(false)}
-                setEditingClientintake={() => setEditingClientintake(null)}
-                fetchclientintake= {() => fetchclientintake()}
+                <AddCustomer
+                    open={showClientintakeDialog}
+                    onOpenChange={setShowClientintakeDialog}
+                    editingClientintake={editingClientintake}
+                    setShowClientintakeDialog={() => setShowClientintakeDialog(false)}
+                    setEditingClientintake={() => setEditingClientintake(null)}
+                    fetchclientintake={() => fetchclientintake()}
                 />
             </div>
         </div>

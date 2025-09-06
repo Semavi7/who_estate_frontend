@@ -1,4 +1,5 @@
 import PropertyGetData from "@/dto/getproperty.dto"
+import { URI } from "./url"
 
 
 export function PropertySchema({ property }: { property: PropertyGetData }) {
@@ -7,7 +8,7 @@ export function PropertySchema({ property }: { property: PropertyGetData }) {
     "@type": "RealEstateListing",
     "name": property.title,
     "description": property.description,
-    "url": `https://deryaemlak.com/ilanlar/${property._id}`,
+    "url": `${URI}/listings/${property._id}`,
     "image": property.images?.map(img => img),
     "datePosted": property.createdAt,
     "price": {

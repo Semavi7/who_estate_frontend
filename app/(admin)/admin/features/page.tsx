@@ -167,13 +167,7 @@ export default function AdminFeaturesPage() {
       <div className="grid grid-cols-1 gap-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl flex items-center space-x-2">
-              <Settings className="h-6 w-6" />
-              <span>Özellik Yönetimi</span>
-            </h2>
-            <p className="text-gray-600">İlan özellik kategorilerini ve özelliklerini yönetin</p>
-          </div>
+          <p className="text-gray-600">İlan özellik kategorilerini ve özelliklerini yönetin</p>
           <Button onClick={handleAddCategory} className="flex items-center space-x-2">
             <Plus className="h-4 w-4" />
             <span>Kategori Ekle</span>

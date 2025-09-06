@@ -17,7 +17,8 @@ import {
     Phone,
     ChevronLeft,
     ChevronRight,
-    Check
+    Check,
+    X
 } from "lucide-react";
 import Link from "next/link";
 import PropertyGetData from "@/dto/getproperty.dto";
@@ -39,6 +40,7 @@ const Property = ({ id }: Property) => {
     const [allFeatures, setAllFeatures] = useState<Record<string, string[]>>({})
     const [loading, setLoading] = useState(true)
     const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false)
     const { isLoaded } = useLoadScript({
         googleMapsApiKey: "AIzaSyA3iPYujGJLwvxjaJmPzqR0kx_z2nk2FTM",
         libraries,
@@ -103,21 +105,26 @@ const Property = ({ id }: Property) => {
         }
     };
 
-    const nextImage = () => {
+    const nextImage = (e?: React.MouseEvent) => {
         if (property) {
+            e?.stopPropagation()
             setSelectedImageIndex((prev) =>
                 prev === property.images.length - 1 ? 0 : prev + 1
             );
         }
     };
 
-    const prevImage = () => {
+    const prevImage = (e?: React.MouseEvent) => {
+        e?.stopPropagation()
         if (property) {
             setSelectedImageIndex((prev) =>
                 prev === 0 ? property.images.length - 1 : prev - 1
             );
         }
     };
+
+    const openLightbox = () => setIsLightboxOpen(true)
+    const closeLightbox = () => setIsLightboxOpen(false)
 
     if (loading) {
         return (
@@ -151,7 +158,7 @@ const Property = ({ id }: Property) => {
         );
     }
     return (
-        <div className="min-h-screen pt-20 mt-5">
+        <div className="min-h-screen pt-20 mt-7">
             <div className="container mx-auto px-4 py-8">
                 {/* Back Button */}
                 <div className="mb-6">
@@ -173,7 +180,7 @@ const Property = ({ id }: Property) => {
                         <Card>
                             <CardContent className="p-0">
                                 {/* Main Image */}
-                                <div className="relative">
+                                <div className="relative cursor-pointer" onClick={openLightbox}>
                                     <div className="aspect-video bg-background rounded-t-lg overflow-hidden w-full h-full">
                                         <Image
                                             fill
@@ -187,13 +194,13 @@ const Property = ({ id }: Property) => {
                                     {property.images.length > 1 && (
                                         <>
                                             <button
-                                                onClick={prevImage}
+                                                onClick={(e) => prevImage(e)}
                                                 className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-muted-foreground hover:bg-muted-foreground/80 rounded-full p-2 shadow-lg transition-all"
                                             >
                                                 <ChevronLeft className="h-4 w-4" />
                                             </button>
                                             <button
-                                                onClick={nextImage}
+                                                onClick={(e) => nextImage(e)}
                                                 className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-muted-foreground hover:bg-muted-foreground/80 rounded-full p-2 shadow-lg transition-all"
                                             >
                                                 <ChevronRight className="h-4 w-4" />
@@ -237,7 +244,7 @@ const Property = ({ id }: Property) => {
                         {/* Property Details */}
                         <Card>
                             <CardHeader>
-                                <div className="flex items-start justify-between">
+                                <div className="flex flex-col md:flex-row items-start justify-between">
                                     <div className="space-y-2">
                                         <div className="flex items-center space-x-2">
                                             {getTypeBadge(property.propertyType)}
@@ -255,7 +262,7 @@ const Property = ({ id }: Property) => {
                                             {property.location.city} - {property.location.district} - {property.location.neighborhood}
                                         </div>
                                     </div>
-                                    <div className="text-right">
+                                    <div className="text-right pt-2 md:pt-7">
                                         <div className="text-3xl text-primary">
                                             {formatPrice(property.price, property.listingType)}
                                         </div>
@@ -479,7 +486,51 @@ const Property = ({ id }: Property) => {
                     </div>
                 </div>
             </div>
+            
             <PropertySchema property={property} />
+
+            {isLightboxOpen && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+                    onClick={closeLightbox}
+                >
+                    {/* Close Button */}
+                    <button
+                        className="absolute top-5 right-5 text-white hover:text-gray-300"
+                        onClick={closeLightbox}
+                    >
+                        <X size={32} />
+                    </button>
+
+                    {/* Image Container */}
+                    <div className="relative w-full h-full max-w-4xl max-h-4/5 p-4">
+                        <Image
+                            fill
+                            src={property.images[selectedImageIndex]}
+                            alt={property.title}
+                            className="object-contain"
+                        />
+                    </div>
+
+                    {/* Lightbox Navigation */}
+                    {property.images.length > 1 && (
+                        <>
+                            <button
+                                onClick={(e) => prevImage(e)}
+                                className="absolute left-5 top-1/2 transform -translate-y-1/2 text-white bg-black/50 hover:bg-black/80 rounded-full p-3"
+                            >
+                                <ChevronLeft size={28} />
+                            </button>
+                            <button
+                                onClick={(e) => nextImage(e)}
+                                className="absolute right-5 top-1/2 transform -translate-y-1/2 text-white bg-black/50 hover:bg-black/80 rounded-full p-3"
+                            >
+                                <ChevronRight size={28} />
+                            </button>
+                        </>
+                    )}
+                </div>
+            )}
         </div>
     )
 }

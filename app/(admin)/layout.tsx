@@ -1,5 +1,5 @@
 'use client'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "../../components/ui/avatar";
 import {
@@ -32,6 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const pathname = usePathname()
     const user = useSelector(selectUser)
     const { theme } = useTheme()
+    const [isMobile, setIsMobile] = useState(false)
     const menuItems = [
         { id: "admin-dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/admin/dashboard" },
         { id: "admin-properties", icon: Building2, label: "İlanlar", path: "/admin/properties" },
@@ -60,25 +61,45 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         router.push('/')
     }
 
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(max-width: 768px)');
+        setIsMobile(mediaQuery.matches);
 
+        const handleMediaQueryChange = (e: any) => {
+            setIsMobile(e.matches);
+        };
+
+        mediaQuery.addEventListener('change', handleMediaQueryChange);
+
+        return () => {
+            mediaQuery.removeEventListener('change', handleMediaQueryChange);
+        };
+    }, [])
 
     return (
         <div className="min-h-screen bg-background text-foreground flex overflow-x-hidden">
             {/* Sidebar */}
-            <div className={`bg-sidebar text-sidebar-foreground border-r border-accent transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-64'} flex flex-col`}>
+            <div className={`
+                bg-sidebar text-sidebar-foreground border-r border-accent 
+                transition-[width,transform,box-shadow] 
+                duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
+                ${sidebarCollapsed ? 'w-16' : 'w-51'} 
+                flex flex-col
+                will-change-[width]
+`}>
                 {/* Sidebar Header */}
                 <div className="p-4 border-b border-accent">
                     <div className="flex items-center justify-between">
                         {!sidebarCollapsed && (
-                            <div className="flex items-center space-x-2">
+                            <div className="flex pl-15 md:pl-0 items-center space-x-2">
                                 <Image
                                     alt=""
                                     width={32}
                                     height={32}
                                     src={theme === "dark" ? "/arkasıbosbeyazyazı.png" : "/e76e564c-c0ae-4241-97a0-4df87dec2b07.png"}
-                                    className="h-8 w-8 flex items-center justify-center"
+                                    className="h-8 w-8"
                                 />
-                                <span className="text-lg text-sidebar-foreground">Admin Panel</span>
+                                <span className="text-md text-sidebar-foreground hidden md:block">Admin Panel</span>
                             </div>
                         )}
                         <Button
@@ -109,7 +130,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     {!sidebarCollapsed && <span>{item.label}</span>}
                                 </Link>
                                 {sidebarCollapsed && (
-                                <Tooltip anchorSelect={`#${item.id}`} place="right" content={item.label} />
+                                    <Tooltip anchorSelect={`#${item.id}`} place="right" content={item.label} />
                                 )}
                             </li>
                         ))}
@@ -137,19 +158,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Main Content */}
             <div className="flex-1 flex flex-col">
                 {/* Top Navbar */}
-                <header className="bg-sidebar border-b border-accent px-6 py-35">
+                <header className="bg-sidebar border-b border-accent px-4 sm:px-6 py-35">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-xl ">
+                            {isMobile ? (sidebarCollapsed && (<h1 className="text-[14px]">
                                 {menuItems.find(item => item.path === pathname)?.label || "Dashboard"}
-                            </h1>
+                            </h1>)) : <h1 className="text-xl ">
+                                {menuItems.find(item => item.path === pathname)?.label || "Dashboard"}
+                            </h1>}
                         </div>
                         <div className="flex items-center space-x-4">
                             <div className="flex items-center space-x-3">
-                                <div className="text-right">
+                                {isMobile ? (sidebarCollapsed && (<div className="text-right">
+                                    <div className="text-sm">{user?.name} {user?.surname}</div>
+                                </div>)) : <div className="text-right">
                                     <div className="text-sm">{user?.name} {user?.surname}</div>
                                     <div className="text-xs text-gray-500">{user?.email}</div>
-                                </div>
+                                </div>}
                                 <Avatar>
                                     <AvatarImage src={user?.image} />
                                     <AvatarFallback>

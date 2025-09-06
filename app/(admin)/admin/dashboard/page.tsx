@@ -265,42 +265,42 @@ export default function AdminDashboard() {
             <CardTitle>Hızlı İşlemler</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Link href={'addproperty'}>
-                <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900   cursor-pointer transition-colors">
                   <Building2 className="h-8 w-8 text-primary mb-2" />
                   <div className="text-sm">Yeni İlan</div>
                   <div className="text-xs text-muted-foreground">İlan ekle</div>
                 </div>
               </Link>
-              <div onClick={() => setShowClientintakeDialog(true)} className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+              <div onClick={() => setShowClientintakeDialog(true)} className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900   cursor-pointer transition-colors">
                 <Users className="h-8 w-8 text-green-600 mb-2" />
                 <div className="text-sm">Yeni Müşteri</div>
                 <div className="text-xs text-muted-foreground">Kullanıcı ekle</div>
               </div>
               <Link href={'messages'}>
-                <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900  cursor-pointer transition-colors">
                   <MessageSquare className="h-8 w-8 text-blue-600 mb-2" />
                   <div className="text-sm">Mesajları Görüntüle</div>
                   <div className="text-xs text-muted-foreground">{messageCount} yeni mesaj</div>
                 </div>
               </Link>
               <Link href={'/SatısSozlesmesi.pdf'} target="_blank" rel="noopener noreferrer">
-                <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900  cursor-pointer transition-colors">
                   <Handshake className="h-8 w-8 text-rose-700 mb-2" />
                   <div className="text-sm">Satış Sözleşmesi</div>
                   <div className="text-xs text-muted-foreground">Satış sözleşmesi örneğini indirebilirsiniz</div>
                 </div>
               </Link>
               <Link href={'/KiraSozlesmesi.pdf'} target="_blank" rel="noopener noreferrer">
-                <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900  cursor-pointer transition-colors">
                   <FileKey2 className="h-8 w-8 text-fuchsia-900 mb-2" />
                   <div className="text-sm">Kira Sözleşmesi</div>
                   <div className="text-xs text-muted-foreground">Kira sözleşmesi örneğini indirebilirsiniz</div>
                 </div>
               </Link>
               <Link href={'/TahliyeTaahudnamesi.pdf'} target="_blank" rel="noopener noreferrer">
-                <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900  cursor-pointer transition-colors">
                   <FileMinus2 className="h-8 w-8 text-red-800 mb-2" />
                   <div className="text-sm">Tahliye Taahüdnamesi</div>
                   <div className="text-xs text-muted-foreground">Tahliye taahüdnamesi örneğini indirebilirsiniz</div>

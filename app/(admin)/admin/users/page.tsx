@@ -106,10 +106,7 @@ export default function AdminUsers() {
       <div className="grid grid-cols-1 gap-6">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl">Kullanıcı Yönetimi</h2>
-            <p className="text-gray-600">Sistem kullanıcılarını yönetin ve düzenleyin</p>
-          </div>
+          <p className="text-gray-600">Sistem kullanıcılarını yönetin ve düzenleyin</p>
           <Button onClick={handleAddUser} className="flex items-center space-x-2">
             <Plus className="h-4 w-4" />
             <span>Yeni Kullanıcı</span>

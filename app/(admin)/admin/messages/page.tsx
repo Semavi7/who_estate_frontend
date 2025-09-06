@@ -105,10 +105,7 @@ export default function AdminMessages() {
       <div className="grid grid-cols-1 gap-6">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl">Mesajlar</h2>
             <p className="text-gray-600">İletişim formundan gelen mesajları yönetin</p>
-          </div>
         </div>
 
         {/* Stats Cards */}

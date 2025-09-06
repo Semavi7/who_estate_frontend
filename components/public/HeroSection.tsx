@@ -11,6 +11,7 @@ import {
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "@/lib/axios";
+import Image from 'next/image'
 
 
 interface City {
@@ -24,7 +25,6 @@ export default function HeroSection() {
   const [listingType, setListingType] = useState("")
   const [propertyType, setPropertyType] = useState("")
   const [cities, setCities] = useState<City[]>([])
-  const [showOverlay, setShowOverlay] = useState(false)
 
   useEffect(() => {
     const fetchAdressInCities = async () => {
@@ -36,11 +36,6 @@ export default function HeroSection() {
       }
     }
     fetchAdressInCities()
-
-    const timer = setTimeout(() => {
-      setShowOverlay(true);
-    }, 2000)
-    return () => clearTimeout(timer)
   }, [])
 
   const handleSearch = () => {
@@ -53,13 +48,17 @@ export default function HeroSection() {
     router.push(`/listings?${queryParams.toString()}`)
   }
   return (
-    <section
-      className="hero-background relative min-h-screen bg-cover bg-center bg-no-repeat pt-16 md:pt-24"
-    >
-      {/* Dark overlay for better text readability */}
-      <div
-        className={`absolute inset-0 bg-black/25 animate-fadeIn`} />
-
+    <section className="relative min-h-screen pt-16 md:pt-24">
+      {/* Background Image */}
+      <Image
+        src="/hero-background.jpg"
+        alt="Hero Background"
+        fill
+        className="object-cover object-center"
+        priority
+        quality={85}
+      />
+      <div className={`absolute inset-0 bg-black/35 animate-fadeIn`} />
 
       <div className="relative z-10 container mx-auto px-4 py-12 md:py-20 min-h-screen flex flex-col justify-center">
         <div className="max-w-4xl mx-auto text-center mb-8 md:mb-12">

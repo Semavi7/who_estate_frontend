@@ -76,17 +76,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" className="scrollbar-hide" suppressHydrationWarning>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+      </head>
       <body>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="ligth"
           enableSystem
           disableTransitionOnChange
         >
           <ReduxProvider>
-            <OneSignalInitializer/>
+            <OneSignalInitializer />
             {children}
-            </ReduxProvider>
+          </ReduxProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>
         <OrganizationSchema />
