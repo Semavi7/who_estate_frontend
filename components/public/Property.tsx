@@ -393,12 +393,12 @@ const Property = ({ id }: Property) => {
                                     <div className="space-y-6">
                                         {Object.entries(allFeatures).map(([category, features]: any) => (
                                             <div key={category}>
-                                                <h4 className="font-semibold mb-3 text-gray-800 border-b pb-2">{category}</h4>
+                                                <h4 className="font-semibold mb-3 text-gray-600 border-b pb-2">{category}</h4>
                                                 <ul className="flex flex-wrap gap-x-6 gap-y-3 pt-2">
                                                     {features.map((feature: any) => {
                                                         const isSelected = property.selectedFeatures[category]?.includes(feature);
                                                         return (
-                                                            <div key={feature} className={`flex items-center text-sm ${isSelected ? 'text-gray-900' : 'text-gray-500 line-through'}`}>
+                                                            <div key={feature} className={`flex items-center text-sm ${isSelected ? 'text-card-foreground' : 'text-gray-500 line-through'}`}>
                                                                 <Check className={`h-4 w-4 mr-2 ${isSelected ? 'text-green-500' : 'text-gray-300'}`} />
                                                                 <span>{feature}</span>
                                                             </div>

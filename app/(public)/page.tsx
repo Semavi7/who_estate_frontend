@@ -15,6 +15,8 @@ export const metadata: Metadata = {
     title: 'Derya Emlak - Ana Sayfa',
     description: 'Türkiye\'nin dört bir yanında satılık ve kiralık emlak ilanları.',
     url: URI,
+    siteName: 'Derya Emlak Who Estate',
+    images: 'favicon.png'
   },
   alternates: {
     canonical: URI,
@@ -30,16 +32,16 @@ export default function Home() {
           <div className="absolute bottom-0 left-0 right-0 w-auto h-20 bg-gradient-to-b from-transparent to-background"></div>
         </div>
 
-        <div className="animate-on-load delay-2000ms">
+        <div className="animate-on-scroll">
           <FeaturedProperties />
         </div>
 
 
-        <div className="animate-on-load delay-2000ms">
+        <div className="animate-on-scroll">
           <Services />
         </div>
 
-        <div className="animate-on-load delay-2000ms">
+        <div className="animate-on-scroll">
           <About />
         </div>
       </main>

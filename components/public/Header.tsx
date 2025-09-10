@@ -6,7 +6,7 @@ import Link from "next/link";
 import LoginForm from "./LoginForm";
 import api from "@/lib/axios";
 import { useDispatch, useSelector } from "react-redux";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { logout, selectIsAuthenticated } from "@/lib/redux/authSlice";
 import { persistor } from "@/lib/redux/store";
 import ForgotPassword from "./ForgotPassword";
@@ -33,6 +33,8 @@ export default function Header({ showHeader = true }: HeaderProps) {
   const router = useRouter()
 
   const { theme } = useTheme()
+
+  const pathname = usePathname()
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -67,7 +69,7 @@ export default function Header({ showHeader = true }: HeaderProps) {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 bg-background shadow-sm dark:shadow-gray-700 z-50 animate-header`}
+        className={`fixed top-0 left-0 right-0 bg-background shadow-sm dark:shadow-gray-700 z-50 ${pathname === "/" && "animate-header"} `}
         style={{ width: `${screenWidth}px` }}
       >
         {/* Top bar - hidden on mobile */}
@@ -103,7 +105,7 @@ export default function Header({ showHeader = true }: HeaderProps) {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div
-              className="flex items-center space-x-2 animate-logo"
+              className={`flex items-center space-x-2 ${pathname === "/" && "animate-logo"}`}
             >
               <Image
                 alt="Logo"
@@ -117,7 +119,7 @@ export default function Header({ showHeader = true }: HeaderProps) {
             </div>
             {/* Desktop Navigation */}
             <nav
-              className="hidden lg:flex items-center space-x-8 animate-nav"
+              className={`hidden lg:flex items-center space-x-8 ${pathname === "/" && "animate-nav"} `}
             >
               <Link className="text-foreground hover:text-primary transition-colors" href={'/'}>Ana Sayfa</Link>
               <Link className="text-foreground hover:text-primary transition-colors" href={'/listings'}>İlanlar</Link>
@@ -125,7 +127,7 @@ export default function Header({ showHeader = true }: HeaderProps) {
               <Link className="text-foreground hover:text-primary transition-colors" href={'/contact'}>İletişim</Link>
             </nav>
 
-            <div className="flex items-center space-x-4 animate-cta">
+            <div className={`flex items-center space-x-4 ${pathname === "/" && "animate-cta"} `}>
               {
                 isAuthenticated && (
                   <Link href="/admin/dashboard">

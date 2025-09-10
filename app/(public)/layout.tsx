@@ -7,9 +7,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <div className="min-h-screen bg-background">
             <Header />
             {children}
-            <div className="animate-on-load delay-2000ms">
-                <Footer />
-            </div>
+            <Footer />
         </div>
     )
 }

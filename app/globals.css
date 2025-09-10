@@ -188,7 +188,7 @@ html {
 @keyframes fadeInAndUp {
   from {
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateY(200px);
   }
 
   to {
@@ -197,20 +197,11 @@ html {
   }
 }
 
-/* Animasyonu uygulayacak ve başlangıçta gizleyecek ana sınıf */
-.animate-on-load {
-  opacity: 0;
-  /* Animasyon başlayana kadar elementi gizli tutar */
-  animation: fadeInAndUp 0.8s ease-out forwards;
-}
 
-/* Farklı gecikme süreleri için yardımcı sınıflar */
-.delay-2000ms {
-  animation-delay: 2s;
-}
-
-.hero-background {
-  background-image: url('/hero-background.jpg');
+.animate-on-scroll {
+  animation: fadeInAndUp 1.5s ease-in forwards;
+  animation-timeline: view();
+  animation-range: entry 0% cover 30%;
 }
 
 /* Header animations */
