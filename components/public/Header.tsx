@@ -27,8 +27,6 @@ export default function Header({ showHeader = true }: HeaderProps) {
 
   const [showForgotPassword, setShowForgotPassword] = useState(false)
 
-  const [screenWidth, setScreenWidth] = useState(0)
-
   const dispatch = useDispatch()
   const router = useRouter()
 
@@ -52,25 +50,10 @@ export default function Header({ showHeader = true }: HeaderProps) {
 
   if (!showHeader) return null
 
-  useEffect(() => {
-    setScreenWidth(window.screen.width)
-    console.log(window.innerWidth)
-    console.log(window.screen.width)
-    const handleResize = () => {
-      setScreenWidth(window.screen.width)
-      
-    }
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  
-
   return (
     <>
       <header
         className={`fixed top-0 left-0 right-0 bg-background shadow-sm dark:shadow-gray-700 z-50 ${pathname === "/" && "animate-header"} `}
-        style={{ width: `${screenWidth}px` }}
       >
         {/* Top bar - hidden on mobile */}
         <div className="bg-primary text-primary-foreground py-2 hidden md:block">

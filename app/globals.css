@@ -2,6 +2,12 @@
 @import "tw-animate-css";
 @import 'tailwind-scrollbar-hide/v4';
 @custom-variant dark (&:where(.dark, .dark *));
+@import "aos/dist/aos.css";
+
+html,
+body {
+  overflow-x: hidden;
+}
 
 :root {
   --font-size: 14px;
@@ -195,13 +201,6 @@ html {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-
-.animate-on-scroll {
-  animation: fadeInAndUp 1.5s ease-in forwards;
-  animation-timeline: view();
-  animation-range: entry 0% cover 30%;
 }
 
 /* Header animations */

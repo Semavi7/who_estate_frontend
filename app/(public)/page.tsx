@@ -32,16 +32,15 @@ export default function Home() {
           <div className="absolute bottom-0 left-0 right-0 w-auto h-20 bg-gradient-to-b from-transparent to-background"></div>
         </div>
 
-        <div className="animate-on-scroll">
+        <div data-aos="fade-up" data-aos-offset="300">
           <FeaturedProperties />
         </div>
 
-
-        <div className="animate-on-scroll">
+        <div data-aos="fade-up">
           <Services />
         </div>
 
-        <div className="animate-on-scroll">
+        <div data-aos="fade-up">
           <About />
         </div>
       </main>

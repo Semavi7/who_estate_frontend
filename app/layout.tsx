@@ -6,6 +6,7 @@ import { ThemeProvider } from "../components/public/theme-provider"
 import OneSignalInitializer from "@/components/public/OneSignalInitializer";
 import { URI } from "@/components/structured-data/url";
 import { OrganizationSchema } from '@/components/structured-data/OrganizationSchema'
+import AOSProvider from "@/components/public/AOSProvider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(URI),
@@ -88,7 +89,9 @@ export default function RootLayout({
         >
           <ReduxProvider>
             <OneSignalInitializer />
-            {children}
+            <AOSProvider>
+              {children}
+            </AOSProvider>
           </ReduxProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>
