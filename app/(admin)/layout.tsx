@@ -25,6 +25,7 @@ import NotificationButton from "@/components/admin/NotificationButton";
 import { useTheme } from "next-themes";
 import { Tooltip } from 'react-tooltip';
 import Image from "next/image";
+import InstallPWA from "@/components/admin/InstallPWA";
 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -139,7 +140,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 {/* Logout Button */}
                 <div className="border-t border-accent">
-                    <NotificationButton prop={sidebarCollapsed} />
+                    <InstallPWA prop={sidebarCollapsed}/>
+                    <NotificationButton prop={sidebarCollapsed}/>
                     <button
                         className={`w-full flex items-center  px-3 py-2 rounded-lg text-gray-500  hover:bg-gray-700 hover:text-red-600 transition-colors ${!sidebarCollapsed ? "space-x-3" : "justify-center"}`}
                         onClick={handleLogout}

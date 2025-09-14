@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { useSearchParams } from "next/navigation";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import Image from "next/image";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PropertyCardSkeleton } from "@/components/public/PropertyCardSkeleton";
 
 interface City {
   code: string
@@ -46,6 +48,7 @@ export default function PropertyListings() {
   const [sortBy, setSortBy] = useState("newest")
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(9)
+  const [loading, setLoading] = useState(false)
 
 
   const applyFilters = async () => {
@@ -74,30 +77,33 @@ export default function PropertyListings() {
   };
 
   const fetchProperties = async () => {
+    setLoading(true)
     try {
       const res = await api.get('/properties')
       setProperties(res.data)
       setFilteredProperties(res.data)
     } catch (error) {
       toast.error("Veri alınırken bir hata oluştu.")
+    } finally {
+      setLoading(false)
     }
   }
 
   useEffect(() => {
-  const handleResize = () => {
-    if (window.innerWidth < 768) {
-      setItemsPerPage(3)
-    } else {
-      setItemsPerPage(9)
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setItemsPerPage(3)
+      } else {
+        setItemsPerPage(9)
+      }
     }
-  }
-  handleResize()
-  window.addEventListener('resize', handleResize);
+    handleResize()
+    window.addEventListener('resize', handleResize);
 
-  // Bileşen kaldırıldığında (unmount) event listener'ı temizle
-  // Bu, hafıza sızıntılarını önler.
-  return () => window.removeEventListener('resize', handleResize);
-}, [])
+    // Bileşen kaldırıldığında (unmount) event listener'ı temizle
+    // Bu, hafıza sızıntılarını önler.
+    return () => window.removeEventListener('resize', handleResize);
+  }, [])
 
   useEffect(() => {
     const fetchAdressInCities = async () => {
@@ -475,9 +481,13 @@ export default function PropertyListings() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {currentProperties.map(property => (
+              {!loading ? currentProperties.map(property => (
                 <PropertyCard key={property._id} property={property} />
-              ))}
+              )) : (
+                Array.from({ length: 6 }).map((_, index) => (
+                  <PropertyCardSkeleton key={index} className="w-[320px] h-[377px]"/>
+                ))
+              )}
             </div>
 
             {sortedAndFilteredProperties.length === 0 && (
@@ -496,7 +506,7 @@ export default function PropertyListings() {
                   <PaginationContent>
                     <PaginationItem>
                       <PaginationPrevious
-                        
+
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();

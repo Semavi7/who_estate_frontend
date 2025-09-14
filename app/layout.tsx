@@ -6,7 +6,7 @@ import { ThemeProvider } from "../components/public/theme-provider"
 import OneSignalInitializer from "@/components/public/OneSignalInitializer";
 import { URI } from "@/components/structured-data/url";
 import { OrganizationSchema } from '@/components/structured-data/OrganizationSchema'
-import AOSProvider from "@/components/public/AOSProvider";
+import PWAAuthGuard from "@/components/admin/PWAAuthGuard";
 
 export const metadata: Metadata = {
   metadataBase: new URL(URI),
@@ -58,6 +58,26 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Derya Emlak',
+  },
+  icons: {
+    icon: [
+      {
+        media: '(prefers-color-scheme: light)',
+        url: '/icon1.png',
+        href: '/icon1.png',
+      },
+      {
+        media: '(prefers-color-scheme: dark)',
+        url: '/arkasıbosbeyazyazı.png',
+        href: '/arkasıbosbeyazyazı.png',
+      },
+    ],
+  },
 }
 
 export const viewport: Viewport = {
@@ -89,9 +109,9 @@ export default function RootLayout({
         >
           <ReduxProvider>
             <OneSignalInitializer />
-            <AOSProvider>
-              {children}
-            </AOSProvider>
+              <PWAAuthGuard>
+                {children}
+              </PWAAuthGuard>
           </ReduxProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>

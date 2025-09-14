@@ -6,6 +6,7 @@ import { URI } from "@/components/structured-data/url";
 import { Metadata } from "next";
 import { WebsiteSchema } from '@/components/structured-data/WebsiteSchema'
 import { OrganizationSchema } from '@/components/structured-data/OrganizationSchema'
+import AnimatedDiv from "@/components/public/AnimatedDiv";
 
 export const metadata: Metadata = {
   title: 'Derya Emlak - Türkiye\'nin En Güvenilir Emlak Platformu | Ana Sayfa',
@@ -32,17 +33,17 @@ export default function Home() {
           <div className="absolute bottom-0 left-0 right-0 w-auto h-20 bg-gradient-to-b from-transparent to-background"></div>
         </div>
 
-        <div data-aos="fade-up" data-aos-offset="300">
+        <AnimatedDiv>
           <FeaturedProperties />
-        </div>
+        </AnimatedDiv>
 
-        <div data-aos="fade-up">
+        <AnimatedDiv>
           <Services />
-        </div>
+        </AnimatedDiv>
 
-        <div data-aos="fade-up">
+        <AnimatedDiv>
           <About />
-        </div>
+        </AnimatedDiv>
       </main>
       <WebsiteSchema />
       <OrganizationSchema />

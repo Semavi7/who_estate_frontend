@@ -14,7 +14,7 @@ import z from "zod";
 interface LoginFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onOpenForgotPassword: () => void
+  onOpenForgotPassword?: () => void
 }
 
 const loginFormSchema = z.object({

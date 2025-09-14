@@ -2,24 +2,29 @@
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { MapPin,Square,CalendarClock, HousePlus } from "lucide-react";
+import { MapPin, Square, CalendarClock, HousePlus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import PropertyGetData from "@/dto/getproperty.dto";
 import api from "@/lib/axios";
 import { toast } from "sonner";
 import Image from "next/image";
+import { PropertyCardSkeleton } from "./PropertyCardSkeleton";
 
 export default function FeaturedProperties() {
   const [properties, setProperties] = useState<PropertyGetData[]>([])
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const fetchProperties = async () => {
+      setLoading(true)
       try {
         const res = await api.get('/properties/lastsix')
         setProperties(res.data)
       } catch (error) {
         toast.error("Veri alınırken bir hata oluştu.")
+      } finally {
+        setLoading(false)
       }
     }
     fetchProperties()
@@ -36,7 +41,7 @@ export default function FeaturedProperties() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {properties.map((property) => (
+          {!loading ? properties.map((property) => (
             <Card key={property._id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden">
               <div className="relative w-full h-44 md:h-48">
                 <Image
@@ -57,7 +62,7 @@ export default function FeaturedProperties() {
 
               <CardContent className="p-4 md:p-6">
                 <div className="mb-4">
-                  <h3 className="text-base md:text-lg mb-2 text-gray-900 line-clamp-1">{property.title}</h3>
+                  <h3 className="text-base md:text-lg mb-2 text-primary line-clamp-1">{property.title}</h3>
                   <div className="flex items-center text-gray-600 mb-2">
                     <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
                     <span className="text-sm line-clamp-1">{property.location.city}</span>
@@ -86,7 +91,11 @@ export default function FeaturedProperties() {
                 <Link href={`listings/${property._id}`}><Button className="w-full">Detayları Görüntüle</Button></Link>
               </CardContent>
             </Card>
-          ))}
+          )) : (
+            Array.from({ length: 6 }).map((_, index) => (
+              <PropertyCardSkeleton key={index} className="w-[423px] h-[391px]" />
+            ))
+          )}
         </div>
 
         <div className="text-center mt-8 md:mt-12">

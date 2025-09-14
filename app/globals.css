@@ -2,7 +2,6 @@
 @import "tw-animate-css";
 @import 'tailwind-scrollbar-hide/v4';
 @custom-variant dark (&:where(.dark, .dark *));
-@import "aos/dist/aos.css";
 
 html,
 body {

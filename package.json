@@ -27,7 +27,6 @@
     "@react-google-maps/api": "^2.20.7",
     "@reduxjs/toolkit": "^2.8.2",
     "@types/cookie": "^0.6.0",
-    "aos": "^2.3.4",
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -40,6 +39,7 @@
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.542.0",
+    "motion": "^12.23.12",
     "next": "15.4.5",
     "next-themes": "^0.4.6",
     "react": "19.1.0",
@@ -64,7 +64,6 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/aos": "^3.0.7",
     "@types/is-hotkey": "^0.1.10",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
