@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Derya Emlak',
     description: 'Emlak Uygulamasının Admin Panel Kısmı',
     start_url: '/admin/dashboard',
-    scope: '/admin/',
+    scope: '/',
     display: 'standalone',
     background_color: '#ffffff',
     theme_color: '#000000',
