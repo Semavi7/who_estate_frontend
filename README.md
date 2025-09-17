@@ -28,6 +28,14 @@ Emlak danışmanlarının ve yöneticilerin tüm operasyonel süreçleri tek bir
 
 -   **Anlık Web Bildirimleri (Push Notifications):** OneSignal entegrasyonu, platformun iletişim yeteneklerini bir üst seviyeye taşır. Yönetici panele yeni bir mesaj düştüğünde veya bir müşteri önemli bir aksiyon aldığında, ilgili danışmanlara anında web push bildirimi gönderilir. Bu proaktif yaklaşım, müşteri memnuniyetini artırır ve hiçbir fırsatın kaçırılmamasını sağlar.
 
+### 📱 Progressive Web App (PWA) Desteği
+
+Yönetim paneli, modern bir PWA olarak tasarlanmıştır. Bu özellik, kullanıcılara platformu bir masaüstü veya mobil uygulama gibi cihazlarına yükleme imkanı tanır, böylece daha hızlı ve entegre bir deneyim sunar.
+
+-   **Uygulama Gibi Deneyim:** Yöneticiler, tarayıcı sekmeleriyle uğraşmadan, doğrudan cihazlarının ana ekranındaki veya masaüstündeki ikondan panele anında erişebilirler.
+-   **Hızlı ve Akıcı Performans:** Bir PWA olarak, uygulama kaynakları verimli bir şekilde önbelleğe alınır, bu da tekrarlanan ziyaretlerde daha hızlı yükleme süreleri ve daha akıcı bir kullanıcı deneyimi sağlar.
+-   **Platformlar Arası Tutarlılık:** PWA, herhangi bir modern tarayıcıyı destekleyen tüm işletim sistemlerinde (Windows, macOS, Android, iOS) tutarlı ve güvenilir bir şekilde çalışır.
+
 ---
 
 ## 🔐 Güvenlik ve Kimlik Doğrulama (Security & Authentication)
