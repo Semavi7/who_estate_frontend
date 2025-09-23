@@ -1,0 +1,72 @@
+/* Print setup: A4 landscape, no margins */
+@page {
+  size: A4 landscape;
+  margin: 0;
+}
+
+/* Ortak stil tanımları - Pixel tabanlı A4 landscape */
+.page {
+  /* A4 landscape: 297mm x 210mm = 1123px x 794px (96 DPI) */
+  width: 1123px;
+  height: 794px;
+  box-sizing: border-box;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 15px; /* ~4mm - çok daha az boşluk */
+  overflow: hidden;
+}
+
+/* Ekran için: Tam boyutu kullan ve ölçekle */
+@media screen {
+  html,
+  body,
+  #app {
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  body {
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .page {
+    border: 2px solid #0f172a;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+
+    /* Viewport'a sığdıracak ölçek hesapla */
+    transform: scale(min(calc((100vw - 20px) / 1123px), calc((100vh - 20px) / 794px)));
+    transform-origin: center center;
+  }
+}
+
+/* Print için: mm birimini kullan */
+@media print {
+  html,
+  body {
+    width: 297mm;
+    height: 210mm;
+    margin: 0;
+    padding: 0;
+  }
+
+  .page {
+    width: 297mm;
+    height: 210mm;
+    border: none;
+    box-shadow: none;
+    padding: 4mm; /* Çok daha az boşluk */
+    transform: none; /* Ölçeklendirmeyi kaldır */
+  }
+
+  .no-print-hidden {
+    display: none !important;
+  }
+}

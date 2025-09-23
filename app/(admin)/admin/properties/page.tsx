@@ -9,14 +9,13 @@ import {
   Plus,
   Edit,
   Trash2,
-  Filter,
   Building2,
   MapPin,
   Calendar,
-  Eye,
   Replace,
   Tag,
-  FileKey
+  FileKey,
+  Dock
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -194,7 +193,6 @@ export default function AdminProperties() {
                     <TableHead>Alan (m²)</TableHead>
                     <TableHead>Oda</TableHead>
                     <TableHead>Konum</TableHead>
-                    <TableHead>Durum</TableHead>
                     <TableHead>Tarih</TableHead>
                     <TableHead>İşlemler</TableHead>
                   </TableRow>
@@ -237,14 +235,19 @@ export default function AdminProperties() {
                           {property.location.city}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        {property.location.city}
-                      </TableCell>
                       <TableCell className="text-sm text-gray-600">
                         {new Date(property.createdAt).toLocaleDateString('tr-TR')}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
+                          <Link href={`/propertylistingflyer/${property._id}`} target="_blank">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                            >
+                              <Dock className="h-3 w-3" />
+                            </Button>
+                          </Link>
                           <Link href={`editproperty/${property._id}`}>
                             <Button
                               variant="outline"

@@ -1,7 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import 'tailwind-scrollbar-hide/v4';
 @custom-variant dark (&:where(.dark, .dark *));
+
 
 html,
 body {
@@ -106,6 +108,10 @@ body {
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --animate-fadeIn: fadeIn 2s ease-in-out;
+}
+
+@theme {
+  --font-greatevibes: "Great Vibes", cursive;
 }
 
 @keyframes fadeIn {
