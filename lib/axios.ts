@@ -4,7 +4,7 @@ import { logout } from './redux/authSlice'
 import { toast } from 'sonner'
 
 const api = axios.create({
-    baseURL: process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : 'https://api.onlineticariotomasyon.org.tr',
+    baseURL: process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : 'https://api.deryaemlak.co',
     withCredentials: true
 })
 

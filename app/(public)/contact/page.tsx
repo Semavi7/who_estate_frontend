@@ -31,7 +31,7 @@ const libraries: ('places' | 'drawing' | 'geometry' | 'visualization')[] = ['pla
 
 export default function ContactPage() {
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: "AIzaSyBiUgeKK4Bs-I9rMA9p7JFXtyOLHoFaFOI",
+    googleMapsApiKey: "AIzaSyB3aWGpA6ZCRmUtTAsctoIWhwJ2PerHQj8",
     libraries,
   })
   const [errors, setErrors] = useState<FieldErrors<Message> | null>()

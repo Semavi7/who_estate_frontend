@@ -1,1 +1,1 @@
-export const URI = 'https://app.onlineticariotomasyon.org.tr/'
+export const URI = 'https://www.deryaemlak.co/'

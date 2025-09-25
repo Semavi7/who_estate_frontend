@@ -87,7 +87,7 @@ export default function Footer() {
               </div>
               <div className="space-x-3">
                 <Mail className="h-4 w-4 text-primary flex-shrink-0" />
-                <span className="text-sm md:text-base text-gray-400">info@emlak.com</span>
+                <span className="text-sm md:text-base text-gray-400">info@deryaemlak.co</span>
               </div>
               <div className="space-x-3">
                 <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />

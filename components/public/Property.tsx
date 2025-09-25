@@ -42,7 +42,7 @@ const Property = ({ id }: Property) => {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0)
     const [isLightboxOpen, setIsLightboxOpen] = useState(false)
     const { isLoaded } = useLoadScript({
-        googleMapsApiKey: "AIzaSyBiUgeKK4Bs-I9rMA9p7JFXtyOLHoFaFOI",
+        googleMapsApiKey: "AIzaSyB3aWGpA6ZCRmUtTAsctoIWhwJ2PerHQj8",
         libraries,
     })
 

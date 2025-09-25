@@ -90,7 +90,7 @@ WhoEstate, **Google Cloud Platform (GCP)** üzerinde modern, sunucusuz (serverle
 -   **Konteynerleştirme:** Uygulama, `Dockerfile` ile bir **Docker** konteyner imajına dönüştürülür. Bu, geliştirme ve üretim ortamları arasında tam bir tutarlılık sağlar.
 -   **İmaj Depolama:** Docker imajları, güvenli ve özel bir depo olan **Google Artifact Registry**'de saklanır.
 -   **Sunucusuz Çalıştırma:** **Google Cloud Run**, Artifact Registry'deki imajı kullanarak uygulamayı çalıştırır. Cloud Run, gelen trafik yüküne göre otomatik olarak ölçeklenir (scale-to-zero dahil), bu da uygulamanın her zaman optimum kaynak kullanmasını ve maliyetlerin düşük kalmasını sağlar.
--   **Alan Adı ve Erişim:** Cloud Run servisine bağlanan özel bir subdomain, uygulamanın dünya çapında hızlı ve güvenli bir şekilde erişilebilir olmasını sağlar.
+-   **Alan Adı ve Erişim:** Cloud Run servisine bağlanan özel bir subdomain, uygulamanın dünya çapında hızlı ve güvenli bir şekilde erişilebilir olmasını sağlar.  https://www.deryaemlak.co/
 
 ---
 
