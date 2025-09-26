@@ -99,6 +99,17 @@ export default function RootLayout({
     <html lang="tr" className="scrollbar-hide" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+         <script
+          src="https://www.googletagmanager.com/gtag/js?id=G-W1929ZVML7"
+        />
+        <script id="google-analytics">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-W1929ZVML7');
+          `}
+        </script>
       </head>
       <body>
         <ThemeProvider
@@ -109,9 +120,9 @@ export default function RootLayout({
         >
           <ReduxProvider>
             <OneSignalInitializer />
-              <PWAAuthGuard>
-                {children}
-              </PWAAuthGuard>
+            <PWAAuthGuard>
+              {children}
+            </PWAAuthGuard>
           </ReduxProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>

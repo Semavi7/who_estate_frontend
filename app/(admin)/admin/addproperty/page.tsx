@@ -919,7 +919,7 @@ export default function AddPropertyPage() {
             <SelectContent>
               <SelectItem value="0">0</SelectItem>
               <SelectItem value="1">1</SelectItem>
-              <SelectItem value="2">1</SelectItem>
+              <SelectItem value="2">2</SelectItem>
               <SelectItem value="3">3</SelectItem>
               <SelectItem value="4">4</SelectItem>
               <SelectItem value="5">5</SelectItem>
