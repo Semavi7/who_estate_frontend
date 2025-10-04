@@ -12,7 +12,7 @@ interface MapPickerProps {
 
 export function MapPicker({ center, onLocationChange }: MapPickerProps) {
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: "AIzaSyB3aWGpA6ZCRmUtTAsctoIWhwJ2PerHQj8",
+    googleMapsApiKey: String(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY),
     libraries,
   });
 

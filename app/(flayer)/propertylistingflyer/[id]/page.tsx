@@ -85,15 +85,15 @@ const PropertyListingFlyer = ({ params }: EditPropertyPageProps) => {
                             <img src={properties.images[1]} alt="interior" className="object-fill w-full h-36 rounded-md" />
                         </div>
                         <div className="rounded-lg p-2 bg-white border border-gray-200 flex-1">
-                            <img src={properties.images[2]} alt="pool" className="object-fill w-full h-109 rounded-md" />
+                            <img src={properties.images[2]} alt="pool" className="object-fill w-full h-full rounded-md" />
                         </div>
                     </div>
 
 
                     <div className="w-80 rounded-lg p-6" style={{ background: "#ffef6a" }}>
-                        <div className="text-xl font-semibold mb-2">{properties.title}</div>
+                        <div className="text-2xl font-semibold mb-2">{properties.title}</div>
 
-                        <ul className="list-disc pl-5 leading-relaxed space-y-2 text-gray-800">
+                        <ul className="list-disc text-2xl pl-5 leading-relaxed space-y-2 text-gray-800">
                             <li contentEditable={true} suppressContentEditableWarning={true}>ÇİLEKLİ VİLLALARI</li>
                             <li contentEditable={true} suppressContentEditableWarning={true}>ŞÖMİNE + 3 BALKON</li>
                             <li className="font-bold"><span contentEditable={true} suppressContentEditableWarning={true}>4 + 2</span> &nbsp; <span contentEditable={true} suppressContentEditableWarning={true}>310</span> m<sup>2</sup></li>
@@ -107,7 +107,7 @@ const PropertyListingFlyer = ({ params }: EditPropertyPageProps) => {
 
                 <div className="mt-4">
                     <div className="w-full bg-red-600 rounded-md p-4 flex items-center justify-center">
-                        <div className="text-6xl text-white font-extrabold tracking-tight"><span contentEditable={true} suppressContentEditableWarning={true}>{properties.listingType === "Satılık" ? "SATILIK" : "KİRALIK"}</span> <span className="ml-6">{Number(properties.price).toLocaleString('tr-TR')}</span></div>
+                        <div className="text-9xl text-white font-extrabold tracking-tight"><span contentEditable={true} suppressContentEditableWarning={true}>{properties.listingType === "Satılık" ? "SATILIK" : "KİRALIK"}</span> <span className="ml-6">{Number(properties.price).toLocaleString('tr-TR')}</span></div>
                     </div>
                 </div>
 
